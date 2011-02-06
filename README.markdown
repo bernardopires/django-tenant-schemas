@@ -62,12 +62,12 @@ Unlike `django-appschema`, this project seeks for the **maximum simplicity**
   individual domains. `django-schemata` only requires `schema_name` sub-key,
   but you're free to store additional configuration there. 
 
-Share applications
-==================
+Shared applications
+-------------------
 
 Not yet.
 
-The reason why `django-appschema` became so hackish is that it tries to
+The reason why `django-appschema` became hackish is that it tries to
 sync/migrate both isolated and shared applications in a single run. The app is
 *shared* if it has its tables in the `public` schema, hence they're accessible
 by every domain. That's because `public` schema is always checked after the
@@ -137,9 +137,8 @@ Later more capabilities will be added here.
 
 ### ./manage.py sync_schemata ###
 
-This command runs the `syncdb` command (from South if it is installed, from
-Django otherwise) for every registered database schema. You can sync **all**
-of your apps and domains in a single run. 
+This command runs the `syncdb` command for every registered database schema.
+You can sync **all** of your apps and domains in a single run. 
 
 The options given to `sync_schemata` are passed to every `syncdb`. So if you
 use South, you may find this handy:
@@ -166,7 +165,9 @@ Bug report? Idea? Patch?
 ------------------------
 
 We're happy to incorporate your patches and ideas. Please either fork and send
-pull requests or just send the patch. Discuss this project! Please report bugs.
+pull requests or just send the patch.
+
+Discuss this project! Please report bugs.
 
 Success stories are highly welcome.
 

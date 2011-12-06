@@ -1,0 +1,7 @@
+
+include LICENSE
+include README.markdown
+include *.txt
+
+include version.py
+include VERSION

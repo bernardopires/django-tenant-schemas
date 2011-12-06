@@ -1,0 +1,1 @@
+"""This project adds the PostgreSQL schema support to Django. The schema, which can be seen as a namespace in which any database object exists, allows to isolate the database objects even when they have the same names. You can have same set of tables, indices, sequences etc. many times under the single database."""

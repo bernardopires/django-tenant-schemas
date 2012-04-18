@@ -86,8 +86,8 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
 
     def _cursor(self):
         """
-        Here it happens. We hope every Django db operation using PostgreSQL
-        must go through this to get the cursor handle. We change the path.
+        Here it happens. We hope every Django db operation using Oracle
+        must go through this to get the cursor handle.
         """ 
         cursor = super(DatabaseWrapper, self)._cursor()
         self._set_oracle_default_schema(cursor)

@@ -6,7 +6,7 @@ and never had a chance to test it thoroughly, not speaking about the
 production run, as our team changed the plans.  While I was very excited
 during coding it, I unfortunately have no use for schemata currently.  I'd
 love to hear how the code is really doing and if you find something that
-should be fixed, I'll gladly reviewpull your patches.  **
+should be fixed, I'll gladly review and pull your patches.**
 
 This project adds the [PostgreSQL schema](http://www.postgresql.org/docs/8.4/static/ddl-schemas.html)
 support to [Django](http://www.djangoproject.com/). The schema, which can

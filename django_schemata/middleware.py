@@ -14,4 +14,4 @@ class SchemataMiddleware(object):
 
         # manually alter routing to schema-based urls
         if request.schema_domain["schema_name"] != "public" and request.path_info[-1] == '/':
-            request.path_info = "/firm" + request.path_info
+            request.path_info = settings.SCHEMA_DEPENDENT_TOKEN + request.path_info

@@ -11,17 +11,7 @@ class SchemataMiddleware(object):
         hostname_without_port = request.get_host().split(':')[0]
         request.schema_domain_name = hostname_without_port
         request.schema_domain = connection.set_schemata_domain(request.schema_domain_name)
-        #print request.schema_domain["schema_name"]
 
-        print settings.ROOT_URLCONF
-
-
+        # manually alter routing to schema-based urls
         if request.schema_domain["schema_name"] != "public" and request.path_info[-1] == '/':
-            request.path_info = "/firm" + request.path_info[1:]
-        #   settings.ROOT_URLCONF = settings.ROOT_SCHEMA_URLCONF
-        #else:
-        #    settings.ROOT_URLCONF = settings.ROOT_NO_SCHEMA_URLCONF
-
-
-    # The question remains whether it's necessary to unset the schema
-    # when the request finishes...
+            request.path_info = "/firm" + request.path_info

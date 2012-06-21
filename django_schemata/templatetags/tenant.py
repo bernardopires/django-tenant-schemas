@@ -2,19 +2,23 @@ from django.conf import settings
 from django.template import Library
 from django.template.base import TemplateSyntaxError, kwarg_re
 from django.template.defaulttags import url as default_url, URLNode
+from django_schemata.utils import clean_tenant_url
 
 register = Library()
 
 class SchemaURLNode(URLNode):
     def render(self, context):
-        url_str = super(SchemaURLNode, self).render(context)
-        if url_str.startswith(settings.SCHEMA_DEPENDENT_TOKEN):
-            url_str = url_str[5:]
-        return url_str
+        url = super(SchemaURLNode, self).render(context)
+        return clean_tenant_url(url)
 
 
 @register.tag
 def url(parser, token):
+    """
+    (todo) find an eleganter solution
+    Copied from django's url tag and changed which kind of Node it
+    returns
+    """
     bits = token.split_contents()
     if len(bits) < 2:
         raise TemplateSyntaxError("'%s' takes at least one argument"

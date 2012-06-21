@@ -9,13 +9,9 @@ from django.contrib.sites.models import Site
 
 # only run this test if the custom database wrapper is in use.
 if hasattr(connection, 'schema_name'):
-
     # This will fail with Django==1.3.1 AND psycopg2==2.4.2
     # See https://code.djangoproject.com/ticket/16250
     # Either upgrade Django to trunk or use psycopg2==2.4.1
-    connection.set_schemata_off()
-
-
     def set_schematas(domain):
         settings.SCHEMATA_DOMAINS = {
             domain: {

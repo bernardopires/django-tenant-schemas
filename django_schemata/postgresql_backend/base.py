@@ -3,6 +3,7 @@ import os, re
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
+from django_schemata.utils import get_tenant_model
 
 ORIGINAL_BACKEND = getattr(settings, 'ORIGINAL_BACKEND', 'django.db.backends.postgresql_psycopg2')
 
@@ -19,21 +20,8 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
     def __init__(self, *args, **kwargs):
         super(DatabaseWrapper, self).__init__(*args, **kwargs)
 
-        # By default the schema is not set
-        self.schema_name = None
-
-        # but one can change the default using the environment variable.
-        force_domain = os.getenv('DJANGO_SCHEMATA_DOMAIN')
-        if force_domain:
-            self.schema_name = self._resolve_schema_domain(force_domain)['schema_name']
-
-    def _resolve_schema_domain(self, domain_name):
-        try:
-            sd = settings.SCHEMATA_DOMAINS[domain_name]
-        except KeyError:
-            raise ImproperlyConfigured("Domain '%s' is not supported by "
-                                       "settings.SCHEMATA_DOMAINS" % domain_name)
-        return sd
+        # By default the schema is public
+        self.set_schema_to_public()
 
     def _set_pg_search_path(self, cursor):
         """
@@ -42,15 +30,8 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         (table, index, sequence, etc.).
         """
         if self.schema_name is None:
-            if settings.DEBUG:
-                full_info = " Choices are: %s." \
-                            % ', '.join(settings.SCHEMATA_DOMAINS.keys())
-            else:
-                full_info = ""
-            raise ImproperlyConfigured("Database schema not set (you can pick "
-                                       "one of the supported domains by setting "
-                                       "then DJANGO_SCHEMATA_DOMAIN environment "
-                                       "variable.%s)" % full_info)
+            raise ImproperlyConfigured("Database schema not set. Did your forget "
+                                       "to call set_schema() or set_tenant()?")
 
         _check_identifier(self.schema_name)
         if self.schema_name == 'public':
@@ -58,20 +39,31 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         else:
             cursor.execute('SET search_path = %s, public', [self.schema_name])
 
-    def set_schemata_domain(self, domain_name):
+    def set_schema(self, schema_name):
         """
         Main API method to current database schema,
         but it does not actually modify the db connection.
-        Returns the particular domain dict from settings.SCHEMATA_DOMAINS. 
         """
-        sd = self._resolve_schema_domain(domain_name)
-        self.schema_name = sd['schema_name']
-        return sd
+        self.schema_name = schema_name
 
-    def set_schemata_off(self):
+    def set_tenant(self, tenant):
+        """
+        Main API method to current database schema,
+        but it does not actually modify the db connection.
+        """
+        self.tenant = tenant
+        self.schema_name = tenant.schema_name
+
+        if self.tenant is not None:
+            if self.schema_name != self.tenant.schema_name:
+                raise ImproperlyConfigured("Passed schema '%s' does not match tenant's schema '%s'."
+                % (self.schema_name, self.tenant.schema_name))
+
+    def set_schema_to_public(self):
         """
         Instructs to stay in the common 'public' schema.
         """
+        self.tenant = None
         self.schema_name = 'public'
 
     def _cursor(self):

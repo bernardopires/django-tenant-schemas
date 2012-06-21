@@ -1,6 +1,4 @@
-from django_schemata.management.commands.sync_schemata import BaseSchemataCommand
-
-# Uses the twin command base code for the actual iteration.
+from django_schemata.management.commands import BaseSchemataCommand
 
 class Command(BaseSchemataCommand):
     COMMAND_NAME = 'migrate'

@@ -3,30 +3,28 @@ from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 
 from django_schemata.postgresql_backend.base import _check_identifier
+from django_schemata.utils import get_tenant_model
 
 class Command(BaseCommand):
     help = "Manages the postgresql schemata."
     
     def handle(self, *unused_args, **unused_options):
-        self.create_schemata()
+        self.create_schemas()
 
-    def create_schemata(self):
+    def create_schemas(self):
         """
-        Go through settings.SCHEMATA_DOMAINS and create all schemata that
+        Go through all tenants and create all schemas that
         do not already exist in the database. 
         """
-        # operate in the public schema
-        connection.set_schemata_off()
         cursor = connection.cursor()
         cursor.execute('SELECT schema_name FROM information_schema.schemata')
-        existing_schemata = [ row[0] for row in cursor.fetchall() ]
+        existing_schemata = [row[0] for row in cursor.fetchall()]
 
-        for sd in settings.SCHEMATA_DOMAINS.values():
-            schema_name = str(sd['schema_name'])
-            _check_identifier(schema_name)
+        for tenant in get_tenant_model().objects.all():
+            _check_identifier(tenant.schema_name)
         
-            if schema_name not in existing_schemata:
-                sql = 'CREATE SCHEMA %s' % schema_name
+            if tenant.schema_name not in existing_schemata:
+                sql = 'CREATE SCHEMA %s' % tenant.schema_name
                 print sql
                 cursor.execute(sql)
                 transaction.commit_unless_managed()

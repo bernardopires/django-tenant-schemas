@@ -12,14 +12,14 @@ def read_file(filename):
         return ''
 
 # Use the docstring of the __init__ file to be the description
-DESC = " ".join(__import__('django_schemata').__doc__.splitlines()).strip()
+DESC = " ".join(__import__('tenant_schemas').__doc__.splitlines()).strip()
 
 setup(
-    name = "django-schemata",
+    name = "django-tenant-schemas",
     version = get_git_version(),
-    url = 'https://github.com/tuttle/django-schemata',
-    author = 'Vlada Macek',
-    author_email = 'macek@sandbox.cz',
+    url = 'https://github.com/bcarneiro/django-tenant-schemas',
+    author = 'Bernardo Pires',
+    author_email = 'carneiro.be@gmail.com',
     description = DESC,
     long_description = read_file('README'),
     packages = find_packages(),

@@ -3,7 +3,7 @@ from django.conf import settings
 from django.core.management import call_command, get_commands, load_command_class
 from django.core.management.base import BaseCommand
 from django.db import connection
-from django_schemata.utils import get_tenant_model
+from tenant_schemas.utils import get_tenant_model
 
 class BaseSchemataCommand(BaseCommand):
     """

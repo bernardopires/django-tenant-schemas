@@ -3,7 +3,7 @@ import os, re
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
-from django_schemata.utils import get_tenant_model
+from tenant_schemas.utils import get_tenant_model
 
 ORIGINAL_BACKEND = getattr(settings, 'ORIGINAL_BACKEND', 'django.db.backends.postgresql_psycopg2')
 

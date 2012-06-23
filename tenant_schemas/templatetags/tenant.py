@@ -2,7 +2,7 @@ from django.conf import settings
 from django.template import Library
 from django.template.base import TemplateSyntaxError, kwarg_re
 from django.template.defaulttags import url as default_url, URLNode
-from django_schemata.utils import clean_tenant_url
+from tenant_schemas.utils import clean_tenant_url
 
 register = Library()
 

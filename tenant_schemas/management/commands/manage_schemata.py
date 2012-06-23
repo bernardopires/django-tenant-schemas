@@ -2,8 +2,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 
-from django_schemata.postgresql_backend.base import _check_identifier
-from django_schemata.utils import get_tenant_model
+from tenant_schemas.postgresql_backend.base import _check_identifier
+from tenant_schemas.utils import get_tenant_model
 
 class Command(BaseCommand):
     help = "Manages the postgresql schemata."

@@ -21,7 +21,8 @@ class BaseSchemataCommand(BaseCommand):
         cmdclass = load_command_class(get_commands()[obj.COMMAND_NAME], obj.COMMAND_NAME)
         # inherit the options from the original command
         obj.option_list = cmdclass.option_list
-        obj.option_list = BaseCommand.option_list + (
+        #print obj.option_list
+        obj.option_list += (
             make_option("-s", "--schema", dest="schema_name"),
             )
         # prepend the command's original help with the info about schemata iteration
@@ -33,9 +34,9 @@ class BaseSchemataCommand(BaseCommand):
 
     def execute_command(self, schema, command_name, *args, **options):
         print
-        print self.style.NOTICE("=== Switching to schema ")\
+        print self.style.NOTICE("=== Switching to schema '")\
               + self.style.SQL_TABLE(schema)\
-        + self.style.NOTICE(" then calling %s:" % command_name)
+        + self.style.NOTICE("' then calling %s:" % command_name)
 
         # sets the schema for the connection
         connection.set_schema(schema)

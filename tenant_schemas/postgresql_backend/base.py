@@ -37,7 +37,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         if self.schema_name == 'public':
             cursor.execute('SET search_path = public')
         else:
-            cursor.execute('SET search_path = %s, public', [self.schema_name])
+            cursor.execute('SET search_path = %s', [self.schema_name]) #, public
 
     def set_schema(self, schema_name):
         """

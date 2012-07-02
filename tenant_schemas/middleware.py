@@ -16,7 +16,7 @@ class SchemataMiddleware(object):
     This schema-token is removed automatically when calling the schemata url tag or the reverse function.
     """
     def process_request(self, request):
-        hostname_without_port = request.get_host().split(':')[0]
+        hostname_without_port = self.remove_www(request.get_host().split(':')[0])
 
         tenant_model = get_tenant_model()
         request.tenant = get_object_or_404(tenant_model, domain_url=hostname_without_port)
@@ -25,3 +25,9 @@ class SchemataMiddleware(object):
         if request.tenant.schema_name != "public" and request.path_info[-1] == '/':
             # we are not at the public schema, manually alter routing to schema-dependent urls
             request.path_info = settings.TENANT_URL_TOKEN + request.path_info
+
+    def remove_www(self, hostname):
+        if hostname.startswith("www."):
+            return hostname[4:]
+        else:
+            return hostname

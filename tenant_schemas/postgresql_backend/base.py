@@ -1,11 +1,9 @@
-from threading import local
 import os, re
 
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
-from django.db import connection
-from django.db import utils
+from tenant_schemas.utils import get_tenant_model
 
 ORIGINAL_BACKEND = getattr(settings, 'ORIGINAL_BACKEND', 'django.db.backends.postgresql_psycopg2')
 
@@ -18,16 +16,28 @@ def _check_identifier(identifier):
     if not SQL_IDENTIFIER_RE.match(identifier):
         raise RuntimeError("Invalid string used for the schema name.")
 
-class PGThread(local):
-    def __init__(self):
+class DatabaseWrapper(original_backend.DatabaseWrapper):
+    def __init__(self, *args, **kwargs):
+        super(DatabaseWrapper, self).__init__(*args, **kwargs)
+
+        # By default the schema is public
         self.set_schema_to_public()
 
-    def set_schema_to_public(self):
+    def _set_pg_search_path(self, cursor):
         """
-        Instructs to stay in the common 'public' schema.
+        Actual search_path modification for the cursor. Database will
+        search schemata from left to right when looking for the object
+        (table, index, sequence, etc.).
         """
-        self.tenant = None
-        self.schema_name = 'public'
+        if self.schema_name is None:
+            raise ImproperlyConfigured("Database schema not set. Did your forget "
+                                       "to call set_schema() or set_tenant()?")
+
+        _check_identifier(self.schema_name)
+        if self.schema_name == 'public':
+            cursor.execute('SET search_path = public')
+        else:
+            cursor.execute('SET search_path = %s', [self.schema_name]) #, public
 
     def set_schema(self, schema_name):
         """
@@ -49,47 +59,12 @@ class PGThread(local):
                 raise ImproperlyConfigured("Passed schema '%s' does not match tenant's schema '%s'."
                 % (self.schema_name, self.tenant.schema_name))
 
-    def set_search_path(self, cursor):
+    def set_schema_to_public(self):
         """
-        Actual search_path modification for the cursor. Database will
-        search schemata from left to right when looking for the object
-        (table, index, sequence, etc.).
+        Instructs to stay in the common 'public' schema.
         """
-        if self.schema_name is None:
-            raise ImproperlyConfigured("Database schema not set. Did your forget "
-                                       "to call set_schema() or set_tenant()?")
-
-        _check_identifier(self.schema_name)
-        connection.enter_transaction_management()
-        try:
-            if self.schema_name == 'public':
-                cursor.execute('SET search_path = public')
-            else:
-                cursor.execute('SET search_path = %s', [self.schema_name]) #, public
-        except utils.DatabaseError, e:
-            connection.rollback()
-            raise utils.DatabaseError(e.message)
-
-        return cursor
-
-    def get_search_path(self, cursor):
-        cursor.execute('SHOW search_path')
-        return cursor.fetchone()
-
-    def get_db_schemas(self, cursor):
-        cursor.execute('SELECT schema_name FROM information_schema.schemata')
-        return [row[0] for row in cursor.fetchall()]
-
-class DatabaseWrapper(original_backend.DatabaseWrapper):
-    def __init__(self, *args, **kwargs):
-        super(DatabaseWrapper, self).__init__(*args, **kwargs)
-        self.pg_thread = PGThread()
-
-        # By default the schema is public
-        self.pg_thread.set_schema_to_public()
-
-    def set_tenant(self, tenant):
-        self.pg_thread.set_tenant(tenant)
+        self.tenant = None
+        self.schema_name = 'public'
 
     def _cursor(self):
         """
@@ -97,7 +72,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         must go through this to get the cursor handle. We change the path.
         """ 
         cursor = super(DatabaseWrapper, self)._cursor()
-        cursor = self.pg_thread.set_search_path(cursor)
+        self._set_pg_search_path(cursor)
         return cursor
 
 DatabaseError = original_backend.DatabaseError

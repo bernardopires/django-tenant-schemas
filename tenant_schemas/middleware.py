@@ -19,6 +19,7 @@ class SchemataMiddleware(object):
         hostname_without_port = self.remove_www_and_dev(request.get_host().split(':')[0])
 
         tenant_model = get_tenant_model()
+        connection.set_schema_to_public()
         request.tenant = get_object_or_404(tenant_model, domain_url=hostname_without_port)
         connection.set_tenant(request.tenant)
 

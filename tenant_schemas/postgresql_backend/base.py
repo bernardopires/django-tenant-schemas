@@ -68,7 +68,7 @@ class PGThread(local):
                 cursor.execute('SET search_path = %s', [self.schema_name]) #, public
         except utils.DatabaseError, e:
             connection.rollback()
-            raise utils.SchemaNotFound(e.message)
+            raise utils.DatabaseError(e.message)
 
         return cursor
 

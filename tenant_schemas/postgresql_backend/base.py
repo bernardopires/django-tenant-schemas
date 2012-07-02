@@ -1,9 +1,10 @@
 import os, re
 
 from django.conf import settings
+from threading import local
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
-from tenant_schemas.utils import get_tenant_model
+from django.db import utils, connection
 
 ORIGINAL_BACKEND = getattr(settings, 'ORIGINAL_BACKEND', 'django.db.backends.postgresql_psycopg2')
 
@@ -16,14 +17,11 @@ def _check_identifier(identifier):
     if not SQL_IDENTIFIER_RE.match(identifier):
         raise RuntimeError("Invalid string used for the schema name.")
 
-class DatabaseWrapper(original_backend.DatabaseWrapper):
-    def __init__(self, *args, **kwargs):
-        super(DatabaseWrapper, self).__init__(*args, **kwargs)
-
-        # By default the schema is public
+class PGThread(local):
+    def __init__(self):
         self.set_schema_to_public()
 
-    def _set_pg_search_path(self, cursor):
+    def set_search_path(self, cursor):
         """
         Actual search_path modification for the cursor. Database will
         search schemata from left to right when looking for the object
@@ -34,10 +32,17 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
                                        "to call set_schema() or set_tenant()?")
 
         _check_identifier(self.schema_name)
-        if self.schema_name == 'public':
-            cursor.execute('SET search_path = public')
-        else:
-            cursor.execute('SET search_path = %s', [self.schema_name]) #, public
+        connection.enter_transaction_management()
+        try:
+            if self.schema_name == 'public':
+                cursor.execute('SET search_path = public')
+            else:
+                cursor.execute('SET search_path = %s', [self.schema_name]) #, public
+        except utils.DatabaseError, e:
+            connection.rollback()
+            raise utils.DatabaseError(e.message)
+
+        return cursor
 
     def set_schema(self, schema_name):
         """
@@ -66,13 +71,29 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         self.tenant = None
         self.schema_name = 'public'
 
+class DatabaseWrapper(original_backend.DatabaseWrapper):
+    def __init__(self, *args, **kwargs):
+        super(DatabaseWrapper, self).__init__(*args, **kwargs)
+
+        self.pg_thread = PGThread()
+
+    def set_tenant(self, tenant):
+        """
+        Main API method to current database schema,
+        but it does not actually modify the db connection.
+        """
+        self.pg_thread.set_tenant(tenant)
+
+    def set_schema_to_public(self):
+        self.pg_thread.set_schema_to_public()
+
     def _cursor(self):
         """
         Here it happens. We hope every Django db operation using PostgreSQL
         must go through this to get the cursor handle. We change the path.
         """ 
         cursor = super(DatabaseWrapper, self)._cursor()
-        self._set_pg_search_path(cursor)
+        cursor = self.pg_thread.set_search_path(cursor)
         return cursor
 
 DatabaseError = original_backend.DatabaseError

@@ -16,10 +16,12 @@ class SchemataMiddleware(object):
     This schema-token is removed automatically when calling the schemata url tag or the reverse function.
     """
     def process_request(self, request):
+        # reset to public schema
+        connection.set_schema_to_public()
+
         hostname_without_port = self.remove_www_and_dev(request.get_host().split(':')[0])
 
         tenant_model = get_tenant_model()
-        connection.set_schema_to_public()
         request.tenant = get_object_or_404(tenant_model, domain_url=hostname_without_port)
         connection.set_tenant(request.tenant)
 

@@ -44,6 +44,9 @@ class PGThread(local):
 
         return cursor
 
+    def get_schema_name(self):
+        return self.schema_name
+
     def set_schema(self, schema_name):
         """
         Main API method to current database schema,
@@ -78,14 +81,13 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         self.pg_thread = PGThread()
 
     def set_tenant(self, tenant):
-        """
-        Main API method to current database schema,
-        but it does not actually modify the db connection.
-        """
         self.pg_thread.set_tenant(tenant)
 
     def set_schema_to_public(self):
         self.pg_thread.set_schema_to_public()
+
+    def get_schema_name(self):
+        return self.pg_thread.get_schema_name()
 
     def _cursor(self):
         """

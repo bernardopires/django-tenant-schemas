@@ -1,8 +1,7 @@
 from django.conf import settings
 from django.db import connection
-from django.db.models.loading import get_model
 from django.shortcuts import get_object_or_404
-from tenant_schemas.utils import get_tenant_model
+from tenant_schemas.utils import get_tenant_model, remove_www_and_dev
 
 class SchemataMiddleware(object):
     """
@@ -16,25 +15,23 @@ class SchemataMiddleware(object):
     This schema-token is removed automatically when calling the schemata url tag or the reverse function.
     """
     def process_request(self, request):
-        # reset to public schema
+        """
+        Resets to public schema
+
+        Some nasty weird bugs happened at the production environment without this call.
+        connection.pg_thread.schema_name would already be set and then terrible errors
+        would occur. Any idea why? My theory is django implements connection as some sort
+        of threading local variable.
+        """
         connection.set_schema_to_public()
 
-        hostname_without_port = self.remove_www_and_dev(request.get_host().split(':')[0])
+        hostname_without_port = remove_www_and_dev(request.get_host().split(':')[0])
 
-        tenant_model = get_tenant_model()
-        request.tenant = get_object_or_404(tenant_model, domain_url=hostname_without_port)
+        TenantModel = get_tenant_model()
+        request.tenant = get_object_or_404(TenantModel, domain_url=hostname_without_port)
         connection.set_tenant(request.tenant)
 
-        if request.tenant.schema_name != "public" and request.path_info[-1] == '/':
+        # do we have tenant-specific URLs?
+        if settings.TENANT_URL_TOKEN and request.tenant.schema_name != "public" and request.path_info[-1] == '/':
             # we are not at the public schema, manually alter routing to schema-dependent urls
             request.path_info = settings.TENANT_URL_TOKEN + request.path_info
-
-    def remove_www_and_dev(self, hostname):
-        """
-        Removes www. and dev. from the beginning of the address. Also
-        removes .dev if it's in address
-        """
-        if hostname.startswith("www.") or hostname.startswith("dev."):
-            return hostname[4:]
-
-        return hostname

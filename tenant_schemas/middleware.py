@@ -3,7 +3,7 @@ from django.db import connection
 from django.shortcuts import get_object_or_404
 from tenant_schemas.utils import get_tenant_model, remove_www_and_dev
 
-class SchemataMiddleware(object):
+class TenantMiddleware(object):
     """
     This middleware should be placed at the very top of the middleware stack.
     Selects the proper database schema using the request host. Can fail in
@@ -24,7 +24,6 @@ class SchemataMiddleware(object):
         of threading local variable.
         """
         connection.set_schema_to_public()
-
         hostname_without_port = remove_www_and_dev(request.get_host().split(':')[0])
 
         TenantModel = get_tenant_model()

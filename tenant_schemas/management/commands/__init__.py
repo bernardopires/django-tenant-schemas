@@ -17,7 +17,6 @@ class BaseSchemataCommand(BaseCommand):
         """
         # instantiate
         obj = super(BaseSchemataCommand, cls).__new__(cls, *args, **kwargs)
-        # load the command class
         cmdclass = load_command_class(get_commands()[obj.COMMAND_NAME], obj.COMMAND_NAME)
         # inherit the options from the original command
         obj.option_list = cmdclass.option_list

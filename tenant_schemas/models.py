@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models, connection, transaction
 from tenant_schemas.postgresql_backend.base import _check_identifier
 from django.core.management import call_command
+from tenant_schemas.utils import django_is_in_test_mode
 
 class TenantMixin(models.Model):
     auto_create_schema = True # set this flag to false on a parent class if
@@ -50,7 +51,10 @@ class TenantMixin(models.Model):
 
         if sync_schema:
             call_command('sync_schemata', schema_name=self.schema_name,
-                    interactive=False) # don't ask for example to create an admin user
-            call_command('migrate_schemata', schema_name=self.schema_name)
+                    interactive=False) # don't ask to create an admin user
+
+            # make sure you have SOUTH_TESTS_MIGRATE = false
+            if 'south' in settings.INSTALLED_APPS and not django_is_in_test_mode():
+                call_command('migrate_schemata', schema_name=self.schema_name)
 
         return True

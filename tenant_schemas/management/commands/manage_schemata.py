@@ -25,6 +25,5 @@ class Command(BaseCommand):
         
             if tenant.schema_name not in existing_schemata:
                 sql = 'CREATE SCHEMA %s' % tenant.schema_name
-                print sql
                 cursor.execute(sql)
                 transaction.commit_unless_managed()

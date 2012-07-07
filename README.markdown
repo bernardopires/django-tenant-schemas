@@ -107,42 +107,54 @@ By the default `TENANT_URL_TOKEN` is set to `None`, which means you can't serve 
 
 Tenant View-Routing
 ------------------
-We have a goodie called `TENANT_URL_TOKEN`. Suppose you have your main website at `example.com` and a customer at `customer.example.com`. You probably want your user to be routed to different views when someone requests `http://example.com/` and `http://customer.example.com/`. Because django only uses the string after the host name, this would be impossible, both would call the view at `/`. This is where `TENANT_URL_TOKEN` comes in handy. If set, `TENANT_URL_TOKEN` will be prepended to the request's `path_info`. So for example, if
+We have a goodie called `TENANT_URL_TOKEN`. Suppose you have your main website at `example.com` and a customer at `customer.example.com`. You probably want your user to be routed to different views when someone requests `http://example.com/` and `http://customer.example.com/`. Because django only uses the string after the host name, this would be impossible, both would call the view at `/`. This is where `TENANT_URL_TOKEN` comes in handy. If set, the string `TENANT_URL_TOKEN` will be prepended to the request's `path_info`. So for example, if you have
 
     TENANT_URL_TOKEN = '/customer'
     
 When requesting the view `/login/` from a tenant's host name, this will be translated to `/customer/login/`. You can now edit your `urls.py` file to use another view for a request incoming at `/customer/login/`. Every time a call is made at a tenant's hostname, `/customer` will be prepended to the request's path info. This is of course invisible to the user, even though django will internally see it at as `/customer/login/`, the user will still be seeing `/login/`. Here's a suggestion for a `urls.py` file.
 
     # settings.py
-	TENANT_URL_TOKEN = '/tenant'
+	TENANT_URL_TOKEN = '/customer'
 	
 	# urls.py
 	urlpatterns = patterns('',
 		url(r'^$', 'your_project.public_urls'),
-		url(r'^tenant/', include('your_project.tenant_urls')),
+		url(r'^customer/', include('your_project.tenant_urls')),
 	)
 	
-Where, `public_urls.py` would contain the patterns for your main website, which is not specific to any tenant and `tenant_urls.py` would contain all your tenant-specific patterns.
+Where `public_urls.py` would contain the patterns for your main website, which is not specific to any tenant and `tenant_urls.py` would contain all your tenant-specific patterns.
 
-As you may have noticed, calling `revert` or the `{% url %}` template tag would cause the wrong URL to be generated. This app comes with it's own versions for `revert`, `revert_lazy` (see [tenant_schemas/urlresolvers.py](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/urlresolvers.py)) and `{% url %}` (see [tenant_schemas/templatetags/tenant.py](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/templatetags/tenant.py)).
+As you may have noticed, calling `revert` or the `{% url %}` template tag would cause the wrong URL to be generated. This app comes with it's own versions for `revert`, `revert_lazy` (see [tenant_schemas/urlresolvers.py](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/urlresolvers.py)) and `{% url %}` (see [tenant_schemas/templatetags/tenant.py](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/templatetags/tenant.py)). But don't worry, they don't do anything magical, they just remove `TENANT_URL_TOKEN` from the beginning of the URL.
+
+Import the `reverse` and `reverse_lazy` methods where needed.
+
+    from tenant_schemas.urlresolvers import reverse, reverse_lazy
 
 To use the template tag, add the following line to the top of your template file.
 
     {% load url from tenant %}
     
-This should not break any of your current code. It simply removes the `TENANT_URL_TOKEN` from the beginning of the URL.
+This should not have any side-effects for your current code.
 
 Using django-tenant-schemas
 -------------------
 
 Creating a Tenant works just like any other model in django. Following our previous example,
 
-    tenant = Client(domain_url='tenant.test.com', # don't add www here!
-                    schema_name='test', 
+    tenant = Client(domain_url='tenant.my-domain.com', # don't add www here!
+                    schema_name='tenant1', 
+                    name='Fonzy Tenant',
+                    paid_until='12/05/2014',
+                    on_trial=True)
+    tenant.save() # syncdb automatically called, your tenant is ready to be used!
+    
+    # create your public tenant
+    tenant = Client(domain_url='my-domain.com', # don't add www here!
+                    schema_name='public', 
                     name='Schemas Inc.',
                     paid_until='12/05/2016',
                     on_trial=False)
-    tenant.save() # syncdb automatically called, your tenant is ready to be used!
+    tenant.save()
 
 Because you have the tenant middleware installed, any request made to `tenant.test.com` will now automatically set the schema to `test` and the tenant will be made available at `request.tenant`. By the way, the current schema is also available at `connection.get_schema()`, which is useful, for example, if you want to hook to any of django's signals. 
 
@@ -189,7 +201,7 @@ If you're using South, don't forget to set `SOUTH_TESTS_MIGRATE = False`.
 tenant-schemas needs your help!
 ------------------------
 
-###Suggestions, bugs, ideas, patches###
+###Suggestions, bugs, ideas, patches, questions###
 Are *highly* welcome! Feel free to write an issue for any feedback you have. :)
 
 ###Shared and Tenant-Specific Apps###

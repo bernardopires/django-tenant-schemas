@@ -124,7 +124,7 @@ When requesting the view `/login/` from a tenant's host name, this will be trans
 	
 Where, `public_urls.py` would contain the patterns for your main website, which is not specific to any tenant and `tenant_urls.py` would contain all your tenant-specific patterns.
 
-As you may have noticed, calling `revert` or the `{% url %}` template tag would cause the wrong URL to be generated. This app comes with it's own versions for `revert`, `revert_lazy` (see `tenant_schemas/urlresolvers.py`) and `{% url %}` (see `tenant_schemas/templatetags/tenant.py`).
+As you may have noticed, calling `revert` or the `{% url %}` template tag would cause the wrong URL to be generated. This app comes with it's own versions for `revert`, `revert_lazy` (see [tenant_schemas/urlresolvers.py](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/urlresolvers.py)) and `{% url %}` (see [tenant_schemas/templatetags/tenant.py](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/templatetags/tenant.py)).
 
 To use the template tag, add the following line to the top of your template file.
 
@@ -193,20 +193,20 @@ tenant-schemas needs your help!
 Are *highly* welcome! Feel free to write an issue for any feedback you have. :)
 
 ###Shared and Tenant-Specific Apps###
-[`django-appschema`](https://bitbucket.org/cedarlab/django-appschema/src) tries to solve this in a very hackish and dangerous way by altering django's app cache. This is not safe for on-the-fly creation of tenants, so this is not an option. [django-schemata](https://github.com/tuttle/django-schemata) partially solves it by forcing you to move your shared tables to the `public` schema. When syncing the tables for tenant-specific applications, the search path is set to `public` plus the tenant's schema, this means all tables that already exist on `public` will not be created. This is not ideal because it doesn't allow you have to applications that are both shared and tenant-specific. For example, you may need to have a user system for your main domain and another for your tenants. Or you may want to have `south` in both.
+[`django-appschema`](https://bitbucket.org/cedarlab/django-appschema/overview) tries to solve this in a very hackish and dangerous way by altering django's app cache. This is not safe for on-the-fly creation of tenants, so this is not an option. [django-schemata](https://github.com/tuttle/django-schemata) partially solves it by forcing you to move your shared tables to the `public` schema. When syncing the tables for tenant-specific applications, the search path is set to `public` plus the tenant's schema, this means all tables that already exist on `public` will not be created. This is not ideal because it doesn't allow you have to applications that are both shared and tenant-specific. For example, you may need to have a user system for your main domain and another for your tenants. Or you may want to have `south` in both.
 
 To enable this, an idea would be to allow all models, both shared and tenant-specific to be synced. After the sync, the unnecessary models can be manually deleted from the database. This is of course not very elegant, but shouldn't present a big hit on performance (how often do you sync your models?) and doesn't involve hacking django's cache.
 
-What do you think of this solution? Do you have a better idea? Please send in your feedback!
+What do you think of this solution? Do you have a better idea? Please send in your feedback at issue #1.
 
 ###Multi-Threading###
-This is being used right now in production on a small project and I have made an attempt to make it thread-safe, but I'm a complete beginner at this subject. Any help on this would be *HIGHLY* appreciated. Can someone please check if the custom `postgresql_backend` is thread-safe? If there is a way to write a test for this, it would be awesome.
+This is being used right now in production on a small project and I have made an attempt to make it thread-safe, but I'm a complete beginner at this subject. Any help on this would be *HIGHLY* appreciated. Can someone please check if the custom `postgresql_backend` is thread-safe? If there is a way to write a test for this, it would be awesome. Please send in your feedback at issue #2.
 
 ####Template tag `{% url %}`####
-Basically 100% of the code was copied from Django's source, just to be able to remove `settings.TENANT_URL_TOKEN` from the URL. There should be a smarter way to do this.
+Basically 100% of the code was copied from Django's source, just to be able to remove `settings.TENANT_URL_TOKEN` from the URL. There should be a smarter way to do this. Please send in your feedback at issue #3.
 
 ####2 Small to-dos at testing####
-Take a look at `tenant_schemas/tests/schemas.py` and search for the string `todo`.
+Take a look at [tenant_schemas/tests/schemas.py](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/tests/schemas.py) and search for the string `todo`.  Please send in your feedback at issue #4.
 
 Final Notes
 -----

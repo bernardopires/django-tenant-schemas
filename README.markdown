@@ -12,14 +12,17 @@ Django provides currently no simple way to support multiple tenants using the sa
 What are schemas
 ------------
 
-A schema can be seen as a directory in an operating system, each directory (schema) with it's own set of files (tables). This allow the same table name and objects to be used in different schemas without conflict. For an accurate description on schemas, see [PostgreSQL's official documentation on schemas](http://www.postgresql.org/docs/9.1/static/ddl-schemas.html).
+A schema can be seen as a directory in an operating system, each directory (schema) with it's own set of files (tables and objects). This allows the same table name and objects to be used in different schemas without conflict. For an accurate description on schemas, see [PostgreSQL's official documentation on schemas](http://www.postgresql.org/docs/9.1/static/ddl-schemas.html).
 
 Why schemas
 ------------
 
 There are typically three solutions for solving the multinancy problem. 
+
 1. Isolated Approach: Separate Databases. Each tenant has it's own database.
+
 2. Semi Isolated Approach: Shared Database, Separate Schemas. One database for all tenants, but one schema per tenant.
+
 3. Shared Approach: Shared Database, Shared Schema. All tenants share the same database and schema. There is a main tenant-table, where all other tables have a foreign key pointing to.
 
 This application implements the second approach, which in our opinion, represents the ideal compromise between simplicity and performance.
@@ -214,7 +217,7 @@ An ever simpler solution would be if it were possible to select which models hav
 Please send in your feedback at issue #1.
 
 ###Multi-Threading###
-This is being used right now in production on a small project and I have made an attempt to make it thread-safe, but I'm a complete beginner at this subject. Any help on this would be *HIGHLY* appreciated. Can someone please check if the custom `postgresql_backend` is thread-safe? If there is a way to write a test for this, it would be awesome. Please send in your feedback at issue #2.
+This is being used right now in production on a small project and I have made an attempt to make it thread-safe, but I'm a complete beginner at this subject. Any help on this would be *HIGHLY* appreciated. Can someone please check if the custom [postgresql_backend](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/postgresql_backend/base.py) is thread-safe? If there is a way to write a test for this, it would be awesome. Please send in your feedback at issue #2.
 
 ####Template tag `{% url %}`####
 Basically 100% of the code was copied from Django's source, just to be able to remove `settings.TENANT_URL_TOKEN` from the URL. There should be a smarter way to do this. Please send in your feedback at issue #3.

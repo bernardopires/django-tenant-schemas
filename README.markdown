@@ -44,7 +44,7 @@ Most of your applications are probably tenant-specific, that is, it's data is no
 
 An application is considered to be shared when it's table are in the `public` schema. Some apps make sense being shared. Suppose you have some sort of public data set, for example, a table containing census data. You want every tenant to be able to query it. 
 
-Right now, this is not possible, at least not in practical way. By default all models are being synced to every schema, including `public`. Please take a look at the [tenant-schemas needs your help!](#tenant-schemas-needs-your-help) section if you have an idea on how to do this.
+Right now, this is not possible, at least not in practical way. By default all models are being synced to every schema, including `public` and the tenant doesn't have access to `public`. Please take a look at the [tenant-schemas needs your help!](#tenant-schemas-needs-your-help) section if you have an idea on how to do this.
 
 Setup
 -----
@@ -205,11 +205,13 @@ tenant-schemas needs your help!
 Are *highly* welcome! Feel free to write an issue for any feedback you have. :)
 
 ###Shared and Tenant-Specific Apps###
-[`django-appschema`](https://bitbucket.org/cedarlab/django-appschema/overview) tries to solve this in a very hackish and dangerous way by altering django's app cache. This is not safe for on-the-fly creation of tenants, so this is not an option. [django-schemata](https://github.com/tuttle/django-schemata) partially solves it by forcing you to move your shared tables to the `public` schema. When syncing the tables for tenant-specific applications, the search path is set to `public` plus the tenant's schema, this means all tables that already exist on `public` will not be created. This is not ideal because it doesn't allow you have to applications that are both shared and tenant-specific. For example, you may need to have a user system for your main domain and another for your tenants. Or you may want to have `south` in both.
+[`django-appschema`](https://bitbucket.org/cedarlab/django-appschema/overview) tries to solve this in a very hackish and dangerous way by altering django's app cache. This is not safe for on-the-fly creation of tenants, so this is not an option. [django-schemata](https://github.com/tuttle/django-schemata) partially solves it by forcing you to move your shared tables to the `public` schema. When syncing the tables for tenant-specific applications, the search path is set to `public` plus the tenant's schema, which means all tables that already exist on `public` will not be created when syncing. This is not ideal because it doesn't allow you have to applications that are both shared and tenant-specific. For example, you may need to have a user system for your main domain and another for your tenants. Or you may want to have `south` in both.
 
-To enable this, an idea would be to allow all models, both shared and tenant-specific to be synced. After the sync, the unnecessary models can be manually deleted from the database. This is of course not very elegant, but shouldn't present a big hit on performance (how often do you sync your models?) and doesn't involve hacking django's cache.
+To enable this, an idea would be to let all models, both shared and tenant-specific to be synced. After the sync, the unnecessary models can be deleted from the database. There would be three arrays, `SHARED_APPS`, `TENANT_APPS` and `MUTUAL_APPS`. For example, when syncing the `public` schema, we can just iterate over `TENANT_APPS` deleting their tables. When syncing tenants, we delete the `SHARED_APPS` tables. We can then enable the tenants to also see the `public` schema. This is of course not very elegant, but shouldn't present a big hit on performance (how often do you sync your models?) and doesn't involve hacking django's cache.
 
-What do you think of this solution? Do you have a better idea? Please send in your feedback at issue #1.
+An ever simpler solution would be if it were possible to select which models have to be synced. AFAIK this is not possible, syncdb is called for all models on `INSTALLED_APPS`.
+
+Please send in your feedback at issue #1.
 
 ###Multi-Threading###
 This is being used right now in production on a small project and I have made an attempt to make it thread-safe, but I'm a complete beginner at this subject. Any help on this would be *HIGHLY* appreciated. Can someone please check if the custom `postgresql_backend` is thread-safe? If there is a way to write a test for this, it would be awesome. Please send in your feedback at issue #2.

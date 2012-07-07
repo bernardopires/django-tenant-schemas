@@ -15,7 +15,7 @@ class SchemaURLNode(URLNode):
 @register.tag
 def url(parser, token):
     """
-    (todo) find an eleganter solution
+    (todo) find a better solution
     Copied from django's url tag and changed which kind of Node it
     returns
     """

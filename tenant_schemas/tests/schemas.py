@@ -16,6 +16,7 @@ class SchemataTestCase(TransactionTestCase):
 
         for row in cursor.fetchall():
             if not row[0].startswith('pg_') and row[0] not in do_not_delete:
+                # todo: this actually doesn't delete the schema. why?
                 print "Deleting schema %s" % row[0]
                 cursor.execute('DROP SCHEMA %s CASCADE' % row[0])
 
@@ -28,7 +29,7 @@ class SchemataTestCase(TransactionTestCase):
               'WHERE schema_name = %s'
         cursor.execute(sql, (schema_name, ))
 
-        # this is not pretty, chould you please suggest something better?
+        # todo: this is not pretty, could you please suggest something better?
         return (len(cursor.fetchall()) == 1)
 
     def test_tenant_schema_is_created(self):

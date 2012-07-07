@@ -1,149 +1,165 @@
-django-schemata
+django-tenant-schemas
 ===============
 
-**BEWARE! THIS IS AN EXPERIMENTAL CODE! Created this as a proof of concept
-and never had a chance to test it thoroughly, not speaking about the
-production run, as our team changed the plans.  While I was very excited
-during coding it, I unfortunately have no use for schemata currently.  I'd
-love to hear how the code is really doing and if you find something that
-should be fixed, I'll gladly review and pull your patches.**
+This application enables [django](https://www.djangoproject.com/) powered websites to have multiple tenants via schemas. A vital feature for every SaaS website.
 
-This project adds the [PostgreSQL schema](http://www.postgresql.org/docs/8.4/static/ddl-schemas.html)
-support to [Django](http://www.djangoproject.com/). The schema, which can
-be seen as a namespace in which any database object exists, allows to isolate
-the database objects even when they have the same names. You can have same set
-of tables, indices, sequences etc. many times under the single database.
+Django provides currently no simple way to support multiple tenants using the same project instance, even when only the data was different. Because we don't want you running many copies of your project, you'll be able to have:
 
-In case you're not using schemata, your objects lie in the default schema
-`public` and because the default `search_path` contains `public`,
-you don't have to care.
+* Multiple customers running on the same instance
+* Shared and Tenant-Specific data
+* Tenant View-Routing
 
-Why to care?
+What are schemas
 ------------
 
-It's simple: 
+A schema can be seen as a directory in an operating system, each directory (schema) with it's own set of files (tables). This allow the same table name and objects to be used in different schemas without conflict. For an accurate description on schemas, see [PostgreSQL's official documentation on schemas](http://www.postgresql.org/docs/9.1/static/ddl-schemas.html).
 
-* One code
-* One instance
-* One shared buffering
-* One connection
-* One database
-* One schema for one customer
-* You scale up to the stars
+Why schemas
+------------
 
-Using schemata can be very useful if you run the Software as a service (SaaS)
-server for multiple customers. Typically for *multiple* databases you had *single*
-project code, cloned many times and that required strong maintenance effort. 
+There are typically three solutions for solving the multinancy problem. 
+1. Isolated Approach: Separate Databases. Each tenant has it's own database.
+2. Semi Isolated Approach: Shared Database, Separate Schemas. One database for all tenants, but one schema per tenant.
+3. Shared Approach: Shared Database, Shared Schema. All tenants share the same database and schema. There is a main tenant-table, where all other tables have a foreign key pointing to.
 
-So until recently you were forced to maintain multiple Django instances even
-when the code did the same things, only the data varied. With the invention
-of multiple databases support in Django it was possible to use it for SaaS,
-yet using schemata was found to bring even more advantages.
+This application implements the second approach, which in our opinion, represents the ideal compromise between simplicity and performance.
 
-This code was inspired by the [A better way : SaaS with Django and PostgreSQL Schemas](http://tidbids.posterous.com/saas-with-django-and-postgresql-schemas)
-blog post and the [django-appschema](https://bitbucket.org/cedarlab/django-appschema/src)
-application.
+* Simplicity: barely make any changes to your current code to support multitenancy. Plus, you only manage one database.
+* Performance: make use of shared connections, buffers and memory.
 
-Going underneath
+Each solution has it's up and down sides, for a more in-depth discussion, see Microsoft's excelent article on [Multi-Tenant Data Architecture](http://msdn.microsoft.com/en-us/library/aa479086.aspx).
+
+How it works
 ----------------
 
-Like `django-appschema` this project infers the proper schema to switch to
-from the hostname found in each web request. You're expected to point
-multiple HTTP domains of your customers handled by your (Apache/WSGI) server
-to the single Django instance supporting schemata.
+All tenants are stored in the `public` schema in the database and each should be on a different host name. Whenever a request is made, the host name is used to match a tenant in the database. At the beginning of every request, the search path is set to `public`, in case a tenant is found the search path is then set to exclusively be able to see this tenant's schema. So for example, suppose you have a tenant `customer` at http://customer.example.com and another at http://client.example.com. Any request incoming at `customer.example.com` will automatically use `customer`'s schema and make the tenant available at the request. If no tenant is found, a 404 error is raised. This means you should set your main domain to use the `public` schema, for more information please read the [setup](#setup) section.
 
-**Warning:** This application was **not tested in the multithreading**
-environment, we configure our mod_wsgi to run each Django instance
-as mutiple separated processes.
-
-Unlike `django-appschema`, this project seeks for the **maximum simplicity**
-(added layer and toolset must be as thin as possible so the data path is clear):
-
-* Minimalistic code.
-* **No hacking** of `INSTALLED_APPS`, `syncdb` or `migrate` commands...
-  (they had enough with [South](http://south.aeracode.org/)).
-* Schema definitions are not stored in the database, but in `settings`'s dict.
-  That allows you to flexibly and uniformly configure the differences between
-  individual domains. `django-schemata` only requires `schema_name` sub-key,
-  but you're free to store additional configuration there. 
-
-Shared applications
+Shared and Tenant-Specific Applications
 -------------------
 
-Not yet.
+###Tenant-Specific Applications###
+Most of your applications are probably tenant-specific, that is, it's data is not to be shared with any of the other tenants. This is the default and automatically all your apps are not being shared with any other tenants.
 
-The reason why `django-appschema` became hackish is that it tries to
-sync/migrate both isolated and shared applications in a single run. The app is
-*shared* if it has its tables in the `public` schema, hence they're accessible
-by every domain. That's because `public` schema is always checked after the
-object was not found in its "home" schema. 
+###Shared Applications###
 
-The support for shared application will be added to `django-schemata` as soon
-as it becomes clear it is required. And we strive to add the support
-in a more simple way: `ALTER TABLE table SET SCHEMA schema` looks
-*very promising*. We believe it's bearable for the admin to do some extra
-setup steps, when the code stays simple. 
+An application is considered to be shared when it's table are in the `public` schema. Some apps make sense being shared. Suppose you have some sort of public data set, for example, a table containing census data. You want every tenant to be able to query it. 
+
+Right now, this is not possible, at least not in practical way. By default all models are being synced to every schema, including `public`. Please take a look at the [tenant-schemas needs your help!](#tenant-schemas-needs-your-help) section if you have an idea on how to do this.
 
 Setup
 -----
 
-`django-schemata` requires the following `settings.py` modifications:
+Assuming you have django installed, you'll have to make the following modifcations to your `settings.py` file.
 
-	# We wrap around the PostgreSQL backend.
+### Basic Settings ###
+
+Your `DATABASE_ENGINE` setting needs to be changed to
+
     DATABASE_ENGINE = 'django_schemata.postgresql_backend'
-
-    # Schema switching upon web requests.
+    
+Add the middleware `tenant_schemas.middleware.TenantMiddleware` to the top of `MIDDLEWARE_CLASSES`, so that each request can be set to use the correct schema.
+    
     MIDDLEWARE_CLASSES = (
-        'django_schemata.middleware.SchemataMiddleware',
+        'tenant_schemas.middleware.TenantMiddleware',
         ...
-	)
-	
-	# We also offer some management commands.
-	INSTALLED_APPS = (
-		...
-	    'django_schemata',
+    )
+    
+Don't forget to add `tenant_schemas` to your `INSTALLED_APPS`.
+    
+    INSTALLED_APPS = (
+        ...
+	    'tenant_schemas',
 	    ...
 	)
+    
+### The Tenant Model ###
+    
+Now we have to create your tenant model. To allow the flexibility of having any data in you want in your tenant, we have a mixin called `TenantMixin` which you *have to* inherit from. This Mixin only has two fields (`domain_url` and `schema_name`) and both are required. Here's an example, suppose we have an app named `customer`.
+
+	class Client(TenantMixin):
+		name = models.CharField(max_length=100)
+		paid_until =  models.DateField()
+		on_trial = models.BooleanField()
+		created_on = models.DateField(auto_now_add=True)
+        
+        # default true, schema will be automatically created and synced when it is saved
+        auto_create_schema = True 
+    
+Going back to `settings.py`, we can now set `TENANT_MODEL`.
+
+    TENANT_MODEL = "customer.Client" # app.Model
+    
+Lastly, you need to create a tenant whose schema is `public` and it's address is your domain URL. Please see the section on [Using django-tenant-schemas](#using-django-tenant-schemas).
+
+### South ###
 	
-	# We need to assure South of the real db backends for all databases.
-	# Otherwise it dies in uncertainty.
+This app supports [south](http://south.aeracode.org/), so if you haven't configured it yet,
+    
 	# For Django 1.1 or below:
 	#SOUTH_DATABASE_ADAPTER = 'south.db.postgresql_psycopg2'
 	# For Django 1.2 or above:
 	SOUTH_DATABASE_ADAPTERS = {
 	    'default': 'south.db.postgresql_psycopg2',
 	}
+    
+### Optional Settings ###
+By the default `TENANT_URL_TOKEN` is set to `None`, which means you can't serve different views on the same path. To be able to have tenant URL routing see the section below.
+
+Tenant View-Routing
+------------------
+We have a goodie called `TENANT_URL_TOKEN`. Suppose you have your main website at `example.com` and a customer at `customer.example.com`. You probably want your user to be routed to different views when someone requests `http://example.com/` and `http://customer.example.com/`. Because django only uses the string after the host name, this would be impossible, both would call the view at `/`. This is where `TENANT_URL_TOKEN` comes in handy. If set, `TENANT_URL_TOKEN` will be prepended to the request's `path_info`. So for example, if
+
+    TENANT_URL_TOKEN = '/customer'
+    
+When requesting the view `/login/` from a tenant's host name, this will be translated to `/customer/login/`. You can now edit your `urls.py` file to use another view for a request incoming at `/customer/login/`. Every time a call is made at a tenant's hostname, `/customer` will be prepended to the request's path info. This is of course invisible to the user, even though django will internally see it at as `/customer/login/`, the user will still be seeing `/login/`. Here's a suggestion for a `urls.py` file.
+
+    # settings.py
+	TENANT_URL_TOKEN = '/tenant'
 	
-	# This maps all HTTP domains to all schemata we want to support.
-	# All of your supported customers need to be registered here. 
-	SCHEMATA_DOMAINS = {
-	    'localhost': {
-	    	'schema_name': 'localhost',
-	    	'additional_data': ...
-	    },
-	    'first-client.com': {
-	    	'schema_name': 'firstclient',
-	    },
-	    'second-client.com': {
-	    	'schema_name': 'secondclient',
-	    },
-	}
+	# urls.py
+	urlpatterns = patterns('',
+		url(r'^$', 'your_project.public_urls'),
+		url(r'^tenant/', include('your_project.tenant_urls')),
+	)
+	
+Where, `public_urls.py` would contain the patterns for your main website, which is not specific to any tenant and `tenant_urls.py` would contain all your tenant-specific patterns.
+
+As you may have noticed, calling `revert` or the `{% url %}` template tag would cause the wrong URL to be generated. This app comes with it's own versions for `revert`, `revert_lazy` (see `tenant_schemas/urlresolvers.py`) and `{% url %}` (see `tenant_schemas/templatetags/tenant.py`).
+
+To use the template tag, add the following line to the top of your template file.
+
+    {% load url from tenant %}
+    
+This should not break any of your current code. It simply removes the `TENANT_URL_TOKEN` from the beginning of the URL.
+
+Using django-tenant-schemas
+-------------------
+
+Creating a Tenant works just like any other model in django. Following our previous example,
+
+    tenant = Client(domain_url='tenant.test.com', # don't add www here!
+                    schema_name='test', 
+                    name='Schemas Inc.',
+                    paid_until='12/05/2016',
+                    on_trial=False)
+    tenant.save() # syncdb automatically called, your tenant is ready to be used!
+
+Because you have the tenant middleware installed, any request made to `tenant.test.com` will now automatically set the schema to `test` and the tenant will be made available at `request.tenant`. By the way, the current schema is also available at `connection.get_schema()`, which is useful, for example, if you want to hook to any of django's signals. 
+
+Any call to the methods `filter`, `get`, `save`, `delete` or any other function involving a database connection will now be done at the tenant's schema, so you shouldn't need to change anything at your views.
 
 Management commands
 -------------------
 
+Every command below runs on all tenants. To run only a particular schema, there is an optional argument called `--schema`. You can create your own commands that run on every tenant by inheriting `BaseTenantCommand`.
+
 ### ./manage.py manage_schemata ###
 
-As soon as you add your first domain to `settings.SCHEMATA_DOMAINS`, you can
-run this. PostgreSQL database is inspected and yet-not-existing schemata
-are added. Current ones are not touched (command is safe to re-run).
-
-Later more capabilities will be added here.
+If you have tenants that do not auto-sync, you can call this command to create the not yet existing schemas. This will however only create the schema and will not sync the models. 
 
 ### ./manage.py sync_schemata ###
 
-This command runs the `syncdb` command for every registered database schema.
-You can sync **all** of your apps and domains in a single run. 
+This command runs the `syncdb` command for every tenant in the database.
 
 The options given to `sync_schemata` are passed to every `syncdb`. So if you
 use South, you may find this handy:
@@ -152,8 +168,7 @@ use South, you may find this handy:
 
 ### ./manage.py migrate_schemata ###
 
-This command runs the South's `migrate` command for every registered database
-schema.
+This command runs the South's `migrate` command for every tenant in the database.
 
 The options given to `migrate_schemata` are passed to every `migrate`. Hence
 you may find
@@ -166,14 +181,33 @@ handy if you're curious or
 
 in case you're just switching `myapp` application to use South migrations.
 
-Bug report? Idea? Patch?
+Running the tests
+------------------------
+    ./manage.py test tenant_schemas
+If you're using South, don't forget to set `SOUTH_TESTS_MIGRATE = False`.
+
+tenant-schemas needs your help!
 ------------------------
 
-We're happy to incorporate your patches and ideas. Please either fork and send
-pull requests or just send the patch.
+###Suggestions, bugs, ideas, patches###
+Are *highly* welcome! Feel free to write an issue for any feedback you have. :)
 
-Discuss this project! Please report bugs.
+###Shared and Tenant-Specific Apps###
+[`django-appschema`](https://bitbucket.org/cedarlab/django-appschema/src) tries to solve this in a very hackish and dangerous way by altering django's app cache. This is not safe for on-the-fly creation of tenants, so this is not an option. [django-schemata](https://github.com/tuttle/django-schemata) partially solves it by forcing you to move your shared tables to the `public` schema. When syncing the tables for tenant-specific applications, the search path is set to `public` plus the tenant's schema, this means all tables that already exist on `public` will not be created. This is not ideal because it doesn't allow you have to applications that are both shared and tenant-specific. For example, you may need to have a user system for your main domain and another for your tenants. Or you may want to have `south` in both.
 
-Success stories are highly welcome.
+To enable this, an idea would be to allow all models, both shared and tenant-specific to be synced. After the sync, the unnecessary models can be manually deleted from the database. This is of course not very elegant, but shouldn't present a big hit on performance (how often do you sync your models?) and doesn't involve hacking django's cache.
 
-Thank you.
+What do you think of this solution? Do you have a better idea? Please send in your feedback!
+
+###Multi-Threading###
+This is being used right now in production on a small project and I have made an attempt to make it thread-safe, but I'm a complete beginner at this subject. Any help on this would be *HIGHLY* appreciated. Can someone please check if the custom `postgresql_backend` is thread-safe? If there is a way to write a test for this, it would be awesome.
+
+####Template tag `{% url %}`####
+Basically 100% of the code was copied from Django's source, just to be able to remove `settings.TENANT_URL_TOKEN` from the URL. There should be a smarter way to do this.
+
+####2 Small to-dos at testing####
+Take a look at `tenant_schemas/tests/schemas.py` and search for the string `todo`.
+
+Final Notes
+-----
+This app is based off [django-schemata](https://github.com/tuttle/django-schemata). My intention initially was only to be a fork, but as my objectives differ significantly from django-schemata's, I've decided to create a new app. For example, whereas django-schemata only supports tenant creation via editing the settings file, this project allows tenants to be created on the fly, a feature virtually every SaaS project needs.

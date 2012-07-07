@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 from django.db import connection
 from tenant_schemas.utils import get_tenant_model
 
-class BaseSchemataCommand(BaseCommand):
+class BaseTenantCommand(BaseCommand):
     """
     Generic command class useful for iterating any existing command
     over all schemata. The actual command name is expected in the
@@ -16,7 +16,7 @@ class BaseSchemataCommand(BaseCommand):
         Sets option_list and help dynamically.
         """
         # instantiate
-        obj = super(BaseSchemataCommand, cls).__new__(cls, *args, **kwargs)
+        obj = super(BaseTenantCommand, cls).__new__(cls, *args, **kwargs)
         cmdclass = load_command_class(get_commands()[obj.COMMAND_NAME], obj.COMMAND_NAME)
         # inherit the options from the original command
         obj.option_list = cmdclass.option_list

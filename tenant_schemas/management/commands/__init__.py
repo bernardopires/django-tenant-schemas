@@ -17,7 +17,14 @@ class BaseTenantCommand(BaseCommand):
         """
         # instantiate
         obj = super(BaseTenantCommand, cls).__new__(cls, *args, **kwargs)
-        cmdclass = load_command_class(get_commands()[obj.COMMAND_NAME], obj.COMMAND_NAME)
+
+        app_name = get_commands()[obj.COMMAND_NAME]
+        if isinstance(app_name, BaseCommand):
+            # If the command is already loaded, use it directly.
+            cmdclass = app_name
+        else:
+            cmdclass = load_command_class(app_name, obj.COMMAND_NAME)
+
         # inherit the options from the original command
         obj.option_list = cmdclass.option_list
         #print obj.option_list

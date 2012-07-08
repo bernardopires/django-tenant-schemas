@@ -168,31 +168,31 @@ Management commands
 
 Every command below runs on all tenants. To run only a particular schema, there is an optional argument called `--schema`. You can create your own commands that run on every tenant by inheriting `BaseTenantCommand`.
 
-### ./manage.py manage_schemata ###
+### ./manage.py manage_schemas ###
 
 If you have tenants that do not auto-sync, you can call this command to create the not yet existing schemas. This will however only create the schema and will not sync the models. 
 
-### ./manage.py sync_schemata ###
+### ./manage.py sync_schemas ###
 
 This command runs the `syncdb` command for every tenant in the database.
 
-The options given to `sync_schemata` are passed to every `syncdb`. So if you
+The options given to `sync_schemas` are passed to every `syncdb`. So if you
 use South, you may find this handy:
 
-    ./manage sync_schemata --migrate
+    ./manage sync_schemas --migrate
 
-### ./manage.py migrate_schemata ###
+### ./manage.py migrate_schemas ###
 
 This command runs the South's `migrate` command for every tenant in the database.
 
-The options given to `migrate_schemata` are passed to every `migrate`. Hence
+The options given to `migrate_schemas` are passed to every `migrate`. Hence
 you may find
 
-    ./manage.py migrate_schemata --list
+    ./manage.py migrate_schemas --list
 
 handy if you're curious or
 
-    ./manage.py migrate_schemata myapp 0001_initial --fake
+    ./manage.py migrate_schemas myapp 0001_initial --fake
 
 in case you're just switching `myapp` application to use South migrations.
 

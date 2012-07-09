@@ -168,13 +168,9 @@ Management commands
 
 Every command below runs on all tenants. To run only a particular schema, there is an optional argument called `--schema`. You can create your own commands that run on every tenant by inheriting `BaseTenantCommand`.
 
-### ./manage.py manage_schemas ###
-
-If you have tenants that do not auto-sync, you can call this command to create the not yet existing schemas. This will however only create the schema and will not sync the models. 
-
 ### ./manage.py sync_schemas ###
 
-This command runs the `syncdb` command for every tenant in the database.
+This command runs the `syncdb` command for every tenant in the database. Also creates the schema if necessary.
 
 The options given to `sync_schemas` are passed to every `syncdb`. So if you
 use South, you may find this handy:

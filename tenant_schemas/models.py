@@ -50,11 +50,14 @@ class TenantMixin(models.Model):
         cursor.execute('CREATE SCHEMA %s' % self.schema_name)
 
         if sync_schema:
-            call_command('sync_schemas', schema_name=self.schema_name,
-                    interactive=False) # don't ask to create an admin user
+            call_command('sync_schemas',
+                    schema_name=self.schema_name,
+                    interactive=False, # don't ask to create an admin user
+                    migrate_all=True, # migrate all apps directly to last version
+            )
 
-            # make sure you have SOUTH_TESTS_MIGRATE = false
+            # fake all migrations
             if 'south' in settings.INSTALLED_APPS and not django_is_in_test_mode():
-                call_command('migrate_schemas', schema_name=self.schema_name)
+                call_command('migrate_schemas', fake=True, schema_name=self.schema_name)
 
         return True

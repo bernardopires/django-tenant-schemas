@@ -92,6 +92,10 @@ Going back to `settings.py`, we can now set `TENANT_MODEL`.
 
     TENANT_MODEL = "customer.Client" # app.Model
     
+Now run `syncdb`.
+
+    python manage.py syncdb
+    
 Lastly, you need to create a tenant whose schema is `public` and it's address is your domain URL. Please see the section on [Using django-tenant-schemas](#using-django-tenant-schemas).
 
 ### South ###

@@ -110,28 +110,28 @@ This app supports [south](http://south.aeracode.org/), so if you haven't configu
 	}
     
 ### Optional Settings ###
-By the default `TENANT_URL_TOKEN` is set to `None`, which means you can't serve different views on the same path. To be able to have tenant URL routing see the section below.
+By the default `PUBLIC_SCHEMA_URL_TOKEN` is set to `None`, which means you can't serve different views on the same path. To be able to have tenant URL routing see the section below.
 
 Tenant View-Routing
 ------------------
-We have a goodie called `TENANT_URL_TOKEN`. Suppose you have your main website at `example.com` and a customer at `customer.example.com`. You probably want your user to be routed to different views when someone requests `http://example.com/` and `http://customer.example.com/`. Because django only uses the string after the host name, this would be impossible, both would call the view at `/`. This is where `TENANT_URL_TOKEN` comes in handy. If set, the string `TENANT_URL_TOKEN` will be prepended to the request's `path_info`. So for example, if you have
+We have a goodie called `PUBLIC_SCHEMA_URL_TOKEN`. Suppose you have your main website at `example.com` and a customer at `customer.example.com`. You probably want your user to be routed to different views when someone requests `http://example.com/` and `http://customer.example.com/`. Because django only uses the string after the host name, this would be impossible, both would call the view at `/`. This is where `PUBLIC_SCHEMA_URL_TOKEN` comes in handy. If set, the string `PUBLIC_SCHEMA_URL_TOKEN` will be prepended to the request's `path_info` when the `public` schema is being requested. So for example, if you have
 
-    TENANT_URL_TOKEN = '/customer'
+    PUBLIC_SCHEMA_URL_TOKEN = '/main'
     
-When requesting the view `/login/` from a tenant's host name, this will be translated to `/customer/login/`. You can now edit your `urls.py` file to use another view for a request incoming at `/customer/login/`. Every time a call is made at a tenant's hostname, `/customer` will be prepended to the request's path info. This is of course invisible to the user, even though django will internally see it at as `/customer/login/`, the user will still be seeing `/login/`. Here's a suggestion for a `urls.py` file.
+When requesting the view `/login/` from the public tenant (your main website), this will be translated to `/main/login/`. You can now edit your `urls.py` file to use another view for a request incoming at `/main/login/`. Every time a call is made at the public's hostname, `/main` will be prepended to the request's path info. This is of course invisible to the user, even though django will internally see it at as `/main/login/`, the user will still be seeing `/login/`. Here's a suggestion for a `urls.py` file.
 
     # settings.py
-	TENANT_URL_TOKEN = '/customer'
+	PUBLIC_SCHEMA_URL_TOKEN = '/main'
 	
 	# urls.py
 	urlpatterns = patterns('',
-		url(r'^$', 'your_project.public_urls'),
-		url(r'^customer/', include('your_project.tenant_urls')),
+		url(r'^main/$', 'your_project.public_urls'),
+		url(r'^', include('your_project.tenant_urls')),
 	)
 	
 Where `public_urls.py` would contain the patterns for your main website, which is not specific to any tenant and `tenant_urls.py` would contain all your tenant-specific patterns.
 
-As you may have noticed, calling `revert` or the `{% url %}` template tag would cause the wrong URL to be generated. This app comes with it's own versions for `revert`, `revert_lazy` (see [tenant_schemas/urlresolvers.py](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/urlresolvers.py)) and `{% url %}` (see [tenant_schemas/templatetags/tenant.py](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/templatetags/tenant.py)). But don't worry, they don't do anything magical, they just remove `TENANT_URL_TOKEN` from the beginning of the URL.
+As you may have noticed, calling `revert` or the `{% url %}` template tag would cause the wrong URL to be generated. This app comes with it's own versions for `revert`, `revert_lazy` (see [tenant_schemas/urlresolvers.py](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/urlresolvers.py)) and `{% url %}` (see [tenant_schemas/templatetags/tenant.py](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/templatetags/tenant.py)). But don't worry, they don't do anything magical, they just remove `PUBLIC_SCHEMA_URL_TOKEN` from the beginning of the URL.
 
 Import the `reverse` and `reverse_lazy` methods where needed.
 
@@ -220,7 +220,7 @@ Please send in your feedback at issue #1.
 This is being used right now in production on a small project and I have made an attempt to make it thread-safe, but I'm a complete beginner at this subject. Any help on this would be *HIGHLY* appreciated. Can someone please check if the custom [postgresql_backend](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/postgresql_backend/base.py) is thread-safe? If there is a way to write a test for this, it would be awesome. Please send in your feedback at issue #2.
 
 ####Template tag `{% url %}`####
-Basically 100% of the code was copied from Django's source, just to be able to remove `settings.TENANT_URL_TOKEN` from the URL. There should be a smarter way to do this. Please send in your feedback at issue #3.
+Basically 100% of the code was copied from Django's source, just to be able to remove `settings.PUBLIC_SCHEMA_URL_TOKEN` from the URL. There should be a smarter way to do this. Please send in your feedback at issue #3.
 
 ####2 Small to-dos at testing####
 Take a look at [tenant_schemas/tests/schemas.py](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/tests/schemas.py) and search for the string `todo`.  Please send in your feedback at issue #4.

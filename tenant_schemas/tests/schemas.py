@@ -12,6 +12,9 @@ class SchemataTestCase(TransactionTestCase):
         """
         do_not_delete = ['public', 'information_schema']
         cursor = connection.cursor()
+
+        # Use information_schema.schemata instead of pg_catalog.pg_namespace in
+        # utils.schema_exists, so that we only "see" schemas that we own
         cursor.execute('SELECT schema_name FROM information_schema.schemata')
 
         for row in cursor.fetchall():

@@ -56,11 +56,14 @@ def schema_exists(schema_name):
     cursor = connection.cursor()
 
     # check if this schema already exists in the db
-    sql = 'SELECT schema_name FROM information_schema.schemata '\
-          'WHERE schema_name = %s'
+    sql = 'SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_namespace WHERE nspname = %s)'
     cursor.execute(sql, (schema_name, ))
 
-    exists = len(cursor.fetchall()) > 0
+    row = cursor.fetchone()
+    if row:
+        exists = row[0]
+    else:
+        exists = False
 
     cursor.close()
 

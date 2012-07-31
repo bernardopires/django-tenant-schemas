@@ -51,3 +51,17 @@ def django_is_in_test_mode():
     See: http://stackoverflow.com/questions/6957016/detect-django-testing-mode
     """
     return hasattr(mail, 'outbox')
+
+def schema_exists(schema_name):
+    cursor = connection.cursor()
+
+    # check if this schema already exists in the db
+    sql = 'SELECT schema_name FROM information_schema.schemata '\
+          'WHERE schema_name = %s'
+    cursor.execute(sql, (schema_name, ))
+
+    exists = len(cursor.fetchall()) > 0
+
+    cursor.close()
+
+    return exists

@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import connection
 from django.test.testcases import TransactionTestCase
 from tenant_schemas.tests.models import Tenant, NonAutoSyncTenant, DummyModel
-from tenant_schemas.utils import tenant_context
+from tenant_schemas.utils import tenant_context, schema_exists
 
 class SchemataTestCase(TransactionTestCase):
     def tearDown(self):
@@ -20,18 +20,6 @@ class SchemataTestCase(TransactionTestCase):
                 print "Deleting schema %s" % row[0]
                 cursor.execute('DROP SCHEMA %s CASCADE' % row[0])
 
-
-    def schema_exists(self, schema_name):
-        cursor = connection.cursor()
-
-        # check if schema now exists
-        sql = 'SELECT schema_name FROM information_schema.schemata '\
-              'WHERE schema_name = %s'
-        cursor.execute(sql, (schema_name, ))
-
-        # todo: this is not pretty, could you please suggest something better?
-        return (len(cursor.fetchall()) == 1)
-
     def test_tenant_schema_is_created(self):
         """
         when saving a tenant, it's schema should be created
@@ -39,19 +27,19 @@ class SchemataTestCase(TransactionTestCase):
         tenant = Tenant(domain_url='test.com', schema_name='test_tenant')
         tenant.save()
 
-        self.assertTrue(self.schema_exists(tenant.schema_name))
+        self.assertTrue(schema_exists(tenant.schema_name))
 
     def test_non_auto_sync_tenant(self):
         """
         when saving a tenant that has the flag auto_create_schema as
         False, the schema should not be created when saving the tenant
         """
-        self.assertFalse(self.schema_exists('non_auto_sync_tenant'))
+        self.assertFalse(schema_exists('non_auto_sync_tenant'))
 
         tenant = NonAutoSyncTenant(domain_url='test.com', schema_name='non_auto_sync_tenant')
         tenant.save()
 
-        self.assertFalse(self.schema_exists(tenant.schema_name))
+        self.assertFalse(schema_exists(tenant.schema_name))
 
     def test_edit_tenant(self):
         """

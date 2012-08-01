@@ -10,6 +10,7 @@ class SchemataTestCase(TransactionTestCase):
         Delete all tenant schemas. Tenant schema are not deleted
         automatically by django.
         """
+        connection.set_schema_to_public()
         do_not_delete = ['public', 'information_schema']
         cursor = connection.cursor()
         cursor.execute('SELECT schema_name FROM information_schema.schemata')

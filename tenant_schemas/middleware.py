@@ -31,6 +31,6 @@ class TenantMiddleware(object):
         connection.set_tenant(request.tenant)
 
         # do we have tenant-specific URLs?
-        if settings.PUBLIC_SCHEMA_URL_TOKEN and request.tenant.schema_name == "public" and request.path_info[-1] == '/':
+        if hasattr(settings, 'PUBLIC_SCHEMA_URL_TOKEN') and request.tenant.schema_name == "public" and request.path_info[-1] == '/':
             # we are not at the public schema, manually alter routing to schema-dependent urls
             request.path_info = settings.PUBLIC_SCHEMA_URL_TOKEN + request.path_info

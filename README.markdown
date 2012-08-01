@@ -58,7 +58,12 @@ Assuming you have django installed, you'll have to make the following modifcatio
 
 Your `DATABASE_ENGINE` setting needs to be changed to
 
-    DATABASE_ENGINE = 'django_schemata.postgresql_backend'
+    DATABASES = {
+        'default': {
+            'ENGINE': 'tenant_schemas.postgresql_backend',
+            # ..
+        }
+    }
     
 Add the middleware `tenant_schemas.middleware.TenantMiddleware` to the top of `MIDDLEWARE_CLASSES`, so that each request can be set to use the correct schema.
     

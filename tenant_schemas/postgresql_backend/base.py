@@ -4,7 +4,7 @@ from django.conf import settings
 from threading import local
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
-from django.db import utils, connection
+from django.db import utils
 
 ORIGINAL_BACKEND = getattr(settings, 'ORIGINAL_BACKEND', 'django.db.backends.postgresql_psycopg2')
 
@@ -27,6 +27,8 @@ class PGThread(local):
         search schemata from left to right when looking for the object
         (table, index, sequence, etc.).
         """
+        from django.db import connection
+
         if self.schema_name is None:
             raise ImproperlyConfigured("Database schema not set. Did your forget "
                                        "to call set_schema() or set_tenant()?")

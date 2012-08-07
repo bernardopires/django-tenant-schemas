@@ -34,14 +34,14 @@ class PGThread(local):
                                        "to call set_schema() or set_tenant()?")
 
         _check_identifier(self.schema_name)
-        connection.enter_transaction_management()
+        #connection.enter_transaction_management()
         try:
             if self.schema_name == 'public':
                 cursor.execute('SET search_path = public')
             else:
                 cursor.execute('SET search_path = %s', [self.schema_name]) #, public
         except utils.DatabaseError, e:
-            connection.rollback()
+            #connection.rollback()
             raise utils.DatabaseError(e.message)
 
         return cursor

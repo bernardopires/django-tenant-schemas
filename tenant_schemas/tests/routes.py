@@ -11,7 +11,7 @@ class RoutesTestCase(TestCase):
 
         # settings needs some patching
         settings.TENANT_MODEL = 'tenant_schemas.Tenant'
-        settings.PUBLIC_SCHEMA_URL_TOKEN = '/tenant'
+        settings.PUBLIC_SCHEMA_URL_TOKEN = '/public'
 
         # add the public tenant
         self.public_tenant_domain = 'test.com'
@@ -34,7 +34,7 @@ class RoutesTestCase(TestCase):
         request = self.factory.get('/any/request/', HTTP_HOST=self.tenant_domain)
         self.tm.process_request(request)
 
-        self.assertEquals(request.path_info, settings.PUBLIC_SCHEMA_URL_TOKEN + request_url)
+        self.assertEquals(request.path_info, request_url)
 
         # request.tenant should also have been set
         self.assertEquals(request.tenant, self.tenant)
@@ -47,7 +47,7 @@ class RoutesTestCase(TestCase):
         request = self.factory.get('/any/request/', HTTP_HOST=self.public_tenant_domain)
         self.tm.process_request(request)
 
-        self.assertEquals(request.path_info, request_url)
+        self.assertEquals(request.path_info, settings.PUBLIC_SCHEMA_URL_TOKEN + request_url)
 
         # request.tenant should also have been set
         self.assertEquals(request.tenant, self.public_tenant)

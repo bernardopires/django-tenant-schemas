@@ -56,6 +56,7 @@ class BaseTenantCommand(BaseCommand):
         """
         if options['schema_name']:
             # only run on a particular schema
+            connection.set_schema_to_public()
             self.execute_command(get_tenant_model().objects.get(schema_name=options['schema_name']), self.COMMAND_NAME, *args, **options)
         else:
             for tenant in get_tenant_model().objects.all():

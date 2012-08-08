@@ -38,14 +38,14 @@ class BaseTenantCommand(BaseCommand):
            getattr(cmdclass, 'help', 'none'))
         return obj
 
-    def execute_command(self, schema, command_name, *args, **options):
+    def execute_command(self, tenant, command_name, *args, **options):
         print
         print self.style.NOTICE("=== Switching to schema '")\
-              + self.style.SQL_TABLE(schema)\
+              + self.style.SQL_TABLE(tenant.schema_name)\
         + self.style.NOTICE("' then calling %s:" % command_name)
 
         # sets the schema for the connection
-        connection.set_schema(schema)
+        connection.set_tenant(tenant)
 
         # call the original command with the args it knows
         call_command(command_name, *args, **options)
@@ -56,8 +56,7 @@ class BaseTenantCommand(BaseCommand):
         """
         if options['schema_name']:
             # only run on a particular schema
-            self.execute_command(options['schema_name'], self.COMMAND_NAME, *args, **options)
+            self.execute_command(get_tenant_model().objects.get(schema_name=options['schema_name']), self.COMMAND_NAME, *args, **options)
         else:
             for tenant in get_tenant_model().objects.all():
-                options['schema_name'] = tenant.schema_name
-                self.execute_command(tenant.schema_name, self.COMMAND_NAME, *args, **options)
+                self.execute_command(tenant, self.COMMAND_NAME, *args, **options)

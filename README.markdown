@@ -168,7 +168,7 @@ Creating a Tenant works just like any other model in django. Following our previ
                     on_trial=False)
     tenant.save()
 
-Because you have the tenant middleware installed, any request made to `tenant.test.com` will now automatically set the schema to `test` and the tenant will be made available at `request.tenant`. By the way, the current schema is also available at `connection.get_schema()`, which is useful, for example, if you want to hook to any of django's signals. 
+Because you have the tenant middleware installed, any request made to `tenant.my-domain.com` will now automatically set the schema to `tenant1` and the tenant will be made available at `request.tenant`. By the way, the current schema is also available at `connection.get_schema()`, which is useful, for example, if you want to hook to any of django's signals. 
 
 Any call to the methods `filter`, `get`, `save`, `delete` or any other function involving a database connection will now be done at the tenant's schema, so you shouldn't need to change anything at your views.
 

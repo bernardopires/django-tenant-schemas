@@ -28,7 +28,7 @@ class RoutesTestCase(TestCase):
 
     def test_tenant_routing(self):
         """
-        request path should get prepended with PUBLIC_SCHEMA_URL_TOKEN
+        request path should not be altered
         """
         request_url = '/any/request/'
         request = self.factory.get('/any/request/', HTTP_HOST=self.tenant_domain)
@@ -41,7 +41,7 @@ class RoutesTestCase(TestCase):
 
     def test_public_schema_routing(self):
         """
-        request path should not be altered, tenant should be the public one
+        request path should get prepended with PUBLIC_SCHEMA_URL_TOKEN
         """
         request_url = '/any/request/'
         request = self.factory.get('/any/request/', HTTP_HOST=self.public_tenant_domain)

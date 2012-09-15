@@ -4,7 +4,7 @@ from django.test.testcases import TransactionTestCase
 from tenant_schemas.tests.models import Tenant, NonAutoSyncTenant, DummyModel
 from tenant_schemas.utils import tenant_context, schema_exists
 
-class SchemataTestCase(TransactionTestCase):
+class TenantTestCase(TransactionTestCase):
     def tearDown(self):
         """
         Delete all tenant schemas. Tenant schema are not deleted

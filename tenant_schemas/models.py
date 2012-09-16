@@ -48,6 +48,7 @@ class TenantMixin(models.Model):
                     schema_name=self.schema_name,
                     interactive=False, # don't ask to create an admin user
                     migrate_all=True, # migrate all apps directly to last version
+                    verbosity=0,
             )
 
             # fake all migrations

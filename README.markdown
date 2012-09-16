@@ -243,7 +243,7 @@ This is being used right now in production on a small project and I have made an
 Basically 100% of the code was copied from Django's source, just to be able to remove `settings.PUBLIC_SCHEMA_URL_TOKEN` from the URL. There should be a smarter way to do this. Please send in your feedback at issue #3.
 
 ####2 Small to-dos at testing####
-Take a look at [tenant_schemas/tests/schemas.py](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/tests/schemas.py) and search for the string `todo`.  Please send in your feedback at issue #4.
+Take a look at [tenant_schemas/tests/schemas.py](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/tests/tenants.py) and search for the string `todo`.  Please send in your feedback at issue #4.
 
 Final Notes
 -----

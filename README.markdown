@@ -206,7 +206,7 @@ Running the tests
     ./manage.py test tenant_schemas
 If you're using South, don't forget to set `SOUTH_TESTS_MIGRATE = False`.
 
-Updating your app tests to work with tenant-schemas
+Updating your app's tests to work with tenant-schemas
 ------------------------
 Because django will not create tenants for you during your tests, we have packed some custom test cases and other utilities. If you want a test to happen at any of the tenant's domain, you can use the test case `TenantTestCase`. It will automatically create a tenant for you, set the connection's schema to tenant's schema and make it available at `self.tenant`. We have also included a `TenantRequestFactory` and a `TenantClient` so that your requests will all take place at the tenant's domain automatically. Here's an example:
 
@@ -215,7 +215,6 @@ Because django will not create tenants for you during your tests, we have packed
 
 	class BaseSetup(TenantTestCase):
 		def setUp(self):
-			super(TenantTestCase, self).setUp() # you have to call the parent setUp method, this is where the tenant is created
 			self.c = TenantClient(self.tenant)
 			
 		def test_user_profile_view(self):

@@ -72,6 +72,7 @@ class TenantTestCase(TransactionTestCase):
         tenant1 = Tenant(domain_url='test.com', schema_name='tenant1')
         tenant1.save()
 
+        connection.set_schema_to_public()
         tenant2 = Tenant(domain_url='example.com', schema_name='tenant2')
         tenant2.save()
 

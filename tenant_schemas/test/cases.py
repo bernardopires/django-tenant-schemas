@@ -1,13 +1,15 @@
-from unittest import TestCase
-from django.db import connection
+from django.core.management import call_command
+from django.db import connection, DEFAULT_DB_ALIAS
+from django.test import TransactionTestCase
+from django.utils.unittest.case import TestCase
 from tenant_schemas.utils import get_tenant_model
 
-class TenantTestCase(TestCase):
-    def setUp(self):
+class TenantTestCase(TransactionTestCase):
+    @classmethod
+    def setUpClass(cls):
         # create a tenant
-        self.tenant_domain = 'tenant.test.com'
-        self.tenant = get_tenant_model()(domain_url=self.tenant_domain, schema_name='test')
-        self.tenant.save()
+        tenant_domain = 'tenant.test.com'
+        cls.tenant = get_tenant_model()(domain_url=tenant_domain, schema_name='test')
+        cls.tenant.save()
 
-        connection.set_tenant(self.tenant)
-        super(TenantTestCase, self).setUp()
+        connection.set_tenant(cls.tenant)

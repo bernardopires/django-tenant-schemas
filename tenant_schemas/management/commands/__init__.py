@@ -32,10 +32,7 @@ class BaseTenantCommand(BaseCommand):
             make_option("-s", "--schema", dest="schema_name"),
             )
         obj.option_list += (
-            make_option("-p", "--skip-public", dest="skip_public", action="store_true", default=True),
-            )
-        obj.option_list += (
-            make_option("-r", "--run-public", dest="skip_public", action="store_false"),
+            make_option("-p", "--skip-public", dest="skip_public", action="store_true", default=False),
             )
 
         # prepend the command's original help with the info about schemata iteration

@@ -31,6 +31,13 @@ class BaseTenantCommand(BaseCommand):
         obj.option_list += (
             make_option("-s", "--schema", dest="schema_name"),
             )
+        obj.option_list += (
+            make_option("-p", "--skip-public", dest="skip_public", action="store_true", default=True),
+            )
+        obj.option_list += (
+            make_option("-r", "--run-public", dest="skip_public", action="store_false"),
+            )
+
         # prepend the command's original help with the info about schemata iteration
         obj.help = "Calls %s for all registered schemata. You can use regular %s options. "\
                    "Original help for %s: %s"\
@@ -63,4 +70,5 @@ class BaseTenantCommand(BaseCommand):
             self.execute_command(get_tenant_model().objects.get(schema_name=options['schema_name']), self.COMMAND_NAME, *args, **options)
         else:
             for tenant in get_tenant_model().objects.all():
-                self.execute_command(tenant, self.COMMAND_NAME, *args, **options)
+                if not(options['skip_public'] and tenant.schema_name == 'public'):
+                    self.execute_command(tenant, self.COMMAND_NAME, *args, **options)

@@ -16,16 +16,16 @@ class TenantMixin(models.Model):
         abstract = True
 
 
-    def save(self, *args, **kwargs):
+    def save(self, verbosity = 1, *args, **kwargs):
         is_new = self.pk is None
         super(TenantMixin, self).save(*args, **kwargs)
 
         if is_new and self.auto_create_schema:
-            self.create_schema(check_if_exists=True)
+            self.create_schema(check_if_exists=True, verbosity=verbosity)
 
         transaction.commit_unless_managed()
 
-    def create_schema(self, check_if_exists = False, sync_schema = True):
+    def create_schema(self, check_if_exists = False, sync_schema = True, verbosity = 1):
         """
         Creates the schema 'schema_name' for this tenant. Optionally checks if the schema
         already exists before creating it. Returns true if the schema was created, false
@@ -48,7 +48,7 @@ class TenantMixin(models.Model):
                     schema_name=self.schema_name,
                     interactive=False, # don't ask to create an admin user
                     migrate_all=True, # migrate all apps directly to last version
-                    verbosity=0,
+                    verbosity=verbosity,
             )
 
             # fake all migrations

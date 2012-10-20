@@ -27,21 +27,18 @@ class PGThread(local):
         search schemata from left to right when looking for the object
         (table, index, sequence, etc.).
         """
-        from django.db import connection
 
         if self.schema_name is None:
             raise ImproperlyConfigured("Database schema not set. Did your forget "
                                        "to call set_schema() or set_tenant()?")
 
         _check_identifier(self.schema_name)
-        #connection.enter_transaction_management()
         try:
             if self.schema_name == 'public':
                 cursor.execute('SET search_path = public')
             else:
-                cursor.execute('SET search_path = %s', [self.schema_name]) #, public
+                cursor.execute('SET search_path = %s,public', [self.schema_name])
         except utils.DatabaseError, e:
-            #connection.rollback()
             raise utils.DatabaseError(e.message)
 
         return cursor

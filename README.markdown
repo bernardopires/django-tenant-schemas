@@ -175,7 +175,7 @@ Any call to the methods `filter`, `get`, `save`, `delete` or any other function 
 Management commands
 -------------------
 
-Every command below runs on all tenants. To run only a particular schema, there is an optional argument called `--schema`. You can create your own commands that run on every tenant by inheriting `BaseTenantCommand`. There is an option called --skip-public to avoid running the command on the public tenant.
+Every command below runs on all tenants. To run only a particular schema, there is an optional argument called `--schema`. You can create your own commands that run on every tenant by inheriting `BaseTenantCommand`. There is an option called `--skip-public` to avoid running the command on the public tenant.
 
 ### ./manage.py sync_schemas ###
 

@@ -53,6 +53,6 @@ class TenantMixin(models.Model):
 
             # fake all migrations
             if 'south' in settings.INSTALLED_APPS and not django_is_in_test_mode():
-                call_command('migrate_schemas', fake=True, schema_name=self.schema_name)
+                call_command('migrate_schemas', fake=True, schema_name=self.schema_name, verbosity=verbosity)
 
         return True

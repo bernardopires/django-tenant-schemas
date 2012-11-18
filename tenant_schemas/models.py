@@ -45,10 +45,10 @@ class TenantMixin(models.Model):
 
         if sync_schema:
             call_command('sync_schemas',
-                    schema_name=self.schema_name,
-                    interactive=False, # don't ask to create an admin user
-                    migrate_all=True, # migrate all apps directly to last version
-                    verbosity=verbosity,
+                schema_name=self.schema_name,
+                interactive=False, # don't ask to create an admin user
+                migrate_all=True, # migrate all apps directly to last version
+                verbosity=verbosity,
             )
 
             # fake all migrations

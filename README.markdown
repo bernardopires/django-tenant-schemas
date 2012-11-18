@@ -1,7 +1,7 @@
 django-tenant-schemas
 ===============
 
-This application enables [django](https://www.djangoproject.com/) powered websites to have multiple tenants via schemas. A vital feature for every SaaS website.
+This application enables [django](https://www.djangoproject.com/) powered websites to have multiple tenants via [PostgreSQL schemas](http://www.postgresql.org/docs/9.1/static/ddl-schemas.html)). A vital feature for every SaaS website.
 
 Django provides currently no simple way to support multiple tenants using the same project instance, even when only the data is different. Because we don't want you running many copies of your project, you'll be able to have:
 
@@ -35,17 +35,17 @@ Each solution has it's up and down sides, for a more in-depth discussion, see Mi
 How it works
 ----------------
 
-All tenants are stored in the `public` schema in the database and each should be on a different host name. Whenever a request is made, the host name is used to match a tenant in the database. At the beginning of every request, the search path is set to `public`, in case a tenant is found the search path is then set to exclusively be able to see this tenant's schema. So for example, suppose you have a tenant `customer` at http://customer.example.com and another at http://client.example.com. Any request incoming at `customer.example.com` will automatically use `customer`'s schema and make the tenant available at the request. If no tenant is found, a 404 error is raised. This means you should set your main domain to use the `public` schema, for more information please read the [setup](#setup) section.
+Tenants are identified via their host name (i.e tenant.domain.com). This information is stored on a table on the `public` schema. Whenever a request is made, the host name is used to match a tenant in the database. If there's a match the search path is updated to use this tenant's schema. So from now on all queries will take place at the tenant's schema. For example, suppose you have a tenant `customer` at http://customer.example.com. Any request incoming at `customer.example.com` will automatically use `customer`'s schema and make the tenant available at the request. If no tenant is found, a 404 error is raised. This means you should have a tenant for your main domain, typically using the `public` schema. For more information please read the [setup](#setup) section.
 
 Shared and Tenant-Specific Applications
 -------------------
 
 ###Tenant-Specific Applications###
-Most of your applications are probably tenant-specific, that is, it's data is not to be shared with any of the other tenants. This is the default and automatically all your apps are not being shared with any other tenants.
+Most of your applications are probably tenant-specific, that is, its data is not to be shared with any of the other tenants. This is the default and all your apps are not being shared with any other tenants.
 
 ###Shared Applications###
 
-An application is considered to be shared when it's table are in the `public` schema. Some apps make sense being shared. Suppose you have some sort of public data set, for example, a table containing census data. You want every tenant to be able to query it. 
+An application is considered to be shared when its tables are in the `public` schema. Some apps make sense being shared. Suppose you have some sort of public data set, for example, a table containing census data. You want every tenant to be able to query it. 
 
 Right now, this is not possible, at least not in practical way. By default all models are being synced to every schema, including `public` and the tenant doesn't have access to `public`. Please take a look at the [tenant-schemas needs your help!](#tenant-schemas-needs-your-help) section if you have an idea on how to do this.
 
@@ -82,7 +82,7 @@ Don't forget to add `tenant_schemas` to your `INSTALLED_APPS`.
     
 ### The Tenant Model ###
     
-Now we have to create your tenant model. To allow the flexibility of having any data in you want in your tenant, we have a mixin called `TenantMixin` which you *have to* inherit from. This Mixin only has two fields (`domain_url` and `schema_name`) and both are required. Here's an example, suppose we have an app named `customer`.
+Now we have to create your tenant model. To allow the flexibility of having any data in you want in your tenant, we have a mixin called `TenantMixin` which you *have to* inherit from. This Mixin only has two fields (`domain_url` and `schema_name`) and both are required. Here's an example, suppose we have an app named `customer` and we want to create a model called `client`.
 
 	class Client(TenantMixin):
 		name = models.CharField(max_length=100)
@@ -123,7 +123,7 @@ We have a goodie called `PUBLIC_SCHEMA_URL_TOKEN`. Suppose you have your main we
 
     PUBLIC_SCHEMA_URL_TOKEN = '/main'
     
-When requesting the view `/login/` from the public tenant (your main website), this will be translated to `/main/login/`. You can now edit your `urls.py` file to use another view for a request incoming at `/main/login/`. Every time a call is made at the public's hostname, `/main` will be prepended to the request's path info. This is of course invisible to the user, even though django will internally see it at as `/main/login/`, the user will still be seeing `/login/`. Here's a suggestion for a `urls.py` file.
+When requesting the view `/login/` from the public tenant (your main website), this will be translated to `/main/login/`. You can now edit your `urls.py` file to use another view for a request incoming at `/main/login/`. Every time a call is made at the public's hostname, `/main` will be prepended to the request's path info. This is of course invisible to the user, even though django will internally see it at as `/main/login/`, the user will still be seeing `/login/`. When receiving a request to a tenant using the `public` schema, this token is added automatically via our middleware. Here's a suggestion for a `urls.py` file.
 
     # settings.py
 	PUBLIC_SCHEMA_URL_TOKEN = '/main'
@@ -146,7 +146,7 @@ To use the template tag, add the following line to the top of your template file
 
     {% load url from tenant %}
     
-This should not have any side-effects for your current code.
+This should not have any side-effects on your current code.
 
 Using django-tenant-schemas
 -------------------
@@ -175,7 +175,7 @@ Any call to the methods `filter`, `get`, `save`, `delete` or any other function 
 Management commands
 -------------------
 
-Every command below runs on all tenants. To run only a particular schema, there is an optional argument called `--schema`. You can create your own commands that run on every tenant by inheriting `BaseTenantCommand`. There is an option called `--skip-public` to avoid running the command on the public tenant.
+Every command runs by default on all tenants. To run only a particular schema, there is an optional argument called `--schema`. You can create your own commands that run on every tenant by inheriting `BaseTenantCommand`. There is also an option called `--skip-public` to avoid running the command on the public tenant.
 
 ### ./manage.py sync_schemas ###
 
@@ -195,11 +195,11 @@ you may find
 
     ./manage.py migrate_schemas --list
 
-handy if you're curious or
+handy if you're curious. Or
 
     ./manage.py migrate_schemas myapp 0001_initial --fake
 
-in case you're just switching `myapp` application to use South migrations.
+in case you're just switching your `myapp` application to use South migrations.
 
 Running the tests
 ------------------------

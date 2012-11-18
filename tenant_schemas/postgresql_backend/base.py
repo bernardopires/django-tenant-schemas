@@ -18,6 +18,16 @@ def _check_identifier(identifier):
         raise RuntimeError("Invalid string used for the schema name.")
 
 class PGThread(local):
+    """
+    Indicates if the public schema should be included on the search path.
+    When syncing the db for creating the tables, it's useful to exclude
+    the public schema so that all tables will be created.
+
+    This is a bad monkey patching resulting from the fact that we can't
+    separate public from shared apps right now. issue #1 on github
+    """
+    include_public_schema = True
+
     def __init__(self):
         self.set_schema_to_public()
 
@@ -36,8 +46,10 @@ class PGThread(local):
         try:
             if self.schema_name == 'public':
                 cursor.execute('SET search_path = public')
-            else:
+            elif self.include_public_schema:
                 cursor.execute('SET search_path = %s,public', [self.schema_name])
+            else:
+                cursor.execute('SET search_path = %s', [self.schema_name])
         except utils.DatabaseError, e:
             raise utils.DatabaseError(e.message)
 
@@ -49,21 +61,23 @@ class PGThread(local):
     def get_tenant(self):
         return self.tenant
 
-    def set_schema(self, schema_name):
+    def set_schema(self, schema_name, include_public = True):
         """
         Main API method to current database schema,
         but it does not actually modify the db connection.
         """
         self.tenant = None
         self.schema_name = schema_name
+        self.include_public_schema = include_public
 
-    def set_tenant(self, tenant):
+    def set_tenant(self, tenant, include_public = True):
         """
         Main API method to current database schema,
         but it does not actually modify the db connection.
         """
         self.tenant = tenant
         self.schema_name = tenant.schema_name
+        self.include_public_schema = include_public
 
         if self.tenant is not None:
             if self.schema_name != self.tenant.schema_name:
@@ -83,11 +97,11 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
 
         self.pg_thread = PGThread()
 
-    def set_tenant(self, tenant):
-        self.pg_thread.set_tenant(tenant)
+    def set_tenant(self, tenant, include_public = True):
+        self.pg_thread.set_tenant(tenant, include_public)
 
-    def set_schema(self, schema_name):
-        self.pg_thread.set_schema(schema_name)
+    def set_schema(self, schema_name, include_public = True):
+        self.pg_thread.set_schema(schema_name, include_public)
 
     def set_schema_to_public(self):
         self.pg_thread.set_schema_to_public()

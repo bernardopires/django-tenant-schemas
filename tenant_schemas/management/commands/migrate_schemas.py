@@ -1,7 +1,8 @@
 from django.db import connection
+from django.conf import settings
 from tenant_schemas.management.commands import BaseTenantCommand
 from tenant_schemas.models import TenantMixin
-from tenant_schemas.utils import get_tenant_model
+from tenant_schemas.utils import get_tenant_model, get_public_schema_name
 
 class Command(BaseTenantCommand):
     COMMAND_NAME = 'migrate'
@@ -17,9 +18,10 @@ class Command(BaseTenantCommand):
         else:
             # migration needs to be executed first on the public schema, else it might fail to select the tenants
             # if there's a modification on the tenant's table.
-            public_tenant = TenantMixin(schema_name='public')
+            public_schema_name = get_public_schema_name()
+            public_tenant = TenantMixin(schema_name=public_schema_name)
             self.execute_command(public_tenant, self.COMMAND_NAME, *args, **options)
 
             for tenant in get_tenant_model().objects.all():
-                if tenant.schema_name != 'public':
+                if tenant.schema_name != public_schema_name:
                     self.execute_command(tenant, self.COMMAND_NAME, *args, **options)

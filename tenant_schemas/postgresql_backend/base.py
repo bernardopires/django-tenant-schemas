@@ -6,6 +6,8 @@ from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.db import utils
 
+from ..utils import get_public_schema_name
+
 ORIGINAL_BACKEND = getattr(settings, 'ORIGINAL_BACKEND', 'django.db.backends.postgresql_psycopg2')
 
 original_backend = import_module('.base', ORIGINAL_BACKEND)
@@ -44,10 +46,11 @@ class PGThread(local):
 
         _check_identifier(self.schema_name)
         try:
-            if self.schema_name == 'public':
-                cursor.execute('SET search_path = public')
+            public_schema_name = get_public_schema_name()
+            if self.schema_name == public_schema_name:
+                cursor.execute('SET search_path = %s' % public_schema_name)
             elif self.include_public_schema:
-                cursor.execute('SET search_path = %s,public', [self.schema_name])
+                cursor.execute('SET search_path = %s,%s', [self.schema_name, public_schema_name])
             else:
                 cursor.execute('SET search_path = %s', [self.schema_name])
         except utils.DatabaseError, e:
@@ -89,7 +92,7 @@ class PGThread(local):
         Instructs to stay in the common 'public' schema.
         """
         self.tenant = None
-        self.schema_name = 'public'
+        self.schema_name = get_public_schema_name()
 
 class DatabaseWrapper(original_backend.DatabaseWrapper):
     def __init__(self, *args, **kwargs):

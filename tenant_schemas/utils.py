@@ -25,6 +25,9 @@ def tenant_context(tenant):
 def get_tenant_model():
     return get_model(*settings.TENANT_MODEL.split("."))
 
+def get_public_schema_name():
+    return getattr(settings, 'PUBLIC_SCHEMA_NAME', 'public')
+
 def clean_tenant_url(url_string):
     """
     Removes the TENANT_TOKEN from a particular string

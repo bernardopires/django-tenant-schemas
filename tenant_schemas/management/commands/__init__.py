@@ -3,7 +3,7 @@ from django.conf import settings
 from django.core.management import call_command, get_commands, load_command_class
 from django.core.management.base import BaseCommand
 from django.db import connection
-from tenant_schemas.utils import get_tenant_model
+from tenant_schemas.utils import get_tenant_model, get_public_schema_name
 
 class BaseTenantCommand(BaseCommand):
     """
@@ -67,5 +67,5 @@ class BaseTenantCommand(BaseCommand):
             self.execute_command(get_tenant_model().objects.get(schema_name=options['schema_name']), self.COMMAND_NAME, *args, **options)
         else:
             for tenant in get_tenant_model().objects.all():
-                if not(options['skip_public'] and tenant.schema_name == 'public'):
+                if not(options['skip_public'] and tenant.schema_name == get_public_schema_name()):
                     self.execute_command(tenant, self.COMMAND_NAME, *args, **options)

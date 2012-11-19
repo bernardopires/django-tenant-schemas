@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import connection
 from django.test.testcases import TransactionTestCase
 from tenant_schemas.tests.models import Tenant, NonAutoSyncTenant, DummyModel
-from tenant_schemas.utils import tenant_context, schema_exists
+from tenant_schemas.utils import tenant_context, schema_exists, get_public_schema_name
 
 class TenantTestCase(TransactionTestCase):
     def tearDown(self):
@@ -11,7 +11,7 @@ class TenantTestCase(TransactionTestCase):
         automatically by django.
         """
         connection.set_schema_to_public()
-        do_not_delete = ['public', 'information_schema']
+        do_not_delete = [get_public_schema_name(), 'information_schema']
         cursor = connection.cursor()
 
         # Use information_schema.schemata instead of pg_catalog.pg_namespace in

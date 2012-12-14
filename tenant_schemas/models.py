@@ -3,6 +3,7 @@ from django.db import models, connection, transaction
 from tenant_schemas.postgresql_backend.base import _check_identifier
 from django.core.management import call_command
 from tenant_schemas.utils import django_is_in_test_mode, schema_exists
+from .utils import get_public_schema_name
 
 class TenantMixin(models.Model):
     auto_create_schema = True # set this flag to false on a parent class if
@@ -17,6 +18,9 @@ class TenantMixin(models.Model):
 
 
     def save(self, verbosity = 1, *args, **kwargs):
+        if connection.get_schema() != get_public_schema_name():
+            raise Exception("Can't update tenant outside the public schema. Current schema is %s." % connection.get_schema())
+
         is_new = self.pk is None
         super(TenantMixin, self).save(*args, **kwargs)
 

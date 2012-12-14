@@ -6,21 +6,21 @@ from django.core import mail
 
 @contextmanager
 def schema_context(schema_name):
-    previous_schema = connection.get_schema()
+    previous_tenant = connection.get_tenant()
     try:
         connection.set_schema(schema_name)
         yield
     finally:
-        connection.set_schema(previous_schema)
+        connection.set_tenant(previous_tenant)
 
 @contextmanager
 def tenant_context(tenant):
-    previous_schema = connection.get_schema()
+    previous_tenant = connection.get_tenant()
     try:
         connection.set_tenant(tenant)
         yield
     finally:
-        connection.set_schema(previous_schema)
+        connection.set_tenant(previous_tenant)
 
 def get_tenant_model():
     return get_model(*settings.TENANT_MODEL.split("."))

@@ -69,6 +69,7 @@ class PGThread(local):
         Main API method to current database schema,
         but it does not actually modify the db connection.
         """
+        print "setting schema to %s" % schema_name
         self.tenant = None
         self.schema_name = schema_name
         self.include_public_schema = include_public

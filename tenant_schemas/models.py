@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models, connection, transaction
 from tenant_schemas.postgresql_backend.base import _check_identifier
 from django.core.management import call_command
+from tenant_schemas.signals import post_schema_sync
 from tenant_schemas.utils import django_is_in_test_mode, schema_exists
 from .utils import get_public_schema_name
 
@@ -26,8 +27,10 @@ class TenantMixin(models.Model):
 
         if is_new and self.auto_create_schema:
             self.create_schema(check_if_exists=True, verbosity=verbosity)
+            post_schema_sync.send(sender=TenantMixin, tenant=self)
 
         transaction.commit_unless_managed()
+
 
     def create_schema(self, check_if_exists = False, sync_schema = True, verbosity = 1):
         """

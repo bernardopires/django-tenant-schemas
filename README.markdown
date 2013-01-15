@@ -84,6 +84,8 @@ Don't forget to add `tenant_schemas` to your `INSTALLED_APPS`.
     
 Now we have to create your tenant model. To allow the flexibility of having any data in you want in your tenant, we have a mixin called `TenantMixin` which you *have to* inherit from. This Mixin only has two fields (`domain_url` and `schema_name`) and both are required. Here's an example, suppose we have an app named `customer` and we want to create a model called `client`.
 
+	from tenant_schemas.models import TenantMixin
+	
 	class Client(TenantMixin):
 		name = models.CharField(max_length=100)
 		paid_until =  models.DateField()

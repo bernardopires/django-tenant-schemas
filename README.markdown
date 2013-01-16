@@ -138,7 +138,7 @@ When requesting the view `/login/` from the public tenant (your main website), t
 	
 Where `public_urls.py` would contain the patterns for your main website, which is not specific to any tenant and `tenant_urls.py` would contain all your tenant-specific patterns.
 
-As you may have noticed, calling `revert` or the `{% url %}` template tag would cause the wrong URL to be generated. This app comes with it's own versions for `revert`, `revert_lazy` (see [tenant_schemas/urlresolvers.py](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/urlresolvers.py)) and `{% url %}` (see [tenant_schemas/templatetags/tenant.py](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/templatetags/tenant.py)). But don't worry, they don't do anything magical, they just remove `PUBLIC_SCHEMA_URL_TOKEN` from the beginning of the URL.
+As you may have noticed, calling `reverse` or the `{% url %}` template tag would cause the wrong URL to be generated. This app comes with it's own versions for `reverse`, `reverse_lazy` (see [tenant_schemas/urlresolvers.py](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/urlresolvers.py)) and `{% url %}` (see [tenant_schemas/templatetags/tenant.py](https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/templatetags/tenant.py)). But don't worry, they don't do anything magical, they just remove `PUBLIC_SCHEMA_URL_TOKEN` from the beginning of the URL.
 
 Import the `reverse` and `reverse_lazy` methods where needed.
 

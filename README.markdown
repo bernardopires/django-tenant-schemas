@@ -154,7 +154,9 @@ Using django-tenant-schemas
 -------------------
 
 Creating a Tenant works just like any other model in django. Following our previous example,
-
+    
+    from customer.models import Client
+    
     tenant = Client(domain_url='tenant.my-domain.com', # don't add www here!
                     schema_name='tenant1', 
                     name='Fonzy Tenant',

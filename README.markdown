@@ -158,7 +158,7 @@ Creating a Tenant works just like any other model in django. Following our previ
     tenant = Client(domain_url='tenant.my-domain.com', # don't add www here!
                     schema_name='tenant1', 
                     name='Fonzy Tenant',
-                    paid_until='12/05/2014',
+                    paid_until='2014-12-05',
                     on_trial=True)
     tenant.save() # syncdb automatically called, your tenant is ready to be used!
     
@@ -166,7 +166,7 @@ Creating a Tenant works just like any other model in django. Following our previ
     tenant = Client(domain_url='my-domain.com', # don't add www here!
                     schema_name='public', 
                     name='Schemas Inc.',
-                    paid_until='12/05/2016',
+                    paid_until='2016-12-05',
                     on_trial=False)
     tenant.save()
 

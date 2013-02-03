@@ -37,10 +37,6 @@ class Command(NoArgsCommand):
         if not hasattr(settings,'SHARED_APPS'):
             raise CommandError("No setting found for SHARED_APPS")
 
-        print 'tenant:', tenant
-        if tenant:
-            print 'schema_name:', schema_name or 'All'
-
         for model in get_models(include_auto_created=True):
             model._meta.managed = False
 

@@ -44,18 +44,18 @@ class Command(NoArgsCommand):
         for model in get_models(include_auto_created=True):
             model._meta.managed = False
 
+        included_apps = settings.SHARED_APPS
         if tenant:
-            for app_model in get_apps():
-                app_name = app_model.__name__.replace('.models','')
-                if hasattr(app_model,'models') and app_name in settings.TENANT_APPS:
-                    for model in get_models(app_model,include_auto_created=True):
-                        model._meta.managed = True
+            included_apps = settings.TENANT_APPS
 
-        elif shared:
-            if not hasattr(settings,'SHARED_APPS'):
-                raise CommandError("No setting found for SHARED_APPS")
+        for app_model in get_apps():
+            app_name = app_model.__name__.replace('.models','')
+            if hasattr(app_model,'models') and app_name in included_apps:
+                for model in get_models(app_model,include_auto_created=True):
+                    model._meta.managed = True
+                    print self.style.NOTICE("=== Include Model: %s: %s" % (app_name,model.__name__))
 
-        print self.style.NOTICE("=== Affected Apps: %s" % ', '.join(settings.INSTALLED_APPS))
+
 
 
         syncdb_command = SyncdbCommand()

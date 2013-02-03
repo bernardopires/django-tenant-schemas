@@ -55,9 +55,6 @@ class Command(NoArgsCommand):
                     model._meta.managed = True
                     print self.style.NOTICE("=== Include Model: %s: %s" % (app_name,model.__name__))
 
-
-
-
         syncdb_command = SyncdbCommand()
 
         if tenant:

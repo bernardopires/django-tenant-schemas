@@ -60,7 +60,7 @@ class Command(NoArgsCommand):
                 print self.style.NOTICE("=== Running syncdb for schema: %s" % schema_name)
                 tenant = get_tenant_model().objects.filter(schema_name=schema_name).get()
                 connection.set_tenant(tenant, include_public = True)
-                syncdb_command.handle_noargs(**options)
+                syncdb_command.execute(**options)
             else:
                 public_schema_name = get_public_schema_name()
                 tenant_schemas_count = get_tenant_model().objects.exclude(schema_name=public_schema_name).count()
@@ -73,12 +73,12 @@ class Command(NoArgsCommand):
 
                     print self.style.NOTICE("=== Running syncdb for schema: %s" % tenant_schema.schema_name)
                     try:
-                        connection.set_tenant(tenant_schema, include_public = True)
-                        syncdb_command.handle_noargs(**options)
+                        connection.set_tenant(tenant_schema, include_public=False)
+                        syncdb_command.execute(**options)
                     except Exception as e:
                         print e
         else:
-            syncdb_command.handle_noargs(**options)
+            syncdb_command.execute(**options)
 
         for model in get_models(include_auto_created=True):
             model._meta.managed = model._meta.was_managed

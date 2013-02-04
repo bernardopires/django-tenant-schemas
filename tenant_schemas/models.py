@@ -43,8 +43,7 @@ class TenantMixin(models.Model):
         _check_identifier(self.schema_name)
         cursor = connection.cursor()
 
-        if check_if_exists \
-                and schema_exists(self.schema_name):
+        if check_if_exists and schema_exists(self.schema_name):
             return False
 
         # create the schema
@@ -53,6 +52,8 @@ class TenantMixin(models.Model):
         if sync_schema:
             call_command('sync_schemas',
                 schema_name=self.schema_name,
+                tenant=True,
+                public=False,
                 interactive=False, # don't ask to create an admin user
                 migrate_all=True, # migrate all apps directly to last version
                 verbosity=verbosity,

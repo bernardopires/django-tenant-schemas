@@ -52,7 +52,7 @@ class Command(NoArgsCommand):
 
         if sync_public:
             self.sync_public_apps(shared_apps or installed_apps)
-        elif sync_tenant:
+        if sync_tenant:
             self.sync_tenant_apps(tenant_apps or installed_apps, schema_name)
 
         # restore settings

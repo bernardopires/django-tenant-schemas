@@ -80,7 +80,7 @@ class Command(NoArgsCommand):
         if schema_name:
             print self.style.NOTICE("=== Running syncdb for schema: %s" % schema_name)
             sync_tenant = get_tenant_model().objects.filter(schema_name=schema_name).get()
-            connection.set_tenant(sync_tenant, include_public=False)
+            connection.set_tenant(sync_tenant, include_public=True)
             syncdb_command.execute(**self.options)
         else:
             public_schema_name = get_public_schema_name()
@@ -91,7 +91,7 @@ class Command(NoArgsCommand):
             for tenant_schema in get_tenant_model().objects.exclude(schema_name = public_schema_name).all():
                 print self.style.NOTICE("=== Running syncdb for schema %s" % tenant_schema.schema_name)
                 try:
-                    connection.set_tenant(tenant_schema, include_public=False)
+                    connection.set_tenant(tenant_schema, include_public=True)
                     syncdb_command.execute(**self.options)
                 except Exception as e:
                     print e

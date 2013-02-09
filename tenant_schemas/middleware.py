@@ -14,6 +14,11 @@ class TenantMiddleware(object):
 
     This schema-token is removed automatically when calling the schemata url tag or the reverse function.
     """
+
+    def __init__(self):
+        self.TenantModel = get_tenant_model()
+        super(TenantMiddleware, self).__init__()
+
     def process_request(self, request):
         """
         Resets to public schema
@@ -24,13 +29,18 @@ class TenantMiddleware(object):
         of threading local variable.
         """
         connection.set_schema_to_public()
-        hostname_without_port = remove_www_and_dev(request.get_host().split(':')[0])
-
-        TenantModel = get_tenant_model()
-        request.tenant = get_object_or_404(TenantModel, domain_url=hostname_without_port)
-        connection.set_tenant(request.tenant)
+        request.tenant = self.set_tenant(request.get_host())
 
         # do we have tenant-specific URLs?
         if hasattr(settings, 'PUBLIC_SCHEMA_URL_TOKEN') and request.tenant.schema_name == get_public_schema_name() and request.path_info[-1] == '/':
             # we are not at the public schema, manually alter routing to schema-dependent urls
             request.path_info = settings.PUBLIC_SCHEMA_URL_TOKEN + request.path_info
+
+    def set_tenant(self, host):
+        tenant = self.get_tenant(host)
+        connection.set_tenant(tenant)
+        return tenant
+
+    def get_tenant(self, host):
+        hostname_without_port = remove_www_and_dev(host.split(':')[0])
+        return get_object_or_404(self.TenantModel, domain_url=hostname_without_port)

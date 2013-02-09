@@ -19,5 +19,5 @@ def url(parser, token):
 
 @register.assignment_tag(takes_context=True)
 def get_tenant(context):
-    if context.get('request'):
+    if hasattr(context['request'],'tenant'):
         return context['request'].tenant

@@ -96,7 +96,6 @@ class Command(NoArgsCommand):
                     print e
 
     def sync_public_apps(self, apps):
-        print apps
         self._set_managed_apps(apps)
         print self.style.NOTICE("=== Running syncdb for schema public")
-        #SyncdbCommand().execute(**self.options)
+        SyncdbCommand().execute(**self.options)

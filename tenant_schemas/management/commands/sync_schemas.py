@@ -31,23 +31,23 @@ class Command(NoArgsCommand):
 
         if sync_public and schema_name:
             raise CommandError("schema should only be used with the --tenant switch.")
-        if not hasattr(settings,'TENANT_APPS') and sync_tenant:
+        if not hasattr(settings, 'TENANT_APPS') and sync_tenant:
             raise CommandError("No setting found for TENANT_APPS")
-        if not hasattr(settings,'SHARED_APPS') and sync_public:
+        if not hasattr(settings, 'SHARED_APPS') and sync_public:
             raise CommandError("No setting found for SHARED_APPS")
 
         # save original settings
         for model in get_models(include_auto_created=True):
-            setattr(model._meta,'was_managed', model._meta.managed)
+            setattr(model._meta, 'was_managed', model._meta.managed)
 
         if not sync_public and not sync_tenant:
             # no options set, sync both
             sync_tenant = True
             sync_public = True
 
-        if hasattr(settings,'TENANT_APPS'):
+        if hasattr(settings, 'TENANT_APPS'):
             tenant_apps = settings.TENANT_APPS
-        if hasattr(settings,'SHARED_APPS'):
+        if hasattr(settings, 'SHARED_APPS'):
             shared_apps = settings.SHARED_APPS
 
         if sync_public:
@@ -59,7 +59,6 @@ class Command(NoArgsCommand):
         for model in get_models(include_auto_created=True):
             model._meta.managed = model._meta.was_managed
 
-
     def _set_managed_apps(self, included_apps):
         for model in get_models(include_auto_created=True):
             model._meta.managed = False
@@ -69,12 +68,12 @@ class Command(NoArgsCommand):
             app_name = app_model.__name__.replace('.models', '')
             if hasattr(app_model, 'models') and app_name in included_apps:
                 for model in get_models(app_model, include_auto_created=True):
-                    model._meta.managed = True and model._meta.was_managed
+                    #Doublecheck (get_models is not reliable)
+                    model._meta.managed = True and model.__module__ == app_model.__name__ and model._meta.was_managed
                     if model._meta.managed and verbosity >= 3:
                         print self.style.NOTICE("=== Include Model: %s: %s" % (app_name, model.__name__))
 
-
-    def sync_tenant_apps(self, apps, schema_name = None):
+    def sync_tenant_apps(self, apps, schema_name=None):
         self._set_managed_apps(apps)
         syncdb_command = SyncdbCommand()
         if schema_name:
@@ -96,8 +95,8 @@ class Command(NoArgsCommand):
                 except Exception as e:
                     print e
 
-
     def sync_public_apps(self, apps):
+        print apps
         self._set_managed_apps(apps)
         print self.style.NOTICE("=== Running syncdb for schema public")
-        SyncdbCommand().execute(**self.options)
+        #SyncdbCommand().execute(**self.options)

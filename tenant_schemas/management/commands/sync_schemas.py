@@ -8,19 +8,20 @@ from django.core.management.commands.syncdb import Command as SyncdbCommand
 from django.db import connection
 from tenant_schemas.utils import get_tenant_model, get_public_schema_name
 
+
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
         make_option('--noinput', action='store_false', dest='interactive', default=True,
-            help='Tells Django to NOT prompt the user for input of any kind.'),
+                    help='Tells Django to NOT prompt the user for input of any kind.'),
         make_option('--tenant', action='store_true', dest='tenant', default=False,
-            help='Tells Django to populate only tenant applications.'),
+                    help='Tells Django to populate only tenant applications.'),
         make_option('--shared', action='store_true', dest='shared', default=False,
-            help='Tells Django to populate only shared applications.'),
+                    help='Tells Django to populate only shared applications.'),
         make_option("-s", "--schema", dest="schema_name"),
         make_option('--database', action='store', dest='database',
-            default=DEFAULT_DB_ALIAS, help='Nominates a database to synchronize. '
-                                           'Defaults to the "default" database.'),
-        )
+                    default=DEFAULT_DB_ALIAS, help='Nominates a database to synchronize. '
+                                                   'Defaults to the "default" database.'),
+    )
 
     def handle_noargs(self, **options):
         sync_tenant = options.get('tenant')
@@ -87,7 +88,7 @@ class Command(NoArgsCommand):
             if not tenant_schemas_count:
                 raise CommandError("No tenant schemas found")
 
-            for tenant_schema in get_tenant_model().objects.exclude(schema_name = public_schema_name).all():
+            for tenant_schema in get_tenant_model().objects.exclude(schema_name=public_schema_name).all():
                 print self.style.NOTICE("=== Running syncdb for schema %s" % tenant_schema.schema_name)
                 try:
                     connection.set_tenant(tenant_schema, include_public=True)

@@ -16,3 +16,8 @@ def render(self, context):
 @register.tag
 def url(parser, token):
     return SchemaURLNode(default_url(parser,token))
+
+@register.assignment_tag(takes_context=True)
+def get_tenant(context):
+    if hasattr(context['request'],'tenant'):
+        return context['request'].tenant

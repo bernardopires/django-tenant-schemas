@@ -26,5 +26,13 @@ class TenantClient(Client):
     def get(self, path, data={}, **extra):
         if 'HTTP_HOST' not in extra:
             extra['HTTP_HOST'] = self.tenant.domain_url
-
+            
         return super(TenantClient, self).get(path, data, **extra)
+            
+    def post(self, path, data={}, **extra):
+        if 'HTTP_HOST' not in extra:
+            extra['HTTP_HOST'] = self.tenant.domain_url
+            
+        return super(TenantClient, self).post(path, data, **extra)
+
+        

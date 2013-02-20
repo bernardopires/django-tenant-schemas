@@ -12,9 +12,14 @@ class TenantRequestFactory(RequestFactory):
         if 'HTTP_HOST' not in extra:
             extra['HTTP_HOST'] = self.tenant.domain_url
 
-        request = super(TenantRequestFactory, self).get(path, data, **extra)
-        return self.tm.process_request(request)
+        return super(TenantRequestFactory, self).get(path, data, **extra)
+        
+    def post(self, path, data={}, **extra):
+        if 'HTTP_HOST' not in extra:
+            extra['HTTP_HOST'] = self.tenant.domain_url
 
+        return super(TenantRequestFactory, self).post(path, data, **extra)
+        
 
 class TenantClient(Client):
     tm = TenantMiddleware()
@@ -26,5 +31,13 @@ class TenantClient(Client):
     def get(self, path, data={}, **extra):
         if 'HTTP_HOST' not in extra:
             extra['HTTP_HOST'] = self.tenant.domain_url
-
+            
         return super(TenantClient, self).get(path, data, **extra)
+            
+    def post(self, path, data={}, **extra):
+        if 'HTTP_HOST' not in extra:
+            extra['HTTP_HOST'] = self.tenant.domain_url
+            
+        return super(TenantClient, self).post(path, data, **extra)
+
+        

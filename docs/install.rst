@@ -83,7 +83,7 @@ Now run `sync_schemas`, this will create the shared apps on the `public` schema.
 
     python manage.py sync_schemas
     
-Lastly, you need to create a tenant whose schema is `public` and it's address is your domain URL. Please see the section on [Using django-tenant-schemas](#using-django-tenant-schemas).
+Lastly, you need to create a tenant whose schema is `public` and it's address is your domain URL. Please see the section on :doc:`use <use>`.
 
 South Migrations
 ================

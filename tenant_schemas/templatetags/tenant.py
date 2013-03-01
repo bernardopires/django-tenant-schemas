@@ -7,7 +7,7 @@ register = Library()
 class SchemaURLNode(URLNode):
 
     def __init__(self, url_node):
-        super(SchemaURLNode, self).__init__(url_node.view_name, url_node.args, url_node.kwargs, url_node.asvar, url_node.legacy_view_name)
+        super(SchemaURLNode, self).__init__(url_node.view_name, url_node.args, url_node.kwargs, url_node.asvar)
 
 def render(self, context):
     url = super(SchemaURLNode, self).render(context)

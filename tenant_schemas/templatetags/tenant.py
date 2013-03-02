@@ -1,23 +1,27 @@
 from django.template import Library
-from django.template.defaulttags import url as default_url, URLNode
-from tenant_schemas.utils import clean_tenant_url
+import django.template.defaulttags
+import tenant_schemas.utils
 
 register = Library()
 
-class SchemaURLNode(URLNode):
+
+class SchemaURLNode(django.template.defaulttags.URLNode):
 
     def __init__(self, url_node):
         super(SchemaURLNode, self).__init__(url_node.view_name, url_node.args, url_node.kwargs, url_node.asvar)
 
+
 def render(self, context):
     url = super(SchemaURLNode, self).render(context)
-    return clean_tenant_url(url)
+    return tenant_schemas.utils.clean_tenant_url(url)
+
 
 @register.tag
 def url(parser, token):
-    return SchemaURLNode(default_url(parser,token))
+    return SchemaURLNode(django.template.defaulttags.url(parser,token))
+
 
 @register.assignment_tag(takes_context=True)
 def get_tenant(context):
-    if hasattr(context['request'],'tenant'):
+    if hasattr(context['request'], 'tenant'):
         return context['request'].tenant

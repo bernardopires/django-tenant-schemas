@@ -1,13 +1,11 @@
 ==================
 Tests
 ==================
-
 Running the tests
 -----------------
 If you're using South, don't forget to set `SOUTH_TESTS_MIGRATE = False`.::
 
     ./manage.py test tenant_schemas
-
 
 Updating your app's tests to work with tenant-schemas
 -----------------------------------------------------

@@ -1,0 +1,10 @@
+Change-log for django-tenant-schemas.
+
+This file will be added to as part of each release
+
+----
+
+Version 1.0.0 (first version), Sat 02 Mar 2013
+===============================================
+
+

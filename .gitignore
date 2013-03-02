@@ -2,3 +2,6 @@
 *.pyc
 .DS_Store
 VERSION
+build/
+dist/
+django_tenant_schemas.egg-info

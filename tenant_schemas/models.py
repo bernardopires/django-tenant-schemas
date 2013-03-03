@@ -6,6 +6,7 @@ from tenant_schemas.signals import post_schema_sync
 from tenant_schemas.utils import django_is_in_test_mode, schema_exists
 from .utils import get_public_schema_name
 
+
 class TenantMixin(models.Model):
     auto_create_schema = True # set this flag to false on a parent class if
                               # you dont want the schema to be automatically
@@ -16,7 +17,6 @@ class TenantMixin(models.Model):
 
     class Meta:
         abstract = True
-
 
     def save(self, verbosity = 1, *args, **kwargs):
         if connection.get_schema() != get_public_schema_name():
@@ -30,7 +30,6 @@ class TenantMixin(models.Model):
             post_schema_sync.send(sender=TenantMixin, tenant=self)
 
         transaction.commit_unless_managed()
-
 
     def create_schema(self, check_if_exists = False, sync_schema = True, verbosity = 1):
         """
@@ -51,12 +50,12 @@ class TenantMixin(models.Model):
 
         if sync_schema:
             call_command('sync_schemas',
-                schema_name=self.schema_name,
-                tenant=True,
-                public=False,
-                interactive=False, # don't ask to create an admin user
-                migrate_all=True, # migrate all apps directly to last version
-                verbosity=verbosity,
+                         schema_name=self.schema_name,
+                         tenant=True,
+                         public=False,
+                         interactive=False,  # don't ask to create an admin user
+                         migrate_all=True,  # migrate all apps directly to last version
+                         verbosity=verbosity,
             )
 
             # fake all migrations

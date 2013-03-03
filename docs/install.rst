@@ -1,7 +1,7 @@
 ==================
 Installation
 ==================
-Assuming you have django installed, the first step is to install `django-tenant-schemas`.:
+Assuming you have django installed, the first step is to install `django-tenant-schemas`.::
 
     pip install django-tenant-schemas
 

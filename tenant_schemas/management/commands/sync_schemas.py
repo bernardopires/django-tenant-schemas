@@ -4,7 +4,10 @@ from django.core.management.base import NoArgsCommand
 from django.db import DEFAULT_DB_ALIAS
 from django.core.management.base import CommandError
 from django.db.models import get_apps, get_models, get_model
-from django.core.management.commands.syncdb import Command as SyncdbCommand
+if "south" in settings.INSTALLED_APPS:
+    from south.management.commands.syncdb import Command as SyncdbCommand
+else:
+    from django.core.management.commands.syncdb import Command as SyncdbCommand
 from django.db import connection
 from tenant_schemas.utils import get_tenant_model, get_public_schema_name
 
@@ -28,6 +31,9 @@ class Command(NoArgsCommand):
         schema_name = options.get('schema_name')
         installed_apps = settings.INSTALLED_APPS
         self.options = options
+
+        if "south" in settings.INSTALLED_APPS:
+            self.options["migrate"] = False
 
         if sync_public and schema_name:
             raise CommandError("schema should only be used with the --tenant switch.")

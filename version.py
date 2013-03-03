@@ -97,7 +97,7 @@ def get_git_version():
 
     # Finally, return the current version.
 
-    return version
+    return version[1:]
 
 
 if __name__ == "__main__":

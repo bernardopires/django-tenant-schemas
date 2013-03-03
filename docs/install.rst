@@ -18,7 +18,7 @@ Your `DATABASE_ENGINE` setting needs to be changed to::
         }
     }
     
-Add the middleware `tenant_schemas.middleware.TenantMiddleware` to the top of `MIDDLEWARE_CLASSES`, so that each request can be set to use the correct schema.:
+Add the middleware `tenant_schemas.middleware.TenantMiddleware` to the top of `MIDDLEWARE_CLASSES`, so that each request can be set to use the correct schema.::
     
     MIDDLEWARE_CLASSES = (
         'tenant_schemas.middleware.TenantMiddleware',
@@ -27,7 +27,7 @@ Add the middleware `tenant_schemas.middleware.TenantMiddleware` to the top of `M
     
 The Tenant Model
 ================
-Now we have to create your tenant model. To allow the flexibility of having any data in you want in your tenant, we have a mixin called `TenantMixin` which you *have to* inherit from. This Mixin only has two fields (`domain_url` and `schema_name`) and both are required. Here's an example, suppose we have an app named `customers` and we want to create a model called `client`.:
+Now we have to create your tenant model. To allow the flexibility of having any data in you want in your tenant, we have a mixin called `TenantMixin` which you *have to* inherit from. This Mixin only has two fields (`domain_url` and `schema_name`) and both are required. Here's an example, suppose we have an app named `customers` and we want to create a model called `client`.::
 
 	from django.db import models
     from tenant_schemas.models import TenantMixin
@@ -71,11 +71,11 @@ By default all apps will be synced to your `public` schema and to your tenant sc
 
     INSTALLED_APPS = SHARED_APPS + TENANT_APPS
 
-You also have to set where your tenant model is.:
+You also have to set where your tenant model is.::
 
     TENANT_MODEL = "customers.Client" # app.Model
     
-Now run `sync_schemas`, this will create the shared apps on the `public` schema. Note: your database should be empty if this is the first time you're running this command.
+Now run `sync_schemas`, this will create the shared apps on the `public` schema. Note: your database should be empty if this is the first time you're running this command.::
 
     python manage.py sync_schemas --shared
     
@@ -89,11 +89,11 @@ South Migrations
 ================
 This app supports `South <http://south.aeracode.org/>`_  so if you haven't configured it yet and would like to:
 
-For Django 1.1 or below:
+For Django 1.1 or below::
 
     SOUTH_DATABASE_ADAPTER = 'south.db.postgresql_psycopg2'
 
-For Django 1.2 or above:
+For Django 1.2 or above::
 
     SOUTH_DATABASE_ADAPTERS = {
         'default': 'south.db.postgresql_psycopg2',
@@ -111,7 +111,7 @@ We have a goodie called `PUBLIC_SCHEMA_URL_TOKEN`. Suppose you have your main we
 
     PUBLIC_SCHEMA_URL_TOKEN = '/main'
     
-When requesting the view `/login/` from the public tenant (your main website), this will be translated to `/main/login/`. You can now edit your `urls.py` file to use another view for a request incoming at `/main/login/`. Every time a call is made at the public's hostname, `/main` will be prepended to the request's path info. This is of course invisible to the user, even though django will internally see it at as `/main/login/`, the user will still be seeing `/login/`. When receiving a request to a tenant using the `public` schema, this token is added automatically via our middleware. Here's a suggestion for a `urls.py` file.:
+When requesting the view `/login/` from the public tenant (your main website), this will be translated to `/main/login/`. You can now edit your `urls.py` file to use another view for a request incoming at `/main/login/`. Every time a call is made at the public's hostname, `/main` will be prepended to the request's path info. This is of course invisible to the user, even though django will internally see it at as `/main/login/`, the user will still be seeing `/login/`. When receiving a request to a tenant using the `public` schema, this token is added automatically via our middleware. Here's a suggestion for a `urls.py` file.::
 
     # settings.py
     PUBLIC_SCHEMA_URL_TOKEN = '/main'
@@ -126,11 +126,11 @@ Where `public_urls.py` would contain the patterns for your main website, which i
 
 As you may have noticed, calling `reverse` or the `{% url %}` template tag would cause the wrong URL to be generated. This app comes with it's own versions for `reverse <https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/urlresolvers.py>`_, `reverse_lazy <https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/urlresolvers.py>`_  and `{% url %} <https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/templatetags/tenant.py>`_ but don't worry, they don't do anything magical, they just remove `PUBLIC_SCHEMA_URL_TOKEN` from the beginning of the URL.
 
-Import the `reverse` and `reverse_lazy` methods where needed.:
+Import the `reverse` and `reverse_lazy` methods where needed.::
 
     from tenant_schemas.urlresolvers import reverse, reverse_lazy
 
-To use the template tag, add the following line to the top of your template file.:
+To use the template tag, add the following line to the top of your template file.::
 
     {% load url from tenant %}
     
@@ -139,7 +139,7 @@ This should not have any side-effects on your current code.
 Building Documentation
 ======================
 Documentation is available in ``docs`` and can be built into a number of 
-formats using `Sphinx <http://pypi.python.org/pypi/Sphinx>`_. To get started:
+formats using `Sphinx <http://pypi.python.org/pypi/Sphinx>`_. To get started::
 
     pip install Sphinx
     cd docs

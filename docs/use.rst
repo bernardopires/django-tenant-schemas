@@ -3,7 +3,7 @@ Using django-tenant-schemas
 ===========================
 Creating a Tenant 
 -----------------
-This works just like any other model in django. The first thing we should do is to create the `public` tenant to make our main website available. We'll use the previous model we defined for `Client`.:
+This works just like any other model in django. The first thing we should do is to create the `public` tenant to make our main website available. We'll use the previous model we defined for `Client`.::
 
     from customer.models import Client
     
@@ -15,7 +15,7 @@ This works just like any other model in django. The first thing we should do is 
                     on_trial=False)
     tenant.save()
     
-Now we can create our first real tenant.:
+Now we can create our first real tenant.::
 
     from customer.models import Client
     
@@ -33,7 +33,7 @@ Any call to the methods `filter`, `get`, `save`, `delete` or any other function 
 
 Management commands
 -------------------
-Every command runs by default on all tenants. To run only a particular schema, there is an optional argument called `--schema`. You can create your own commands that run on every tenant by inheriting `BaseTenantCommand`. There is also an option called `--skip-public` to avoid running the command on the public tenant.:
+Every command runs by default on all tenants. To run only a particular schema, there is an optional argument called `--schema`. You can create your own commands that run on every tenant by inheriting `BaseTenantCommand`. There is also an option called `--skip-public` to avoid running the command on the public tenant.::
 
     ./manage.py sync_schemas 
 
@@ -47,7 +47,7 @@ The options given to `sync_schemas` are passed to every `syncdb`. So if you use 
 
     ./manage sync_schemas --migrate
     
-You can also use the option `--tenant` to only sync tenant apps or `--shared` to only sync shared apps.:
+You can also use the option `--tenant` to only sync tenant apps or `--shared` to only sync shared apps.::
 
     ./manage.py migrate_schemas 
 

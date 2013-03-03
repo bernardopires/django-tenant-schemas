@@ -35,6 +35,8 @@ Tenants are identified via their host name (i.e tenant.domain.com). This informa
 
 What can this app do?
 ---------------------------------------
+### As many tenants as you want ###
+Each tenant has its data on a specific schema. Use a single project instance to serve as many as you want.
 
 ### Tenant-specific and shared apps ###
 Tenant-specific apps do not share their data between tenants, but you can also have shared apps where the information is always available and shared between all.

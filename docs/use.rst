@@ -33,11 +33,11 @@ Any call to the methods `filter`, `get`, `save`, `delete` or any other function 
 
 Management commands
 -------------------
-Every command runs by default on all tenants. To run only a particular schema, there is an optional argument called `--schema`. You can create your own commands that run on every tenant by inheriting `BaseTenantCommand`. There is also an option called `--skip-public` to avoid running the command on the public tenant.::
+Every command runs by default on all tenants. You can also create your own commands that run on every tenant by inheriting `BaseTenantCommand`. To run only a particular schema, there is an optional argument called `--schema`.::
 
-    ./manage.py sync_schemas 
+    ./manage.py sync_schemas --schema=customer1
 
-This is the most important command on this app. The way it works is that it calls Django's `syncdb` in two different ways. First, it calls `syncdb` for the `public` schema, only syncing the shared apps. Then it runs `syncdb` for every tenant in the database, this time only syncing the tenant apps. 
+The command `sync_schemas` is the most important command on this app. The way it works is that it calls Django's `syncdb` in two different ways. First, it calls `syncdb` for the `public` schema, only syncing the shared apps. Then it runs `syncdb` for every tenant in the database, this time only syncing the tenant apps. 
 
 .. warning::
 
@@ -49,16 +49,17 @@ The options given to `sync_schemas` are passed to every `syncdb`. So if you use 
     
 You can also use the option `--tenant` to only sync tenant apps or `--shared` to only sync shared apps.::
 
-    ./manage.py migrate_schemas 
+	./manage.py sync_schemas --shared # will only sync the public schema
 
-This command runs the South's `migrate` command for every tenant in the database.
+We've also packed south's migrate command in a compatible way with this app. It will also respect the `SHARED_APPS` and `TENANT_APPS` settings, so if you're migrating the `public` schema it will only migrate `SHARED_APPS`. If you're migrating tenants, it will only migrate `TENANT_APPS`.::
 
-The options given to `migrate_schemas` are passed to every `migrate`. Hence
-you may find::
+	./manage.py migrate_schemas
+
+The options given to `migrate_schemas` are also passed to every `migrate`. Hence you may find handy::
 
     ./manage.py migrate_schemas --list
 
-handy if you're curious. Or::
+Or::
 
     ./manage.py migrate_schemas myapp 0001_initial --fake
 

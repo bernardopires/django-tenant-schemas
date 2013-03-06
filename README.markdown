@@ -45,7 +45,7 @@ Tenant-specific apps do not share their data between tenants, but you can also h
 You can have different views for `http://customer.example.com/` and `http://example.com/`, even though Django only uses the string after the host name to identify which view to serve.
 
 ### Magic ###
-Everyone loves magic! You'll be able to have all this without barely having to change your code!
+Everyone loves magic! You'll be able to have all this barely having to change your code!
 
 Setup & Documentation
 -------------

@@ -27,10 +27,6 @@ class Command(NoArgsCommand):
 
         if sync_public and schema_name:
             raise CommandError("schema should only be used with the --tenant switch.")
-        if not hasattr(settings, 'TENANT_APPS') and sync_tenant:
-            raise CommandError("No setting found for TENANT_APPS")
-        if not hasattr(settings, 'SHARED_APPS') and sync_public:
-            raise CommandError("No setting found for SHARED_APPS")
 
         if not sync_public and not sync_tenant and not schema_name:
             # no options set, sync both

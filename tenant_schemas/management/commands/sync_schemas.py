@@ -77,7 +77,7 @@ class Command(NoArgsCommand):
                     if model._meta.managed and verbosity >= 3:
                         print self.style.NOTICE("=== Include Model: %s: %s" % (app_name, model.__name__))
 
-    def sync_tenant_apps(self, apps, schema_name=None):
+    def sync_tenant_apps(self, schema_name=None):
         apps = self.tenant_apps or self.installed_apps
         self._set_managed_apps(apps)
         syncdb_command = SyncdbCommand()

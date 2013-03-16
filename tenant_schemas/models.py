@@ -31,7 +31,7 @@ class TenantMixin(models.Model):
 
         transaction.commit_unless_managed()
 
-    def create_schema(self, check_if_exists = False, sync_schema = True, verbosity = 1):
+    def create_schema(self, check_if_exists=False, sync_schema=True, verbosity=1):
         """
         Creates the schema 'schema_name' for this tenant. Optionally checks if the schema
         already exists before creating it. Returns true if the schema was created, false
@@ -56,7 +56,7 @@ class TenantMixin(models.Model):
                          interactive=False,  # don't ask to create an admin user
                          migrate_all=True,  # migrate all apps directly to last version
                          verbosity=verbosity,
-            )
+                         )
 
             # fake all migrations
             if 'south' in settings.INSTALLED_APPS and not django_is_in_test_mode():

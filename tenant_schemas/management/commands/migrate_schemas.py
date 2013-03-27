@@ -82,8 +82,6 @@ class Command(NoArgsCommand):
         apps = self.tenant_apps or self.installed_apps
         self._set_managed_apps(included_apps=apps, excluded_apps=self.shared_apps)
 
-        Migrations.invalidate_all_modules()
-
         migrate_command = MigrateCommand()
         if schema_name:
             print self.style.NOTICE("=== Running migrate for schema: %s" % schema_name)

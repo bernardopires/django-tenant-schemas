@@ -28,10 +28,10 @@ class BaseTenantCommand(BaseCommand):
         obj.option_list = cmdclass.option_list
         obj.option_list += (
             make_option("-s", "--schema", dest="schema_name"),
-            )
+        )
         obj.option_list += (
             make_option("-p", "--skip-public", dest="skip_public", action="store_true", default=False),
-            )
+        )
 
         # prepend the command's original help with the info about schemata iteration
         obj.help = "Calls %s for all registered schemata. You can use regular %s options. "\

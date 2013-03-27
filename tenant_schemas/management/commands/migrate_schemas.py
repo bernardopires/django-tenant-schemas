@@ -1,8 +1,9 @@
 from optparse import make_option
 from django.core.management import CommandError
 from django.core.management.base import NoArgsCommand
-from django.db import connection, DEFAULT_DB_ALIAS
+from django.db import connection
 from django.conf import settings
+from south import migration
 from south.migration.base import Migrations
 from tenant_schemas.utils import get_tenant_model, get_public_schema_name
 from south.management.commands.migrate import Command as MigrateCommand
@@ -70,19 +71,26 @@ class Command(NoArgsCommand):
     def _restore_south_settings(self):
         settings.SOUTH_MIGRATION_MODULES = self._old_south_modules
 
+    def _clear_south_cache(self):
+        for mig in list(migration.all_migrations()):
+            delattr(mig._application, "migrations")
+        Migrations._clear_cache()
+
     def migrate_tenant_apps(self, schema_name=None):
         self._save_south_settings()
 
         apps = self.tenant_apps or self.installed_apps
         self._set_managed_apps(included_apps=apps, excluded_apps=self.shared_apps)
 
-        syncdb_command = MigrateCommand()
+        Migrations.invalidate_all_modules()
+
+        migrate_command = MigrateCommand()
         if schema_name:
             print self.style.NOTICE("=== Running migrate for schema: %s" % schema_name)
             connection.set_schema_to_public()
             sync_tenant = get_tenant_model().objects.filter(schema_name=schema_name).get()
             connection.set_tenant(sync_tenant, include_public=False)
-            syncdb_command.execute(**self.options)
+            migrate_command.execute(**self.options)
         else:
             public_schema_name = get_public_schema_name()
             tenant_schemas_count = get_tenant_model().objects.exclude(schema_name=public_schema_name).count()
@@ -93,7 +101,7 @@ class Command(NoArgsCommand):
                 Migrations._dependencies_done = False  # very important, the dependencies need to be purged from cache
                 print self.style.NOTICE("=== Running migrate for schema %s" % tenant_schema.schema_name)
                 connection.set_tenant(tenant_schema, include_public=False)
-                syncdb_command.execute(**self.options)
+                migrate_command.execute(**self.options)
 
         self._restore_south_settings()
 
@@ -106,4 +114,5 @@ class Command(NoArgsCommand):
         print self.style.NOTICE("=== Running migrate for schema public")
         MigrateCommand().execute(**self.options)
 
+        self._clear_south_cache()
         self._restore_south_settings()

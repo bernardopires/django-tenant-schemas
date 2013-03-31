@@ -79,6 +79,8 @@ class TenantMiddleware(object):
         if SET_TENANT_SITE_DYNAMICALLY and hasattr(request.tenant, 'site') and request.tenant.site:
             SITE_THREAD_LOCAL.SITE_ID = request.tenant.site_id
             #dynamically set the site
+        else:
+            SITE_THREAD_LOCAL.SITE_ID = DEFAULT_SITE_ID
 
     def set_tenant(self, host):
         tenant = self.get_tenant(host)

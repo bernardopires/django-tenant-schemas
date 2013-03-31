@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.db import models, connection, transaction
 from tenant_schemas.postgresql_backend.base import _check_identifier
 from django.core.management import call_command
@@ -6,10 +7,12 @@ from tenant_schemas.signals import post_schema_sync
 from tenant_schemas.utils import django_is_in_test_mode, schema_exists
 from .utils import get_public_schema_name
 
+
 class TenantMixin(models.Model):
-    auto_create_schema = True # set this flag to false on a parent class if
-                              # you dont want the schema to be automatically
-                              # created upon save.
+    auto_create_schema = True
+    # set this flag to false on a parent class if
+    # you dont want the schema to be automatically
+    # created upon save.
 
     domain_url = models.CharField(max_length=128, unique=True)
     schema_name = models.CharField(max_length=63)
@@ -17,13 +20,20 @@ class TenantMixin(models.Model):
     class Meta:
         abstract = True
 
-
-    def save(self, verbosity = 1, *args, **kwargs):
+    def save(self, verbosity=1, *args, **kwargs):
         if connection.get_schema() != get_public_schema_name():
             raise Exception("Can't update tenant outside the public schema. Current schema is %s." % connection.get_schema())
 
         is_new = self.pk is None
+
+        if is_new and settings.TENANT_DYNAMIC_SITE and hasattr(self, 'site_id') and not self.site_id:
+            self.site_id = self.create_site().id
+
+        print self.site_id
+
         super(TenantMixin, self).save(*args, **kwargs)
+
+        print self.site_id
 
         if is_new and self.auto_create_schema:
             self.create_schema(check_if_exists=True, verbosity=verbosity)
@@ -31,8 +41,11 @@ class TenantMixin(models.Model):
 
         transaction.commit_unless_managed()
 
+    def create_site(self):
+        site, created = Site.objects.get_or_create(domain=self.domain_url, defaults={'name': self.domain_url})
+        return site
 
-    def create_schema(self, check_if_exists = False, sync_schema = True, verbosity = 1):
+    def create_schema(self, check_if_exists=False, sync_schema=True, verbosity=1):
         """
         Creates the schema 'schema_name' for this tenant. Optionally checks if the schema
         already exists before creating it. Returns true if the schema was created, false
@@ -51,12 +64,12 @@ class TenantMixin(models.Model):
 
         if sync_schema:
             call_command('sync_schemas',
-                schema_name=self.schema_name,
-                tenant=True,
-                public=False,
-                interactive=False, # don't ask to create an admin user
-                migrate_all=True, # migrate all apps directly to last version
-                verbosity=verbosity,
+                         schema_name=self.schema_name,
+                         tenant=True,
+                         public=False,
+                         interactive=False, # don't ask to create an admin user
+                         migrate_all=True, # migrate all apps directly to last version
+                         verbosity=verbosity,
             )
 
             # fake all migrations

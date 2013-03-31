@@ -1,7 +1,47 @@
+# coding:utf-8
+
+"""
+    Dynamic Site pieces borrowed from https://github.com/jedie which assembled them from multiple snippets
+"""
+
+import os
 from django.conf import settings
 from django.db import connection
 from django.shortcuts import get_object_or_404
 from tenant_schemas.utils import get_tenant_model, remove_www_and_dev, get_public_schema_name
+
+try:
+    from threading import local
+except ImportError:
+    from django.utils._threading_local import local
+
+
+class DynamicTenantSiteId(object):
+    def __getattribute__(self, name):
+        return getattr(SITE_THREAD_LOCAL.SITE_ID, name)
+
+    def __int__(self):
+        return SITE_THREAD_LOCAL.SITE_ID
+
+    def __hash__(self):
+        return hash(SITE_THREAD_LOCAL.SITE_ID)
+
+    def __repr__(self):
+        return repr(SITE_THREAD_LOCAL.SITE_ID)
+
+    def __str__(self):
+        return str(SITE_THREAD_LOCAL.SITE_ID)
+
+    def __unicode__(self):
+        return unicode(SITE_THREAD_LOCAL.SITE_ID)
+
+SET_TENANT_SITE_DYNAMICALLY = getattr(settings, "TENANT_DYNAMIC_SITE", False)
+
+if SET_TENANT_SITE_DYNAMICALLY:
+    DEFAULT_SITE_ID = int(getattr(os.environ, "SITE_ID", settings.SITE_ID))
+    SITE_THREAD_LOCAL = local()
+    settings.SITE_ID = DynamicTenantSiteId()
+
 
 class TenantMiddleware(object):
     """
@@ -35,6 +75,10 @@ class TenantMiddleware(object):
         if hasattr(settings, 'PUBLIC_SCHEMA_URL_TOKEN') and request.tenant.schema_name == get_public_schema_name() and request.path_info[-1] == '/':
             # we are not at the public schema, manually alter routing to schema-dependent urls
             request.path_info = settings.PUBLIC_SCHEMA_URL_TOKEN + request.path_info
+
+        if SET_TENANT_SITE_DYNAMICALLY and hasattr(request.tenant, 'site') and request.tenant.site:
+            SITE_THREAD_LOCAL.SITE_ID = request.tenant.site_id
+            #dynamically set the site
 
     def set_tenant(self, host):
         tenant = self.get_tenant(host)

@@ -21,7 +21,7 @@ class TenantMixin(models.Model):
         abstract = True
 
     def save(self, verbosity=1, *args, **kwargs):
-        if connection.get_schema() != get_public_schema_name():
+        if hasattr(connection, 'get_schema') and connection.get_schema() != get_public_schema_name():
             raise Exception("Can't update tenant outside the public schema. Current schema is %s." % connection.get_schema())
 
         is_new = self.pk is None
@@ -35,7 +35,7 @@ class TenantMixin(models.Model):
 
         print self.site_id
 
-        if is_new and self.auto_create_schema:
+        if is_new and self.auto_create_schema and hasattr(connection, 'get_schema'):
             self.create_schema(check_if_exists=True, verbosity=verbosity)
             post_schema_sync.send(sender=TenantMixin, tenant=self)
 

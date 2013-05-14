@@ -95,10 +95,10 @@ class PGThread(local):
         self.schema_name = get_public_schema_name()
 
 class DatabaseWrapper(original_backend.DatabaseWrapper):
-    def __init__(self, *args, **kwargs):
-        super(DatabaseWrapper, self).__init__(*args, **kwargs)
 
+    def __init__(self, *args, **kwargs):
         self.pg_thread = PGThread()
+        super(DatabaseWrapper, self).__init__(*args, **kwargs)
 
     def set_tenant(self, tenant, include_public = True):
         self.pg_thread.set_tenant(tenant, include_public)

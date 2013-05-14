@@ -1,5 +1,6 @@
 from django.conf import settings
 from optparse import make_option
+from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import NoArgsCommand
 from django.db import DEFAULT_DB_ALIAS
 from django.core.management.base import CommandError
@@ -78,6 +79,8 @@ class Command(NoArgsCommand):
                         print self.style.NOTICE("=== Include Model: %s: %s" % (app_name, model.__name__))
 
     def sync_tenant_apps(self, schema_name=None):
+        ContentType.objects.clear_cache()
+
         apps = self.tenant_apps or self.installed_apps
         self._set_managed_apps(apps)
         syncdb_command = SyncdbCommand()
@@ -98,6 +101,8 @@ class Command(NoArgsCommand):
                 syncdb_command.execute(**self.options)
 
     def sync_public_apps(self):
+        ContentType.objects.clear_cache()
+
         apps = self.shared_apps or self.installed_apps
         self._set_managed_apps(apps)
         print self.style.NOTICE("=== Running syncdb for schema public")

@@ -41,10 +41,9 @@ class Command(BaseCommand):
 
 
     def dump_tenant_data(self, schema_name=None):
-        print 'schema_name:', schema_name
         dumpdb_command = DumpDataCommand()
         if schema_name:
-            print self.style.NOTICE("=== Running syncdb for schema: %s" % schema_name)
+            print self.style.NOTICE("=== Running dumpdata for schema: %s" % schema_name)
             sync_tenant = get_tenant_model().objects.filter(schema_name=schema_name).get()
             connection.set_tenant(sync_tenant, include_public=True)
             dumpdb_command.execute(*self.app_labels, **self.options)

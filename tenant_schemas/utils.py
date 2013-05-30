@@ -34,7 +34,6 @@ def clean_tenant_url(url_string):
     """
     if settings.PUBLIC_SCHEMA_URL_TOKEN and url_string.startswith(settings.PUBLIC_SCHEMA_URL_TOKEN):
         url_string = url_string[len(settings.PUBLIC_SCHEMA_URL_TOKEN):]
-    print 'url_string:', url_string
     return url_string
 
 

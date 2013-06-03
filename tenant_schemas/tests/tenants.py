@@ -4,7 +4,11 @@ from django.test.testcases import TransactionTestCase
 from tenant_schemas.tests.models import Tenant, NonAutoSyncTenant, DummyModel
 from tenant_schemas.utils import tenant_context, schema_exists, get_public_schema_name
 
+
 class TenantTestCase(TransactionTestCase):
+    def setUp(self):
+        connection.set_schema_to_public()
+
     def tearDown(self):
         """
         Delete all tenant schemas. Tenant schema are not deleted
@@ -20,15 +24,18 @@ class TenantTestCase(TransactionTestCase):
 
         for row in cursor.fetchall():
             if not row[0].startswith('pg_') and row[0] not in do_not_delete:
-                # todo: this actually doesn't delete the schema. why?
                 print "Deleting schema %s" % row[0]
                 cursor.execute('DROP SCHEMA %s CASCADE' % row[0])
+
+    @classmethod
+    def setUpClass(cls):
+        settings.TENANT_APPS = ('tenant_schemas', 'django.contrib.contenttypes', 'django.contrib.auth', )
 
     def test_tenant_schema_is_created(self):
         """
         when saving a tenant, it's schema should be created
         """
-        tenant = Tenant(domain_url='test.com', schema_name='test_tenant')
+        tenant = Tenant(domain_url='test.com', schema_name='test')
         tenant.save()
 
         self.assertTrue(schema_exists(tenant.schema_name))
@@ -40,7 +47,7 @@ class TenantTestCase(TransactionTestCase):
         """
         self.assertFalse(schema_exists('non_auto_sync_tenant'))
 
-        tenant = NonAutoSyncTenant(domain_url='test.com', schema_name='non_auto_sync_tenant')
+        tenant = NonAutoSyncTenant(domain_url='test.com', schema_name='test')
         tenant.save()
 
         self.assertFalse(schema_exists(tenant.schema_name))
@@ -60,6 +67,7 @@ class TenantTestCase(TransactionTestCase):
         DummyModel(name="awesome!").save()
 
         # edit tenant
+        connection.set_schema_to_public()
         tenant.domain_url = 'example.com'
         tenant.save()
 

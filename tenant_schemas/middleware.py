@@ -3,6 +3,7 @@ from django.db import connection
 from django.shortcuts import get_object_or_404
 from tenant_schemas.utils import get_tenant_model, remove_www_and_dev, get_public_schema_name
 
+
 class TenantMiddleware(object):
     """
     This middleware should be placed at the very top of the middleware stack.
@@ -31,6 +32,7 @@ class TenantMiddleware(object):
         connection.set_tenant(request.tenant)
 
         # do we have tenant-specific URLs?
-        if hasattr(settings, 'PUBLIC_SCHEMA_URL_TOKEN') and request.tenant.schema_name == get_public_schema_name() and request.path_info[-1] == '/':
+        if hasattr(settings, 'PUBLIC_SCHEMA_URL_TOKEN') and request.tenant.schema_name == get_public_schema_name() \
+           and request.path_info[-1] == '/':
             # we are not at the public schema, manually alter routing to schema-dependent urls
             request.path_info = settings.PUBLIC_SCHEMA_URL_TOKEN + request.path_info

@@ -4,6 +4,7 @@ from django.db import connection
 from django.db.models.loading import get_model
 from django.core import mail
 
+
 @contextmanager
 def schema_context(schema_name):
     previous_tenant = connection.get_tenant()
@@ -12,6 +13,7 @@ def schema_context(schema_name):
         yield
     finally:
         connection.set_tenant(previous_tenant)
+
 
 @contextmanager
 def tenant_context(tenant):
@@ -22,11 +24,14 @@ def tenant_context(tenant):
     finally:
         connection.set_tenant(previous_tenant)
 
+
 def get_tenant_model():
     return get_model(*settings.TENANT_MODEL.split("."))
 
+
 def get_public_schema_name():
     return getattr(settings, 'PUBLIC_SCHEMA_NAME', 'public')
+
 
 def clean_tenant_url(url_string):
     """
@@ -48,12 +53,14 @@ def remove_www_and_dev(hostname):
 
     return hostname
 
+
 def django_is_in_test_mode():
     """
     I know this is very ugly! I'm looking for more elegant solutions.
     See: http://stackoverflow.com/questions/6957016/detect-django-testing-mode
     """
     return hasattr(mail, 'outbox')
+
 
 def schema_exists(schema_name):
     cursor = connection.cursor()

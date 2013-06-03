@@ -4,6 +4,7 @@ from django.test.client import RequestFactory
 from tenant_schemas.middleware import TenantMiddleware
 from tenant_schemas.tests.models import Tenant
 
+
 class RoutesTestCase(TestCase):
     def setUp(self):
         self.factory = RequestFactory()

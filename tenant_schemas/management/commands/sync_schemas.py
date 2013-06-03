@@ -2,9 +2,8 @@ from django.conf import settings
 from optparse import make_option
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import NoArgsCommand
-from django.db import DEFAULT_DB_ALIAS
 from django.core.management.base import CommandError
-from django.db.models import get_apps, get_models, get_model
+from django.db.models import get_apps, get_models
 if "south" in settings.INSTALLED_APPS:
     from south.management.commands.syncdb import Command as SyncdbCommand
 else:

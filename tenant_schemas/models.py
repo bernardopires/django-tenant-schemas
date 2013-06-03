@@ -8,9 +8,9 @@ from .utils import get_public_schema_name
 
 
 class TenantMixin(models.Model):
-    auto_create_schema = True # set this flag to false on a parent class if
-                              # you dont want the schema to be automatically
-                              # created upon save.
+    auto_create_schema = True  # set this flag to false on a parent class if
+                               # you dont want the schema to be automatically
+                               # created upon save.
 
     domain_url = models.CharField(max_length=128, unique=True)
     schema_name = models.CharField(max_length=63)
@@ -18,9 +18,10 @@ class TenantMixin(models.Model):
     class Meta:
         abstract = True
 
-    def save(self, verbosity = 1, *args, **kwargs):
+    def save(self, verbosity=1, *args, **kwargs):
         if connection.get_schema() != get_public_schema_name():
-            raise Exception("Can't update tenant outside the public schema. Current schema is %s." % connection.get_schema())
+            raise Exception("Can't update tenant outside the public schema. Current schema is %s."
+                            % connection.get_schema())
 
         is_new = self.pk is None
         super(TenantMixin, self).save(*args, **kwargs)

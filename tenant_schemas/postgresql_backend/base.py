@@ -15,9 +15,11 @@ original_backend = import_module('.base', ORIGINAL_BACKEND)
 # from the postgresql doc
 SQL_IDENTIFIER_RE = re.compile('^[_a-zA-Z][_a-zA-Z0-9]{,62}$')
 
+
 def _check_identifier(identifier):
     if not SQL_IDENTIFIER_RE.match(identifier):
         raise RuntimeError("Invalid string used for the schema name.")
+
 
 class PGThread(local):
     """
@@ -64,7 +66,7 @@ class PGThread(local):
     def get_tenant(self):
         return self.tenant
 
-    def set_schema(self, schema_name, include_public = True):
+    def set_schema(self, schema_name, include_public=True):
         """
         Main API method to current database schema,
         but it does not actually modify the db connection.
@@ -73,7 +75,7 @@ class PGThread(local):
         self.schema_name = schema_name
         self.include_public_schema = include_public
 
-    def set_tenant(self, tenant, include_public = True):
+    def set_tenant(self, tenant, include_public=True):
         """
         Main API method to current database schema,
         but it does not actually modify the db connection.
@@ -85,7 +87,7 @@ class PGThread(local):
         if self.tenant is not None:
             if self.schema_name != self.tenant.schema_name:
                 raise ImproperlyConfigured("Passed schema '%s' does not match tenant's schema '%s'."
-                % (self.schema_name, self.tenant.schema_name))
+                                           % (self.schema_name, self.tenant.schema_name))
 
     def set_schema_to_public(self):
         """
@@ -94,16 +96,17 @@ class PGThread(local):
         self.tenant = None
         self.schema_name = get_public_schema_name()
 
+
 class DatabaseWrapper(original_backend.DatabaseWrapper):
     def __init__(self, *args, **kwargs):
         super(DatabaseWrapper, self).__init__(*args, **kwargs)
 
         self.pg_thread = PGThread()
 
-    def set_tenant(self, tenant, include_public = True):
+    def set_tenant(self, tenant, include_public=True):
         self.pg_thread.set_tenant(tenant, include_public)
 
-    def set_schema(self, schema_name, include_public = True):
+    def set_schema(self, schema_name, include_public=True):
         self.pg_thread.set_schema(schema_name, include_public)
 
     def set_schema_to_public(self):

@@ -9,11 +9,6 @@ class TenantMiddleware(object):
     This middleware should be placed at the very top of the middleware stack.
     Selects the proper database schema using the request host. Can fail in
     various ways which is better than corrupting or revealing data...
-
-    If the request comes from a subdomain (a schema that isn't public), a token is added to the request URL
-    path to force django to route this to schema-dependent views. This allows different views at the same URL.
-
-    This schema-token is removed automatically when calling the schemata url tag or the reverse function.
     """
     def process_request(self, request):
         """
@@ -31,8 +26,6 @@ class TenantMiddleware(object):
         request.tenant = get_object_or_404(TenantModel, domain_url=hostname_without_port)
         connection.set_tenant(request.tenant)
 
-        # do we have tenant-specific URLs?
-        if hasattr(settings, 'PUBLIC_SCHEMA_URL_TOKEN') and request.tenant.schema_name == get_public_schema_name() \
-           and request.path_info[-1] == '/':
-            # we are not at the public schema, manually alter routing to schema-dependent urls
+        # do we have a public-specific token?
+        if hasattr(settings, 'PUBLIC_SCHEMA_URL_TOKEN') and request.tenant.schema_name == get_public_schema_name():
             request.path_info = settings.PUBLIC_SCHEMA_URL_TOKEN + request.path_info

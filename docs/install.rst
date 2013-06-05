@@ -49,9 +49,10 @@ By default all apps will be synced to your `public` schema and to your tenant sc
         'tenant_schemas',  # mandatory
         'customers', # you must list the app where your tenant model resides in
         
+        'django.contrib.contenttypes',
+         
         # everything below here is optional
         'django.contrib.auth', 
-        'django.contrib.contenttypes', 
         'django.contrib.sessions', 
         'django.contrib.sites', 
         'django.contrib.messages', 
@@ -60,7 +61,6 @@ By default all apps will be synced to your `public` schema and to your tenant sc
     
     TENANT_APPS = (
         # The following Django contrib apps must be in TENANT_APPS
-        'django.contrib.auth',
         'django.contrib.contenttypes',
 
         # your tenant-specific apps

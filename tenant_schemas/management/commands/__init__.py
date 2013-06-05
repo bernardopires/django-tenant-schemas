@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand
 from django.db import connection
 from tenant_schemas.utils import get_tenant_model, get_public_schema_name
 
+
 class BaseTenantCommand(BaseCommand):
     """
     Generic command class useful for iterating any existing command
@@ -35,9 +36,8 @@ class BaseTenantCommand(BaseCommand):
 
         # prepend the command's original help with the info about schemata iteration
         obj.help = "Calls %s for all registered schemata. You can use regular %s options. "\
-                   "Original help for %s: %s"\
-        % (obj.COMMAND_NAME, obj.COMMAND_NAME, obj.COMMAND_NAME,\
-           getattr(cmdclass, 'help', 'none'))
+                   "Original help for %s: %s" % (obj.COMMAND_NAME, obj.COMMAND_NAME, obj.COMMAND_NAME,
+                                                 getattr(cmdclass, 'help', 'none'))
         return obj
 
     def execute_command(self, tenant, command_name, *args, **options):
@@ -45,9 +45,9 @@ class BaseTenantCommand(BaseCommand):
 
         if verbosity >= 1:
             print
-            print self.style.NOTICE("=== Switching to schema '")\
-                  + self.style.SQL_TABLE(tenant.schema_name)\
-            + self.style.NOTICE("' then calling %s:" % command_name)
+            print self.style.NOTICE("=== Switching to schema '") \
+                + self.style.SQL_TABLE(tenant.schema_name)\
+                + self.style.NOTICE("' then calling %s:" % command_name)
 
         connection.set_tenant(tenant)
 

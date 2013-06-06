@@ -103,14 +103,20 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
 
         self.pg_thread = PGThread()
 
-    def set_tenant(self, tenant, include_public=True):
+    def set_tenant(self, tenant, include_public = True):
+        self.set_settings_schema(tenant.schema_name)
         self.pg_thread.set_tenant(tenant, include_public)
 
-    def set_schema(self, schema_name, include_public=True):
+    def set_schema(self, schema_name, include_public = True):
+        self.set_settings_schema(schema_name)
         self.pg_thread.set_schema(schema_name, include_public)
 
     def set_schema_to_public(self):
+        self.set_settings_schema(get_public_schema_name())
         self.pg_thread.set_schema_to_public()
+
+    def set_settings_schema(self, schema_name):
+        self.settings_dict['SCHEMA'] = schema_name
 
     def get_schema(self):
         return self.pg_thread.get_schema()

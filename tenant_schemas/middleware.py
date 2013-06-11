@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db import connection
 from django.shortcuts import get_object_or_404
 from tenant_schemas.utils import get_tenant_model, remove_www_and_dev, get_public_schema_name
@@ -25,6 +26,14 @@ class TenantMiddleware(object):
         TenantModel = get_tenant_model()
         request.tenant = get_object_or_404(TenantModel, domain_url=hostname_without_port)
         connection.set_tenant(request.tenant)
+
+        # content type can no longer be cached as public and tenant schemas have different
+        # models. if someone wants to change this, the cache needs to be separated between
+        # public and shared schemas. if this cache isn't cleared, this can cause permission
+        # problems. for example, on public, a particular model has id 14, but on the tenants
+        # it has the id 15. if 14 is cached instead of 15, the permissions for the wrong
+        # model will be fetched.
+        ContentType.objects.clear_cache()
 
         # do we have a public-specific token?
         if hasattr(settings, 'PUBLIC_SCHEMA_URL_TOKEN') and request.tenant.schema_name == get_public_schema_name():

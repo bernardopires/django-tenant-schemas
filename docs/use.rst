@@ -8,7 +8,7 @@ This works just like any other model in django. The first thing we should do is 
     from customer.models import Client
     
     # create your public tenant
-    tenant = Client(domain_url='my-domain.com', # don't add www here! on a local server you'll want to use localhost here
+    tenant = Client(domain_url='my-domain.com', # don't add your port or www here! on a local server you'll want to use localhost here
                     schema_name='public', 
                     name='Schemas Inc.',
                     paid_until='2016-12-05',
@@ -20,7 +20,7 @@ Now we can create our first real tenant.::
     from customer.models import Client
     
     # create your first real tenant
-    tenant = Client(domain_url='tenant.my-domain.com', # don't add www here!
+    tenant = Client(domain_url='tenant.my-domain.com', # don't add your port or www here!
                     schema_name='tenant1', 
                     name='Fonzy Tenant',
                     paid_until='2014-12-05',

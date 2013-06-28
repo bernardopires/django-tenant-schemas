@@ -106,34 +106,11 @@ By default `PUBLIC_SCHEMA_URL_TOKEN` is set to `None`, which means you can't ser
 
 Tenant View-Routing
 -------------------
-We have a goodie called `PUBLIC_SCHEMA_URL_TOKEN`. Suppose you have your main website at `example.com` and a customer at `customer.example.com`. You probably want your user to be routed to different views when someone requests `http://example.com/` and `http://customer.example.com/`. Because django only uses the string after the host name, this would be impossible, both would call the view at `/`. This is where `PUBLIC_SCHEMA_URL_TOKEN` comes in handy. If set, the string `PUBLIC_SCHEMA_URL_TOKEN` will be prepended to the request's `path_info` when the `public` schema is being requested. So for example, if you have::
+We have a goodie called `PUBLIC_SCHEMA_URLCONF`. Suppose you have your main website at `example.com` and a customer at `customer.example.com`. You probably want your user to be routed to different views when someone requests `http://example.com/` and `http://customer.example.com/`. Because django only uses the string after the host name, this would be impossible, both would call the view at `/`. This is where `PUBLIC_SCHEMA_URLCONF` comes in handy. If set, when the `public` schema is being requested, the value of this variable will be used instead of `ROOT_URLCONF <https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-ROOT_URLCONF>`. So for example, if you have::
 
-    PUBLIC_SCHEMA_URL_TOKEN = '/main'
+    PUBLIC_SCHEMA_URLCONF = 'myproject.urls_public'
     
-When requesting the view `/login/` from the public tenant (your main website), this will be translated to `/main/login/`. You can now edit your `urls.py` file to use another view for a request incoming at `/main/login/`. Every time a call is made at the public's hostname, `/main` will be prepended to the request's path info. This is of course invisible to the user, even though django will internally see it at as `/main/login/`, the user will still be seeing `/login/`. When receiving a request to a tenant using the `public` schema, this token is added automatically via our middleware. Here's a suggestion for a `urls.py` file.::
-
-    # settings.py
-    PUBLIC_SCHEMA_URL_TOKEN = '/main'
-    
-    # urls.py
-    urlpatterns = patterns('',
-        url(r'^main/$', 'your_project.public_urls'),
-        url(r'^', include('your_project.tenant_urls')),
-    )
-    
-Where `public_urls.py` would contain the patterns for your main website, which is not specific to any tenant and `tenant_urls.py` would contain all your tenant-specific patterns.
-
-As you may have noticed, calling `reverse` or the `{% url %}` template tag would cause the wrong URL to be generated. This app comes with it's own versions for `reverse <https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/urlresolvers.py>`_, `reverse_lazy <https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/urlresolvers.py>`_  and `{% url %} <https://github.com/bcarneiro/django-tenant-schemas/blob/master/tenant_schemas/templatetags/tenant.py>`_ but don't worry, they don't do anything magical, they just remove `PUBLIC_SCHEMA_URL_TOKEN` from the beginning of the URL.
-
-Import the `reverse` and `reverse_lazy` methods where needed.::
-
-    from tenant_schemas.urlresolvers import reverse, reverse_lazy
-
-To use the template tag, add the following line to the top of your template file.::
-
-    {% load url from tenant %}
-    
-This should not have any side-effects on your current code.
+When requesting the view `/login/` from the public tenant (your main website), it will search for this path on `PUBLIC_SCHEMA_URLCONF` instead of `ROOT_URLCONF`. 
 
 Building Documentation
 ======================

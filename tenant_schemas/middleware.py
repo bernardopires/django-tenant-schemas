@@ -1,8 +1,9 @@
+import warnings
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection
 from django.shortcuts import get_object_or_404
-from tenant_schemas.utils import get_tenant_model, remove_www_and_dev, get_public_schema_name
+from tenant_schemas.utils import get_tenant_model, remove_www_and_dev, get_public_schema_name, clean_tenant_url
 
 
 class TenantMiddleware(object):
@@ -38,3 +39,8 @@ class TenantMiddleware(object):
         # do we have a public-specific token?
         if hasattr(settings, 'PUBLIC_SCHEMA_URL_TOKEN') and request.tenant.schema_name == get_public_schema_name():
             request.path_info = settings.PUBLIC_SCHEMA_URL_TOKEN + request.path_info
+            warnings.warn("PUBLIC_SCHEMA_URL_TOKEN is deprecated. Use PUBLIC_SCHEMA_URLCONF instead.",
+                          category=DeprecationWarning)
+
+        if hasattr(settings, 'PUBLIC_SCHEMA_URLCONF') and request.tenant.schema_name == get_public_schema_name():
+            request.urlconf = settings.PUBLIC_SCHEMA_URLCONF

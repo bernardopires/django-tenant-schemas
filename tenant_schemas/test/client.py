@@ -9,13 +9,13 @@ class TenantRequestFactory(RequestFactory):
         super(TenantRequestFactory, self).__init__(**defaults)
         self.tenant = tenant
 
-    def get(self, path, data=None, **extra):
+    def get(self, path, data={}, **extra):
         if 'HTTP_HOST' not in extra:
             extra['HTTP_HOST'] = self.tenant.domain_url
 
         return super(TenantRequestFactory, self).get(path, data, **extra)
         
-    def post(self, path, data=None, **extra):
+    def post(self, path, data={}, **extra):
         if 'HTTP_HOST' not in extra:
             extra['HTTP_HOST'] = self.tenant.domain_url
 
@@ -29,13 +29,13 @@ class TenantClient(Client):
         super(TenantClient, self).__init__(enforce_csrf_checks, **defaults)
         self.tenant = tenant
 
-    def get(self, path, data=None, **extra):
+    def get(self, path, data={}, **extra):
         if 'HTTP_HOST' not in extra:
             extra['HTTP_HOST'] = self.tenant.domain_url
             
         return super(TenantClient, self).get(path, data, **extra)
             
-    def post(self, path, data=None, **extra):
+    def post(self, path, data={}, **extra):
         if 'HTTP_HOST' not in extra:
             extra['HTTP_HOST'] = self.tenant.domain_url
             

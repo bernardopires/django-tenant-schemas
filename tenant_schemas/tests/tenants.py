@@ -6,6 +6,10 @@ from tenant_schemas.utils import tenant_context, schema_exists, get_public_schem
 
 
 class TenantTestCase(TransactionTestCase):
+    @classmethod
+    def setUpClass(cls):
+        settings.TENANT_APPS = ('tenant_schemas', 'django.contrib.contenttypes', 'django.contrib.auth', )
+
     def setUp(self):
         connection.set_schema_to_public()
 
@@ -26,10 +30,6 @@ class TenantTestCase(TransactionTestCase):
             if not row[0].startswith('pg_') and row[0] not in do_not_delete:
                 print "Deleting schema %s" % row[0]
                 cursor.execute('DROP SCHEMA %s CASCADE' % row[0])
-
-    @classmethod
-    def setUpClass(cls):
-        settings.TENANT_APPS = ('tenant_schemas', 'django.contrib.contenttypes', 'django.contrib.auth', )
 
     def test_tenant_schema_is_created(self):
         """

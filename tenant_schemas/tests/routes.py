@@ -1,11 +1,15 @@
-from unittest.case import TestCase
 from django.conf import settings
+from django.test import TransactionTestCase
 from django.test.client import RequestFactory
 from tenant_schemas.middleware import TenantMiddleware
 from tenant_schemas.tests.models import Tenant
 
 
-class RoutesTestCase(TestCase):
+class RoutesTestCase(TransactionTestCase):
+    @classmethod
+    def setUpClass(cls):
+        settings.TENANT_APPS = ('tenant_schemas', 'django.contrib.contenttypes', 'django.contrib.auth', )
+
     def setUp(self):
         self.factory = RequestFactory()
         self.tm = TenantMiddleware()

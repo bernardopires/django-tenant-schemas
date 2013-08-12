@@ -59,7 +59,8 @@ class Command(NoArgsCommand):
                     ignored_apps.append(item)
 
         for app in ignored_apps:
-            settings.SOUTH_MIGRATION_MODULES[app] = 'ignore'
+            app_label = app.split('.')[-1]
+            settings.SOUTH_MIGRATION_MODULES[app_label] = 'ignore'
 
     def _save_south_settings(self):
         self._old_south_modules = None

@@ -5,7 +5,7 @@ Creating a Tenant
 -----------------
 This works just like any other model in django. The first thing we should do is to create the `public` tenant to make our main website available. We'll use the previous model we defined for `Client`.::
 
-    from customer.models import Client
+    from customers.models import Client
     
     # create your public tenant
     tenant = Client(domain_url='my-domain.com', # don't add your port or www here! on a local server you'll want to use localhost here
@@ -17,7 +17,7 @@ This works just like any other model in django. The first thing we should do is 
     
 Now we can create our first real tenant.::
 
-    from customer.models import Client
+    from customers.models import Client
     
     # create your first real tenant
     tenant = Client(domain_url='tenant.my-domain.com', # don't add your port or www here!

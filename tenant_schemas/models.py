@@ -5,9 +5,16 @@ from django.core.management import call_command
 from tenant_schemas.signals import post_schema_sync
 from tenant_schemas.utils import django_is_in_test_mode, schema_exists
 from .utils import get_public_schema_name
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 
 
 class TenantMixin(models.Model):
+    auto_drop_schema = False   # USE THIS WITH CAUTION!
+                               # set this flag to true on a parent class if
+                               # you want the schema to be automatically
+                               # removed after tenant remove.
+
     auto_create_schema = True  # set this flag to false on a parent class if
                                # you dont want the schema to be automatically
                                # created upon save.
@@ -64,3 +71,19 @@ class TenantMixin(models.Model):
                 call_command('migrate_schemas', fake=True, schema_name=self.schema_name, verbosity=verbosity)
 
         return True
+
+
+@receiver(post_delete)
+def drop_schema(sender, instance, **kwargs):
+    """
+    Called in post_delete signal.
+    Drops the schema related to the tenant instance. Just drop the schema if the parent
+    class model has the attribute auto_drop_schema setted to True.
+
+    """
+
+    cursor = connection.cursor()
+
+    if schema_exists(instance.schema_name) and instance.auto_drop_schema:
+        # remove the schema
+        cursor.execute('DROP SCHEMA %s CASCADE' % instance.schema_name)

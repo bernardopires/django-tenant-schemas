@@ -82,8 +82,11 @@ def drop_schema(sender, instance, **kwargs):
 
     """
 
-    cursor = connection.cursor()
+    # this function is called each time some model object is deleted, even if it is not a
+    # tenant. So we check that a tenant is being deleted:
+    if isinstance(instance, TenantMixin):
+        cursor = connection.cursor()
 
-    if schema_exists(instance.schema_name) and instance.auto_drop_schema:
-        # remove the schema
-        cursor.execute('DROP SCHEMA %s CASCADE' % instance.schema_name)
+        if schema_exists(instance.schema_name) and instance.auto_drop_schema:
+            # remove the schema
+            cursor.execute('DROP SCHEMA %s CASCADE' % instance.schema_name)

@@ -73,20 +73,13 @@ class TenantMixin(models.Model):
         return True
 
 
-@receiver(post_delete)
+@receiver(post_delete, sender=get_tenant_model())
 def drop_schema(sender, instance, **kwargs):
     """
     Called in post_delete signal.
     Drops the schema related to the tenant instance. Just drop the schema if the parent
-    class model has the attribute auto_drop_schema setted to True.
-
+    class model has the attribute auto_drop_schema set to True.
     """
-
-    # this function is called each time some model object is deleted, even if it is not a
-    # tenant. So we check that a tenant is being deleted:
-    if isinstance(instance, TenantMixin):
+    if schema_exists(instance.schema_name) and instance.auto_drop_schema:
         cursor = connection.cursor()
-
-        if schema_exists(instance.schema_name) and instance.auto_drop_schema:
-            # remove the schema
-            cursor.execute('DROP SCHEMA %s CASCADE' % instance.schema_name)
+        cursor.execute('DROP SCHEMA %s CASCADE' % instance.schema_name)

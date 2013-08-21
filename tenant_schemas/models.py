@@ -73,7 +73,7 @@ class TenantMixin(models.Model):
         return True
 
 
-@receiver(post_delete, sender=TenantMixin)
+@receiver(post_delete)
 def drop_schema(sender, instance, **kwargs):
     """
     Called in post_delete signal.

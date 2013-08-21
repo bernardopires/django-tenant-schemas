@@ -3,7 +3,7 @@ from django.db import models, connection, transaction
 from tenant_schemas.postgresql_backend.base import _check_identifier
 from django.core.management import call_command
 from tenant_schemas.signals import post_schema_sync
-from tenant_schemas.utils import django_is_in_test_mode, schema_exists
+from tenant_schemas.utils import django_is_in_test_mode, schema_exists, get_tenant_model
 from .utils import get_public_schema_name
 from django.db.models.signals import post_delete
 from django.dispatch import receiver

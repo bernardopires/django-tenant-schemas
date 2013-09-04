@@ -26,11 +26,15 @@ class TenantMixin(models.Model):
         abstract = True
 
     def save(self, verbosity=1, *args, **kwargs):
-        if connection.get_schema() != get_public_schema_name():
+        is_new = self.pk is None
+
+        if is_new and connection.get_schema() != get_public_schema_name():
             raise Exception("Can't update tenant outside the public schema. Current schema is %s."
                             % connection.get_schema())
+        elif not is_new and connection.get_schema() not in (self.schema_name, get_public_schema_name()):
+            raise Exception("Can't update tenant outside it's own schema or the public schema. Current schema is %s."
+                            % connection.get_schema())
 
-        is_new = self.pk is None
         super(TenantMixin, self).save(*args, **kwargs)
 
         if is_new and self.auto_create_schema:
@@ -69,6 +73,8 @@ class TenantMixin(models.Model):
             # fake all migrations
             if 'south' in settings.INSTALLED_APPS and not django_is_in_test_mode():
                 call_command('migrate_schemas', fake=True, schema_name=self.schema_name, verbosity=verbosity)
+
+        connection.set_schema_to_public()
 
         return True
 

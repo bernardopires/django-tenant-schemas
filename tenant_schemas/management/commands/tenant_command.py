@@ -32,8 +32,6 @@ class Command(BaseCommand):
 To learn how create a tenant, see:
 https://django-tenant-schemas.readthedocs.org/en/latest/use.html#creating-a-tenant""")
         
-        #tenstrings = ["%s - %s" % (t.pk, t.domain_url,) for t in alltenants]
-        
         if options['tenant_schema']:
             tenant_schema = options['tenant_schema']
         else:

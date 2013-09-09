@@ -19,6 +19,16 @@ class Command(BaseCommand):
         ),
     )
 
+    def create_parser(self, prog_name, subcommand):
+        """
+        Create and return the ``OptionParser`` which will be used to
+        parse the arguments to this command.
+
+        """
+        optparser = super(Command, self).create_parser(prog_name, subcommand)
+        optparser.disable_interspersed_args()
+        return optparser
+
     def handle(self, command=None, target=None, *args, **options):
         from tenant_schemas.utils import get_tenant_model
 

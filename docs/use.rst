@@ -33,7 +33,7 @@ Any call to the methods `filter`, `get`, `save`, `delete` or any other function 
 
 Management commands
 -------------------
-Every command runs by default on all tenants. You can also create your own commands that run on every tenant by inheriting `BaseTenantCommand`. To run only a particular schema, there is an optional argument called `--schema`.::
+Every command except tenant_command runs by default on all tenants. You can also create your own commands that run on every tenant by inheriting `BaseTenantCommand`. To run only a particular schema, there is an optional argument called `--schema`.::
 
     ./manage.py sync_schemas --schema=customer1
 
@@ -64,3 +64,12 @@ Or::
     ./manage.py migrate_schemas myapp 0001_initial --fake
 
 in case you're just switching your `myapp` application to use South migrations.
+
+To run any command on an individual schema, you can use the special `tenant_command`, which creates a wrapper around your command so that it only runs on the schema you specify. For example::
+
+    ./manage.py tenant_command createsuperuser
+
+If you don't specify a schema, you will be prompted to enter one. Otherwise, you may specify a schema preemptively::
+
+
+    ./manage.py tenant_command createsuperuser --schema=customer1

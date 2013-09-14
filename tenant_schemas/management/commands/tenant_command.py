@@ -17,7 +17,6 @@ class Command(BaseCommand):
 
     option_list = (
         make_option(
-            "--tenant",
             "--tenant", 
             dest = "tenant_schema",
             help = "specify tenant schema", 
@@ -44,9 +43,7 @@ class Command(BaseCommand):
         """
         parent_command = self.get_parent_command()
         parent_command.option_list += self.option_list
-        optparse = parent_command.create_parser(prog_name, subcommand)
-        optparse.set_conflict_handler("resolve")
-        return optparse
+        return parent_command.create_parser(prog_name, subcommand)
 
     def handle(self, command=None, target=None, *args, **options):
         from tenant_schemas.utils import get_tenant_model

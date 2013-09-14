@@ -1,8 +1,9 @@
+import sys
 from getpass import getpass
 from optparse import make_option
 
 from django.core.management.base import BaseCommand, CommandError
-from django.core.management import call_command
+from django.core.management import call_command, get_commands, load_command_class
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection
 from django.utils.six.moves import input
@@ -11,13 +12,29 @@ class Command(BaseCommand):
    
     help = "Wrapper around django commands for use with an individual tenant" 
 
-    option_list = BaseCommand.option_list + (
+    __parent_command = None
+    __parent_command_app = None
+
+    option_list = (
         make_option(
+            "--tenant",
             "--tenant", 
             dest = "tenant_schema",
             help = "specify tenant schema", 
         ),
     )
+
+    def __init__(self):
+        allcommands = get_commands()
+        try:
+            self.__parent_command = sys.argv[2]
+            self.__parent_command_app = allcommands[self.__parent_command]
+        except KeyError:
+            raise CommandError("Could not find command: %s" % (self.__parent_command,))
+        super(Command, self).__init__()
+
+    def get_parent_command(self):
+        return load_command_class(self.__parent_command_app, self.__parent_command)
 
     def create_parser(self, prog_name, subcommand):
         """
@@ -25,9 +42,11 @@ class Command(BaseCommand):
         parse the arguments to this command.
 
         """
-        optparser = super(Command, self).create_parser(prog_name, subcommand)
-        optparser.disable_interspersed_args()
-        return optparser
+        parent_command = self.get_parent_command()
+        parent_command.option_list += self.option_list
+        optparse = parent_command.create_parser(prog_name, subcommand)
+        optparse.set_conflict_handler("resolve")
+        return optparse
 
     def handle(self, command=None, target=None, *args, **options):
         from tenant_schemas.utils import get_tenant_model
@@ -42,7 +61,7 @@ class Command(BaseCommand):
 To learn how create a tenant, see:
 https://django-tenant-schemas.readthedocs.org/en/latest/use.html#creating-a-tenant""")
         
-        if options['tenant_schema']:
+        if options.get('tenant_schema'):
             tenant_schema = options['tenant_schema']
         else:
             while True:

@@ -17,7 +17,7 @@ class Command(BaseCommand):
 
     option_list = (
         make_option(
-            "--tenant", 
+            "--schema", 
             dest = "tenant_schema",
             help = "specify tenant schema", 
         ),

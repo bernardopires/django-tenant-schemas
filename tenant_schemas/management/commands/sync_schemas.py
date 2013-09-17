@@ -1,7 +1,5 @@
-from optparse import make_option
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.core.management.base import CommandError
 from django.db.models import get_apps, get_models
 if "south" in settings.INSTALLED_APPS:
     from south.management.commands.syncdb import Command as SyncdbCommand
@@ -14,7 +12,6 @@ from tenant_schemas.management.common import SyncCommon
 
 class Command(SyncCommon):
     help = "Sync schemas based on TENANT_APPS and SHARED_APPS settings"
-
     option_list = SyncdbCommand.option_list + SyncCommon.option_list
 
     def handle_noargs(self, **options):

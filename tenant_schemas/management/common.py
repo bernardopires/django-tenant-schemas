@@ -1,6 +1,8 @@
 from optparse import make_option
 from django.conf import settings
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import NoArgsCommand, CommandError
+from tenant_schemas.utils import get_public_schema_name
+
 
 class SyncCommon(NoArgsCommand):
     option_list = (

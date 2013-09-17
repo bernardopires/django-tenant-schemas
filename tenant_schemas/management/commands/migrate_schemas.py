@@ -1,7 +1,5 @@
-from optparse import make_option
 from django.conf import settings
 from django.db import connection
-from django.core.management import CommandError
 from south import migration
 from south.migration.base import Migrations
 from south.management.commands.migrate import Command as MigrateCommand

@@ -24,6 +24,8 @@ class Command(SyncCommon):
         for model in get_models(include_auto_created=True):
             setattr(model._meta, 'was_managed', model._meta.managed)
 
+        ContentType.objects.clear_cache()
+
         if self.sync_public:
             self.sync_public_apps()
         if self.sync_tenant:
@@ -53,8 +55,6 @@ class Command(SyncCommon):
         SyncdbCommand().execute(**self.options)
 
     def sync_tenant_apps(self, schema_name=None):
-        ContentType.objects.clear_cache()
-
         apps = self.tenant_apps or self.installed_apps
         self._set_managed_apps(apps)
         if schema_name:
@@ -69,8 +69,6 @@ class Command(SyncCommon):
                 self._sync_tenant(tenant)
 
     def sync_public_apps(self):
-        ContentType.objects.clear_cache()
-
         apps = self.shared_apps or self.installed_apps
         self._set_managed_apps(apps)
         SyncdbCommand().execute(**self.options)

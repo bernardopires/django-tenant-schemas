@@ -45,7 +45,7 @@ class Command(SyncCommon):
             app_name = app_model.__name__.replace('.models', '')
             if hasattr(app_model, 'models') and app_name in included_apps:
                 for model in get_models(app_model, include_auto_created=True):
-                    model._meta.managed = True and model._meta.was_managed
+                    model._meta.managed = model._meta.was_managed
                     if model._meta.managed and verbosity >= 3:
                         self._notice("=== Include Model: %s: %s" % (app_name, model.__name__))
 

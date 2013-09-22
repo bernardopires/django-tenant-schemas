@@ -1,9 +1,10 @@
 from optparse import make_option
-from django.conf import settings
 from django.core.management import call_command, get_commands, load_command_class
 from django.core.management.base import BaseCommand
 from django.db import connection
 from tenant_schemas.utils import get_tenant_model, get_public_schema_name
+from django.core.management.base import CommandError
+from django.utils.six.moves import input
 
 
 class BaseTenantCommand(BaseCommand):
@@ -66,3 +67,54 @@ class BaseTenantCommand(BaseCommand):
             for tenant in get_tenant_model().objects.all():
                 if not(options['skip_public'] and tenant.schema_name == get_public_schema_name()):
                     self.execute_command(tenant, self.COMMAND_NAME, *args, **options)
+
+
+class InteractiveTenantOption(object):
+    def __init__(self, *args, **kwargs):
+        super(InteractiveTenantOption, self).__init__(*args, **kwargs)
+        self.option_list += (
+            make_option("-s", "--schema", dest="schema_name", help="specify tenant schema"),
+        )
+
+    def get_tenant_from_options_or_interactive(self, **options):
+        TenantModel = get_tenant_model()
+        allTenants = TenantModel.objects.all()
+
+        if not allTenants:
+            raise CommandError("""There are no tenants in the system.
+To learn how create a tenant, see:
+https://django-tenant-schemas.readthedocs.org/en/latest/use.html#creating-a-tenant""")
+
+        if options.get('schema_name'):
+            tenant_schema = options['schema_name']
+        else:
+            while True:
+                tenant_schema = input("Enter Tenant Schema ('?' to list schemas): ")
+                if tenant_schema == '?':
+                    print '\n'.join(["%s - %s" % (t.schema_name, t.domain_url,) for t in allTenants])
+                else:
+                    break
+
+        if tenant_schema not in [t.schema_name for t in allTenants]:
+            raise CommandError("Invalid tenant schema, '%s'" % (tenant_schema,))
+
+        return TenantModel.objects.get(schema_name=tenant_schema)
+
+
+class TenantWrappedCommand(InteractiveTenantOption, BaseCommand):
+    """
+    Generic command class useful for running any existing command
+    on a particular tenant. The actual command name is expected in the
+    class variable COMMAND_NAME of the subclass.
+    """
+    def __new__(cls, *args, **kwargs):
+        obj = super(TenantWrappedCommand, cls).__new__(cls, *args, **kwargs)
+        obj.command_instance = obj.COMMAND()
+        obj.option_list = obj.command_instance.option_list
+        return obj
+
+    def handle(self, *args, **options):
+        tenant = self.get_tenant_from_options_or_interactive(**options)
+        connection.set_tenant(tenant)
+
+        self.command_instance.execute(*args, **options)

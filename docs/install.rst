@@ -69,6 +69,10 @@ By default all apps will be synced to your `public` schema and to your tenant sc
     )
 
     INSTALLED_APPS = SHARED_APPS + TENANT_APPS
+    
+.. warning::
+
+   As of now it's not possible to have a centralized `django.contrib.auth`.
 
 You also have to set where your tenant model is.::
 
@@ -98,7 +102,13 @@ For Django 1.2 or above::
         'default': 'south.db.postgresql_psycopg2',
     }
     
-You can list `south` under `TENANT_APPS` and `SHARED_APPS` if you want. 
+You can list `south` under `TENANT_APPS` and `SHARED_APPS` if you want.
+
+We override `south`'s `syncdb` and `migrate` command, so you'll need to change your `INSTALLED_APPS` to
+
+    INSTALLED_APPS = SHARED_APPS + TENANT_APPS + ('tenant_schemas',)
+    
+This makes sure `tenant_schemas` is the last on the list and therefore always has precedence when running an overriden command.
 
 Optional Settings
 =================

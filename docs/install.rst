@@ -104,7 +104,7 @@ For Django 1.2 or above::
     
 You can list `south` under `TENANT_APPS` and `SHARED_APPS` if you want.
 
-We override `south`'s `syncdb` and `migrate` command, so you'll need to change your `INSTALLED_APPS` to
+We override `south`'s `syncdb` and `migrate` command, so you'll need to change your `INSTALLED_APPS` to ::
 
     INSTALLED_APPS = SHARED_APPS + TENANT_APPS + ('tenant_schemas',)
     
@@ -116,11 +116,29 @@ By default `PUBLIC_SCHEMA_URL_TOKEN` is set to `None`, which means you can't ser
 
 Tenant View-Routing
 -------------------
-We have a goodie called `PUBLIC_SCHEMA_URLCONF`. Suppose you have your main website at `example.com` and a customer at `customer.example.com`. You probably want your user to be routed to different views when someone requests `http://example.com/` and `http://customer.example.com/`. Because django only uses the string after the host name, this would be impossible, both would call the view at `/`. This is where `PUBLIC_SCHEMA_URLCONF` comes in handy. If set, when the `public` schema is being requested, the value of this variable will be used instead of `ROOT_URLCONF <https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-ROOT_URLCONF>`. So for example, if you have::
+We have a goodie called `PUBLIC_SCHEMA_URLCONF`. Suppose you have your main website at `example.com` and a customer at `customer.example.com`. You probably want your user to be routed to different views when someone requests `http://example.com/` and `http://customer.example.com/`. Because django only uses the string after the host name, this would be impossible, both would call the view at `/`. This is where `PUBLIC_SCHEMA_URLCONF` comes in handy. If set, when the `public` schema is being requested, the value of this variable will be used instead of `ROOT_URLCONF <https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-ROOT_URLCONF>`_. So for example, if you have::
 
     PUBLIC_SCHEMA_URLCONF = 'myproject.urls_public'
     
 When requesting the view `/login/` from the public tenant (your main website), it will search for this path on `PUBLIC_SCHEMA_URLCONF` instead of `ROOT_URLCONF`. 
+
+Different WSGI for the main website
+-----------------------------------
+If you have a more complex setup in your project, using the `PUBLIC_SCHEMA_URLCONF` can be difficult.
+For example, `Django CMS <https://www.django-cms.org/>`_ want to take some control over the default Django url routing, and uses different middlewares, which the tenant websites don't need.
+Another example is when you put apps on the main website, which needs different settings than tenant websites.
+In these cases it might be much simpler if you just run the main website `example.com` as a separate wsgi application. For example, creating a `wsgi_main_website.py` next to the `wsgi.py` like this::
+
+    # wsgi_main_website.py
+    import os
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings_public")
+
+    from django.core.wsgi import get_wsgi_application
+    application = get_wsgi_application()
+
+If you put this in the same Django project, you can make a new ``settings_public.py`` which points to a different ``urls_public.py``. This has the advantage that you can use the same apps than you use for tenant websites.
+
+Or you can do a totally separate project for the main website, but be aware that if you specify a PostgreSQL database in the ``DATABASES`` setting in ``settings.py``, Django will use it's default ``public`` schema as `described in the PostgreSQL documentation <http://www.postgresql.org/docs/9.2/static/ddl-schemas.html#DDL-SCHEMAS-PUBLIC>`_.
 
 Building Documentation
 ======================

@@ -7,7 +7,7 @@ else:
     from django.core.management.commands.syncdb import Command as SyncdbCommand
 from django.db import connection
 from tenant_schemas.utils import get_tenant_model, get_public_schema_name
-from tenant_schemas.management.common import SyncCommon
+from tenant_schemas.management.commands import SyncCommon
 
 
 class Command(SyncCommon):

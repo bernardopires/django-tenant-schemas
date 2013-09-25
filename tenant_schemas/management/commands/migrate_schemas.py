@@ -3,7 +3,7 @@ from django.db import connection
 from south import migration
 from south.migration.base import Migrations
 from south.management.commands.migrate import Command as MigrateCommand
-from tenant_schemas.management.common import SyncCommon
+from tenant_schemas.management.commands import SyncCommon
 from tenant_schemas.utils import get_tenant_model, get_public_schema_name
 
 
@@ -68,7 +68,7 @@ class Command(SyncCommon):
 
             for tenant in all_tenants:
                 Migrations._dependencies_done = False  # very important, the dependencies need to be purged from cache
-                self._notice("=== Running migrate for schema %s" % tenant_schema.schema_name)
+                self._notice("=== Running migrate for schema %s" % tenant.schema_name)
                 self._migrate_schema(tenant)
 
         self._restore_south_settings()

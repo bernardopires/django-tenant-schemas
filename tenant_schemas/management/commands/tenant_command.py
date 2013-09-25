@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
 from django.db import connection
-from django.utils.six.moves import input
 from tenant_schemas.management.commands import InteractiveTenantOption
 
 

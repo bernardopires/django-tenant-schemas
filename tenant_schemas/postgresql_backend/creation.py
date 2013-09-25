@@ -1,6 +1,5 @@
 from django.db.backends.postgresql_psycopg2.creation import DatabaseCreation as OriginalDatabaseCreation
 from tenant_schemas.utils import get_public_schema_name
-from django.db import connection
 
 
 class SharedDatabaseCreation(OriginalDatabaseCreation):
@@ -20,7 +19,8 @@ class SharedDatabaseCreation(OriginalDatabaseCreation):
         rel_to = field.rel.to
         if rel_to in known_models or rel_to == model:
             output = [style.SQL_KEYWORD('REFERENCES') + ' ' +
-                      (style.SQL_TABLE(qn(get_public_schema_name())) + '.' if rel_to in connection.shared_models else '') +
+                      (style.SQL_TABLE(qn(get_public_schema_name())) + '.'
+                       if rel_to in self.connection.shared_models else '') +
                       style.SQL_TABLE(qn(rel_to._meta.db_table)) + ' (' +
                       style.SQL_FIELD(qn(rel_to._meta.get_field(
                           field.rel.field_name).column)) + ')' +

@@ -103,8 +103,13 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         """
         if not hasattr(self, '_shared_models'):
             shared_apps = map(lambda appstr: get_app(appstr.split('.')[-1]), getattr(settings, 'SHARED_APPS'))
+
+            # Remove apps which are both in SHARED_APPS and TENANT_APPS,
+            # so apps in TENANT_APPS will reference to the same schema they are in
+            tenant_apps = getattr(settings, 'TENANT_APPS')
+            shared_apps = filter(lambda app: app not in tenant_apps, shared_apps)
             shared_app_models = [get_models(app) for app in shared_apps]
-            print "RUNNING",
+
             # Cache the results
             self._shared_models = [model for model in itertools.chain(*shared_app_models)]
 

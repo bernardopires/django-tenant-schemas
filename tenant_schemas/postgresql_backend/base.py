@@ -102,22 +102,20 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         SHARED_MODELS is an iterable which members are in a form of 'applabel.Model'.
         """
         if not hasattr(self, '_shared_models'):
-            shared_apps = map(lambda appstr: get_app(appstr.split('.')[-1]), getattr(settings, 'SHARED_APPS'))
+            self._shared_models = []
 
-            # Remove apps which are both in SHARED_APPS and TENANT_APPS,
-            # so apps in TENANT_APPS will reference to the same schema they are in
-            tenant_apps = getattr(settings, 'TENANT_APPS')
-            shared_apps = filter(lambda app: app not in tenant_apps, shared_apps)
-            shared_app_models = [get_models(app) for app in shared_apps]
-
-            # Cache the results
-            self._shared_models = [model for model in itertools.chain(*shared_app_models)]
+            for appstring in getattr(settings, 'SHARED_APPS'):
+                # Only put in apps which are in SHARED_APPS exclusively, so
+                # apps in TENANT_APPS will reference to the same schema they are in
+                if appstring not in getattr(settings, 'TENANT_APPS'):
+                    app = get_app(appstring.split('.')[-1])
+                    self._shared_models.extend(get_models(app))
 
             # append the list of models generated from SHARED_MODELS setting
             for modelstring in getattr(settings, 'SHARED_MODELS'):
                 model = get_model(*modelstring.split('.'))
-                if model:
-                    self.shared_models.append(model)
+                if model and model not in self._shared_models:
+                    self._shared_models.append(model)
 
         return self._shared_models
 

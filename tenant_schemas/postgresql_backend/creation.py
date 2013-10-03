@@ -1,4 +1,5 @@
 from django.db.backends.postgresql_psycopg2.creation import DatabaseCreation as OriginalDatabaseCreation
+from django.db.backends.util import truncate_name
 from tenant_schemas.utils import get_public_schema_name
 
 
@@ -34,3 +35,37 @@ class SharedDatabaseCreation(OriginalDatabaseCreation):
             pending = True
 
         return output, pending
+
+    def sql_for_pending_references(self, model, style, pending_references):
+        """
+        Returns any ALTER TABLE statements to add constraints after the fact.
+        Code copied from django.db.backends.creation.BaseDatabaseCreation and modified.
+        """
+        opts = model._meta
+        if not opts.managed or opts.swapped:
+            return []
+        qn = self.connection.ops.quote_name
+        final_output = []
+        if model in pending_references:
+            for rel_class, f in pending_references[model]:
+                rel_opts = rel_class._meta
+                r_table = rel_opts.db_table
+                r_col = f.column
+                table = opts.db_table
+                col = opts.get_field(f.rel.field_name).column
+                # For MySQL, r_name must be unique in the first 64 characters.
+                # So we are careful with character usage here.
+                r_name = '%s_refs_%s_%s' % (
+                    r_col, col, self._digest(r_table, table))
+                final_output.append(style.SQL_KEYWORD('ALTER TABLE') +
+                                    ' %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s%s (%s)%s;' %
+                                    (qn(r_table),
+                                     qn(truncate_name(r_name, self.connection.ops.max_name_length())),
+                                     qn(r_col),
+                                     # insert '"public".' in front of table name if model is shared.
+                                     qn(get_public_schema_name()) + "." if model in self.connection.shared_models else '',
+                                     qn(table),
+                                     qn(col),
+                                     self.connection.ops.deferrable_sql()))
+            del pending_references[model]
+        return final_output

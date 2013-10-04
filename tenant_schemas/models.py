@@ -44,6 +44,13 @@ class TenantMixin(models.Model):
 
         transaction.commit_unless_managed()
 
+    def delete(self, *args, **kwargs):
+        if connection.get_schema() not in (self.schema_name, get_public_schema_name()):
+            raise Exception("Can't delete tenant outside it's own schema or the public schema. Current schema is %s."
+                            % connection.get_schema())
+
+        super(TenantMixin, self).delete(*args, **kwargs)
+
     def create_schema(self, check_if_exists=False, sync_schema=True, verbosity=1):
         """
         Creates the schema 'schema_name' for this tenant. Optionally checks if the schema

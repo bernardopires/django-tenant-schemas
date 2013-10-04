@@ -30,7 +30,7 @@ class TenantMixin(models.Model):
         is_new = self.pk is None
 
         if is_new and connection.get_schema() != get_public_schema_name():
-            raise Exception("Can't update tenant outside the public schema. Current schema is %s."
+            raise Exception("Can't create tenant outside the public schema. Current schema is %s."
                             % connection.get_schema())
         elif not is_new and connection.get_schema() not in (self.schema_name, get_public_schema_name()):
             raise Exception("Can't update tenant outside it's own schema or the public schema. Current schema is %s."

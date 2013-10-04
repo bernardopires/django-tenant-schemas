@@ -8,21 +8,29 @@ from django.core import mail
 @contextmanager
 def schema_context(schema_name):
     previous_tenant = connection.get_tenant()
+    previous_schema = connection.get_schema() if not previous_tenant else None
     try:
         connection.set_schema(schema_name)
         yield
     finally:
-        connection.set_tenant(previous_tenant)
+        if previous_tenant:
+            connection.set_tenant(previous_tenant)
+        else:
+            connection.set_schema(previous_schema)
 
 
 @contextmanager
 def tenant_context(tenant):
     previous_tenant = connection.get_tenant()
+    previous_schema = connection.get_schema() if not previous_tenant else None
     try:
         connection.set_tenant(tenant)
         yield
     finally:
-        connection.set_tenant(previous_tenant)
+        if previous_tenant:
+            connection.set_tenant(previous_tenant)
+        else:
+            connection.set_schema(previous_schema)
 
 
 def get_tenant_model():

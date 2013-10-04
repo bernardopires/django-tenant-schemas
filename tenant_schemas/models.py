@@ -3,6 +3,7 @@ from django.db import models, connection, transaction
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from django.core.management import call_command
+from django.utils.functional import lazy
 from tenant_schemas.postgresql_backend.base import _check_identifier
 from tenant_schemas.signals import post_schema_sync
 from tenant_schemas.utils import django_is_in_test_mode, schema_exists, get_tenant_model
@@ -78,8 +79,7 @@ class TenantMixin(models.Model):
 
         return True
 
-
-@receiver(post_delete, sender=get_tenant_model())
+@receiver(post_delete, sender=lazy(get_tenant_model))
 def drop_schema(sender, instance, **kwargs):
     """
     Called in post_delete signal.

@@ -140,6 +140,18 @@ If you put this in the same Django project, you can make a new ``settings_public
 
 Or you can do a totally separate project for the main website, but be aware that if you specify a PostgreSQL database in the ``DATABASES`` setting in ``settings.py``, Django will use it's default ``public`` schema as `described in the PostgreSQL documentation <http://www.postgresql.org/docs/9.2/static/ddl-schemas.html#DDL-SCHEMAS-PUBLIC>`_.
 
+Configuring your Apache Server
+=======================
+Here's how you can configure your Apache server to route all subdomains to your django project so you don't have to setup any subdomains manually.
+
+    <VirtualHost 127.0.0.1:8080>
+        ServerName mywebsite.com
+        ServerAlias *.mywebsite.com mywebsite.com
+        WSGIScriptAlias / "/path/to/django/scripts/mywebsite.wsgi"
+    </VirtualHost>
+
+`Django's Deployment with Apache and mod_wsgi <https://docs.djangoproject.com/en/dev/howto/deployment/wsgi/modwsgi/>` might interest you too.
+
 Building Documentation
 ======================
 Documentation is available in ``docs`` and can be built into a number of 

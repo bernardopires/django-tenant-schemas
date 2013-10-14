@@ -5,6 +5,7 @@ from tenant_schemas.postgresql_backend.base import _check_identifier
 from tenant_schemas.signals import post_schema_sync
 from tenant_schemas.utils import django_is_in_test_mode, schema_exists
 from tenant_schemas.utils import get_public_schema_name
+import listeners
 
 
 class TenantMixin(models.Model):

@@ -1,11 +1,10 @@
 import re
 import warnings
-import itertools
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
-from django.db.models import get_models, get_app, get_model
-from tenant_schemas.utils import get_public_schema_name
+from django.db.models import get_model
+from tenant_schemas.utils import get_public_schema_name, get_models_from_appstring
 from tenant_schemas.postgresql_backend.creation import SharedDatabaseCreation
 
 ORIGINAL_BACKEND = getattr(settings, 'ORIGINAL_BACKEND', 'django.db.backends.postgresql_psycopg2')
@@ -97,19 +96,20 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
     # Basically, we can only construct this list in runtime, after the database backend properly built.
     @property
     def shared_models(self):
-        """
-        Return the list of public models generated from the setting SHARED_APPS and SHARED_MODELS.
+        """Return the list of public models.
+
+        It is generated from the setting SHARED_APPS and SHARED_MODELS.
+        The results are cached in _shared_models attribute.
         SHARED_MODELS is an iterable which members are in a form of 'applabel.Model'.
         """
         if not hasattr(self, '_shared_models'):
             self._shared_models = []
 
-            for appstring in getattr(settings, 'SHARED_APPS'):
-                # Only put in apps which are in SHARED_APPS exclusively, so
-                # apps in TENANT_APPS will reference to the same schema they are in
-                if appstring not in getattr(settings, 'TENANT_APPS'):
-                    app = get_app(appstring.split('.')[-1])
-                    self._shared_models.extend(get_models(app))
+            shared_apps = getattr(settings, 'SHARED_APPS') if hasattr(settings, 'SHARED_APPS') \
+                          else getattr(settings, 'INSTALLED_APPS')
+
+            for app in shared_apps:
+                self._shared_models.extend(get_models_from_appstring(app))
 
             # append the list of models generated from SHARED_MODELS setting
             for modelstring in getattr(settings, 'SHARED_MODELS'):
@@ -118,6 +118,27 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
                     self._shared_models.append(model)
 
         return self._shared_models
+
+    @property
+    def tenant_models(self):
+        """Return the list of tenant models generated from the setting TENANT_APPS.
+
+        But only those which are not in SHARED_MODELS.
+        If a model is either in SHARED_APPS and TENANT_APPS, it will be included here.
+        """
+        if not hasattr(self, '_tenant_models'):
+            self._tenant_models = []
+            tenant_apps = getattr(settings, 'TENANT_APPS') if hasattr(settings, 'TENANT_APPS') \
+                          else getattr(settings, 'INSTALLED_APPS')
+            shared_models = [get_model(*app.split('.')) for app in getattr(settings, 'SHARED_MODELS', None)]
+
+            for app in tenant_apps:
+                app_models = get_models_from_appstring(app)
+                # remove models which are in SHARED_MODELS setting, so those will be forced to public
+                models = filter(lambda mod: mod not in shared_models, app_models)
+                self._tenant_models.extend(models)
+
+        return self._tenant_models
 
 
 DatabaseError = original_backend.DatabaseError

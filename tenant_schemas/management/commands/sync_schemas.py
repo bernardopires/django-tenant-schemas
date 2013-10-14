@@ -1,4 +1,3 @@
-import itertools
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import get_apps, get_models
@@ -12,7 +11,7 @@ else:
 from django.db import connection
 
 from tenant_schemas.utils import get_tenant_model, get_public_schema_name
-from tenant_schemas.management.common import SyncCommon
+from tenant_schemas.management.commands import SyncCommon
 
 
 class Command(SyncCommon):
@@ -37,36 +36,37 @@ class Command(SyncCommon):
         ContentType.objects.clear_cache()
 
         if self.sync_public:
-            self.sync_public_apps()
+            self.sync_public_models()
         if self.sync_tenant:
-            self.sync_tenant_apps(self.schema_name)
+            self.sync_tenant_models(self.schema_name)
 
         # restore settings
         for model in get_models(include_auto_created=True):
             model._meta.managed = model._meta.was_managed
 
-    def _set_managed_apps(self, included_apps):
-        """ sets which apps are managed by syncdb """
+    def _set_managed_models(self, included_models):
+        """Sets which models are managed by syncdb."""
+
         for model in get_models(include_auto_created=True):
             model._meta.managed = False
 
         verbosity = int(self.options.get('verbosity'))
         for app_model in get_apps():
-            app_name = app_model.__name__.replace('.models', '')
-            if hasattr(app_model, 'models') and app_name in included_apps:
+            if hasattr(app_model, 'models'):
                 for model in get_models(app_model, include_auto_created=True):
-                    model._meta.managed = True and model._meta.was_managed
-                    if model._meta.managed and verbosity >= 3:
-                        self._notice("=== Include Model: %s: %s" % (app_name, model.__name__))
+                    if model in included_models:
+                        model._meta.managed = model._meta.was_managed
+                        if model._meta.managed and verbosity >= 2:
+                            app_name = app_model.__name__.replace('.models', '')
+                            self._notice("=== Include Model: %s: %s" % (app_name, model.__name__))
 
     def _sync_tenant(self, tenant):
         self._notice("=== Running syncdb for schema: %s" % tenant.schema_name)
         connection.set_tenant(tenant, include_public=False)
         SyncdbCommand().execute(**self.options)
 
-    def sync_tenant_apps(self, schema_name=None):
-        apps = self.tenant_apps or self.installed_apps
-        self._set_managed_apps(apps)
+    def sync_tenant_models(self, schema_name=None):
+        self._set_managed_models(connection.tenant_models)
         self.options['load_initial_data'] = False
 
         if schema_name:
@@ -80,8 +80,7 @@ class Command(SyncCommon):
             for tenant in all_tenants:
                 self._sync_tenant(tenant)
 
-    def sync_public_apps(self):
-        apps = self.shared_apps or self.installed_apps
-        self._set_managed_apps(apps)
+    def sync_public_models(self):
+        self._set_managed_models(connection.shared_models)
         self._notice("=== Running syncdb for schema public")
         SyncdbCommand().execute(**self.options)

@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from django.conf import settings
 from django.db import connection
-from django.db.models.loading import get_model
+from django.db.models.loading import get_model, get_models, get_app
 from django.core import mail
 
 
@@ -23,6 +23,11 @@ def tenant_context(tenant):
         yield
     finally:
         connection.set_tenant(previous_tenant)
+
+
+def get_models_from_appstring(appstring):
+    app = get_app(appstring.split('.')[-1])
+    return get_models(app, include_auto_created=True)
 
 
 def get_tenant_model():

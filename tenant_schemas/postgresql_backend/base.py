@@ -45,16 +45,13 @@ class PGThread(local):
                                        "to call set_schema() or set_tenant()?")
 
         _check_identifier(self.schema_name)
-        try:
-            public_schema_name = get_public_schema_name()
-            if self.schema_name == public_schema_name:
-                cursor.execute('SET search_path = %s' % public_schema_name)
-            elif self.include_public_schema:
-                cursor.execute('SET search_path = %s,%s', [self.schema_name, public_schema_name])
-            else:
-                cursor.execute('SET search_path = %s', [self.schema_name])
-        except utils.DatabaseError, e:
-            raise utils.DatabaseError(e.message)
+        public_schema_name = get_public_schema_name()
+        if self.schema_name == public_schema_name:
+            cursor.execute('SET search_path = %s' % public_schema_name)
+        elif self.include_public_schema:
+            cursor.execute('SET search_path = %s,%s', [self.schema_name, public_schema_name])
+        else:
+            cursor.execute('SET search_path = %s', [self.schema_name])
 
         return cursor
 

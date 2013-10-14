@@ -50,7 +50,7 @@ class SharedDatabaseCreation(OriginalDatabaseCreation):
         It is modified only with public schema name insert before table name.
         """
         opts = model._meta
-        if not opts.managed or opts.swapped:
+        if (not opts.managed or opts.swapped) and model not in self.connection.shared_models:
             return []
         qn = self.connection.ops.quote_name
         final_output = []

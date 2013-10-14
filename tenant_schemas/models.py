@@ -1,12 +1,9 @@
 from django.conf import settings
 from django.db import models, connection, transaction
-from django.db.models.signals import post_delete
-from django.dispatch import receiver
 from django.core.management import call_command
-from django.utils.functional import lazy
 from tenant_schemas.postgresql_backend.base import _check_identifier
 from tenant_schemas.signals import post_schema_sync
-from tenant_schemas.utils import django_is_in_test_mode, schema_exists, get_tenant_model
+from tenant_schemas.utils import django_is_in_test_mode, schema_exists
 from tenant_schemas.utils import get_public_schema_name
 
 
@@ -85,14 +82,3 @@ class TenantMixin(models.Model):
         connection.set_schema_to_public()
 
         return True
-
-@receiver(post_delete, sender=lazy(get_tenant_model))
-def drop_schema(sender, instance, **kwargs):
-    """
-    Called in post_delete signal.
-    Drops the schema related to the tenant instance. Just drop the schema if the parent
-    class model has the attribute auto_drop_schema set to True.
-    """
-    if schema_exists(instance.schema_name) and instance.auto_drop_schema:
-        cursor = connection.cursor()
-        cursor.execute('DROP SCHEMA %s CASCADE' % instance.schema_name)

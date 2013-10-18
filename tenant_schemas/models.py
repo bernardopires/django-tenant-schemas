@@ -5,7 +5,6 @@ from tenant_schemas.postgresql_backend.base import _check_identifier
 from tenant_schemas.signals import post_schema_sync
 from tenant_schemas.utils import django_is_in_test_mode, schema_exists
 from tenant_schemas.utils import get_public_schema_name
-import listeners
 
 
 class TenantMixin(models.Model):
@@ -43,9 +42,17 @@ class TenantMixin(models.Model):
         transaction.commit_unless_managed()
 
     def delete(self, *args, **kwargs):
+        """
+        Drops the schema related to the tenant instance. Just drop the schema if the parent
+        class model has the attribute auto_drop_schema set to True.
+        """
         if connection.get_schema() not in (self.schema_name, get_public_schema_name()):
             raise Exception("Can't delete tenant outside it's own schema or the public schema. Current schema is %s."
                             % connection.get_schema())
+
+        if schema_exists(self.schema_name) and self.auto_drop_schema:
+            cursor = connection.cursor()
+            cursor.execute('DROP SCHEMA %s CASCADE' % self.schema_name)
 
         super(TenantMixin, self).delete(*args, **kwargs)
 

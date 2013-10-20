@@ -33,13 +33,11 @@ class TenantMixin(models.Model):
             raise Exception("Can't update tenant outside it's own schema or the public schema. Current schema is %s."
                             % connection.get_schema())
 
-        super(TenantMixin, self).save(*args, **kwargs)
-
         if is_new and self.auto_create_schema:
             self.create_schema(check_if_exists=True, verbosity=verbosity)
             post_schema_sync.send(sender=TenantMixin, tenant=self)
 
-        transaction.commit_unless_managed()
+        super(TenantMixin, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         """
@@ -88,5 +86,4 @@ class TenantMixin(models.Model):
                 call_command('migrate_schemas', fake=True, schema_name=self.schema_name, verbosity=verbosity)
 
         connection.set_schema_to_public()
-
         return True

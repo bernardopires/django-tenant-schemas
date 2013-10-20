@@ -6,3 +6,4 @@ VERSION
 _build/
 dist/
 django_tenant_schemas.egg-info
+.idea/

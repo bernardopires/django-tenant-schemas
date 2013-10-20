@@ -51,6 +51,7 @@ Contents
    
    install
    use
+   examples
    test
    involved
 

@@ -25,6 +25,13 @@ Add the middleware `tenant_schemas.middleware.TenantMiddleware` to the top of `M
         #...
     )
     
+Make sure you have `django.core.context_processors.request` listed under `TEMPLATE_CONTEXT_PROCESSORS` else the tenant will not be available at `request`.
+
+    TEMPLATE_CONTEXT_PROCESSORS = (
+        'django.core.context_processors.request',
+        #...
+    )`
+    
 The Tenant Model
 ================
 Now we have to create your tenant model. To allow the flexibility of having any data in you want in your tenant, we have a mixin called `TenantMixin` which you *have to* inherit from. This Mixin only has two fields (`domain_url` and `schema_name`) and both are required. Here's an example, suppose we have an app named `customers` and we want to create a model called `client`.::
@@ -142,7 +149,7 @@ Or you can do a totally separate project for the main website, but be aware that
 
 Configuring your Apache Server
 =======================
-Here's how you can configure your Apache server to route all subdomains to your django project so you don't have to setup any subdomains manually.
+Here's how you can configure your Apache server to route all subdomains to your django project so you don't have to setup any subdomains manually.::
 
     <VirtualHost 127.0.0.1:8080>
         ServerName mywebsite.com

@@ -37,10 +37,5 @@ class TenantMiddleware(object):
         ContentType.objects.clear_cache()
 
         # do we have a public-specific token?
-        if hasattr(settings, 'PUBLIC_SCHEMA_URL_TOKEN') and request.tenant.schema_name == get_public_schema_name():
-            request.path_info = settings.PUBLIC_SCHEMA_URL_TOKEN + request.path_info
-            warnings.warn("PUBLIC_SCHEMA_URL_TOKEN is deprecated. Use PUBLIC_SCHEMA_URLCONF instead.",
-                          category=DeprecationWarning)
-
         if hasattr(settings, 'PUBLIC_SCHEMA_URLCONF') and request.tenant.schema_name == get_public_schema_name():
             request.urlconf = settings.PUBLIC_SCHEMA_URLCONF

@@ -20,7 +20,6 @@ setup(
     	'tenant_schemas.management',
     	'tenant_schemas.management.commands',
     	'tenant_schemas.templatetags',
-    	'tenant_schemas.examples',
     	'tenant_schemas.test',
     	'tenant_schemas.tests',
     ],

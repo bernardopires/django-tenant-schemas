@@ -22,7 +22,6 @@ setup(
     	'tenant_schemas.templatetags',
     	'tenant_schemas.test',
     	'tenant_schemas.tests',
-    	'examples',
     ],
     scripts=[],
     url='https://github.com/bcarneiro/django-tenant-schemas',

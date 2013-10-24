@@ -6,3 +6,4 @@ include *.txt
 include version.py
 include VERSION
 recursive-include docs *
+recursive-include examples *

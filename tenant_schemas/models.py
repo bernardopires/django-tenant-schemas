@@ -48,12 +48,12 @@ class TenantMixin(models.Model):
             raise Exception("Can't delete tenant outside it's own schema or the public schema. Current schema is %s."
                             % connection.get_schema())
 
+        super(TenantMixin, self).delete(*args, **kwargs)
+
         if schema_exists(self.schema_name) and self.auto_drop_schema:
             cursor = connection.cursor()
             cursor.execute('DROP SCHEMA %s CASCADE' % self.schema_name)
             transaction.commit_unless_managed()
-
-        super(TenantMixin, self).delete(*args, **kwargs)
 
     def create_schema(self, check_if_exists=False, sync_schema=True, verbosity=1):
         """

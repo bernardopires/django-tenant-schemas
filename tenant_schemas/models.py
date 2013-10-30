@@ -51,6 +51,7 @@ class TenantMixin(models.Model):
         if schema_exists(self.schema_name) and self.auto_drop_schema:
             cursor = connection.cursor()
             cursor.execute('DROP SCHEMA %s CASCADE' % self.schema_name)
+            transaction.commit_unless_managed()
 
         super(TenantMixin, self).delete(*args, **kwargs)
 
@@ -70,6 +71,7 @@ class TenantMixin(models.Model):
 
         # create the schema
         cursor.execute('CREATE SCHEMA %s' % self.schema_name)
+        transaction.commit_unless_managed()
 
         if sync_schema:
             call_command('sync_schemas',

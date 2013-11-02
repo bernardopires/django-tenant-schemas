@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import get_apps, get_models
+from django.core.exceptions import ImproperlyConfigured
 if "south" in settings.INSTALLED_APPS:
     from south.management.commands.syncdb import Command as SyncdbCommand
 else:
@@ -16,6 +16,10 @@ class Command(SyncCommon):
 
     def handle_noargs(self, **options):
         super(Command, self).handle_noargs(**options)
+
+        if 'tenant_schemas.routers.TenantSyncRouter' not in settings.DATABASE_ROUTERS:
+            raise ImproperlyConfigured("DATABASE_ROUTERS setting must contain "
+                               "'tenant_schemas.routers.TenantSyncRouter'.")
 
         if "south" in settings.INSTALLED_APPS:
             self.options["migrate"] = False

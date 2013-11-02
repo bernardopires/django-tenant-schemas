@@ -16,7 +16,6 @@ class TenantSyncRouter(object):
 
         if connection.get_schema() == get_public_schema_name():
             if model._meta.app_label not in app_labels(settings.SHARED_APPS):
-                print model._meta.app_label
                 return False
         else:
             if model._meta.app_label not in app_labels(settings.TENANT_APPS):

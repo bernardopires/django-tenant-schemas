@@ -18,6 +18,12 @@ Your `DATABASE_ENGINE` setting needs to be changed to::
         }
     }
     
+Add `tenant_schemas.routers.TenantSyncRouter` to your `DATABASE_ROUTERS` setting.
+
+    DATABASE_ROUTERS = (
+        'tenant_schemas.routers.TenantSyncRouter',
+    )
+    
 Add the middleware `tenant_schemas.middleware.TenantMiddleware` to the top of `MIDDLEWARE_CLASSES`, so that each request can be set to use the correct schema.::
     
     MIDDLEWARE_CLASSES = (

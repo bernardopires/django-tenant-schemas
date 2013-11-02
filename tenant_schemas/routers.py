@@ -3,14 +3,13 @@ from django.conf import settings
 
 class TenantSyncRouter(object):
     """
-    A router to control all database operations on models in
-    the myapp application
+    A router to control which applications will be synced,
+    depending if we are syncing the shared apps or the tenant apps.
     """
 
     def allow_syncdb(self, db, model):
-        """
-        Make sure the myapp app only appears on the 'other' db
-        """
+        # the imports below need to be done here else django <1.5 goes crazy
+        # https://code.djangoproject.com/ticket/20704
         from django.db import connection
         from tenant_schemas.utils import get_public_schema_name, app_labels
 

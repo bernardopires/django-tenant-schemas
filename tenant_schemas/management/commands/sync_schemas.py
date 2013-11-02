@@ -14,8 +14,8 @@ class Command(SyncCommon):
     help = "Sync schemas based on TENANT_APPS and SHARED_APPS settings"
     option_list = SyncdbCommand.option_list + SyncCommon.option_list
 
-    def handle_noargs(self, **options):
-        super(Command, self).handle_noargs(**options)
+    def handle(self, *args, **options):
+        super(Command, self).handle(*args, **options)
 
         if "south" in settings.INSTALLED_APPS:
             self.options["migrate"] = False

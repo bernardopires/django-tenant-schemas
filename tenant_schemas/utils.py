@@ -79,3 +79,10 @@ def schema_exists(schema_name):
     cursor.close()
 
     return exists
+
+
+def app_labels(apps_list):
+    """
+    Returns a list of app labels of the given apps_list
+    """
+    return [app.split('.')[-1] for app in apps_list]

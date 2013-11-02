@@ -11,8 +11,8 @@ class Command(SyncCommon):
     help = "Migrate schemas with South"
     option_list = MigrateCommand.option_list + SyncCommon.option_list
 
-    def handle_noargs(self, **options):
-        super(Command, self).handle_noargs(**options)
+    def handle(self, *args, **options):
+        super(Command, self).handle(*args, **options)
 
         if self.sync_public:
             self.migrate_public_apps()
@@ -48,7 +48,7 @@ class Command(SyncCommon):
 
     def _migrate_schema(self, tenant):
         connection.set_tenant(tenant, include_public=False)
-        MigrateCommand().execute(**self.options)
+        MigrateCommand().execute(*self.args, **self.options)
 
     def migrate_tenant_apps(self, schema_name=None):
         self._save_south_settings()
@@ -80,7 +80,7 @@ class Command(SyncCommon):
         self._set_managed_apps(included_apps=apps, excluded_apps=self.tenant_apps)
 
         self._notice("=== Running migrate for schema public")
-        MigrateCommand().execute(**self.options)
+        MigrateCommand().execute(*self.args, **self.options)
 
         self._clear_south_cache()
         self._restore_south_settings()

@@ -120,7 +120,7 @@ class TenantWrappedCommand(InteractiveTenantOption, BaseCommand):
         self.command_instance.execute(*args, **options)
 
 
-class SyncCommon(NoArgsCommand):
+class SyncCommon(BaseCommand):
     option_list = (
         make_option('--tenant', action='store_true', dest='tenant', default=False,
                     help='Tells Django to populate only tenant applications.'),
@@ -129,11 +129,12 @@ class SyncCommon(NoArgsCommand):
         make_option("-s", "--schema", dest="schema_name"),
     )
 
-    def handle_noargs(self, **options):
+    def handle(self, *args, **options):
         self.sync_tenant = options.get('tenant')
         self.sync_public = options.get('shared')
         self.schema_name = options.get('schema_name')
         self.installed_apps = settings.INSTALLED_APPS
+        self.args = args
         self.options = options
 
         if self.schema_name:

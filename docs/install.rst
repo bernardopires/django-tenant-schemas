@@ -13,7 +13,7 @@ You'll have to make the following modifcations to your ``settings.py`` file.
 
 Your ``DATABASE_ENGINE`` setting needs to be changed to
 
-.. code-block:: django
+.. code-block:: python
 
     DATABASES = {
         'default': {
@@ -24,7 +24,7 @@ Your ``DATABASE_ENGINE`` setting needs to be changed to
     
 Add the middleware ``tenant_schemas.middleware.TenantMiddleware`` to the top of ``MIDDLEWARE_CLASSES``, so that each request can be set to use the correct schema.
 
-.. code-block:: django
+.. code-block:: python
     
     MIDDLEWARE_CLASSES = (
         'tenant_schemas.middleware.TenantMiddleware',
@@ -33,7 +33,7 @@ Add the middleware ``tenant_schemas.middleware.TenantMiddleware`` to the top of 
     
 Make sure you have ``django.core.context_processors.request`` listed under ``TEMPLATE_CONTEXT_PROCESSORS`` else the tenant will not be available at ``request``.
 
-.. code-block:: django
+.. code-block:: python
 
     TEMPLATE_CONTEXT_PROCESSORS = (
         'django.core.context_processors.request',
@@ -44,7 +44,7 @@ The Tenant Model
 ================
 Now we have to create your tenant model. To allow the flexibility of having any data in you want in your tenant, we have a mixin called ``TenantMixin`` which you **have to** inherit from. This Mixin only has two fields (``domain_url`` and ``schema_name``) and both are required. Here's an example, suppose we have an app named ``customers`` and we want to create a model called ``Client``.
 
-.. code-block:: django
+.. code-block:: python
 
     from django.db import models
     from tenant_schemas.models import TenantMixin
@@ -62,7 +62,7 @@ Configure Tenant and Shared Applications
 ========================================
 By default all apps will be synced to your ``public`` schema and to your tenant schemas. If you want to make use of shared and tenant-specific applications, there are two additional settings called ``SHARED_APPS`` and ``TENANT_APPS``. ``SHARED_APPS`` is a tuple of strings just like ``INSTALLED_APPS`` and should contain all apps that you want to be synced to ``public``. If ``SHARED_APPS`` is set, then these are the only apps that will be to your ``public`` schema! The same applies for ``TENANT_APPS``, it expects a tuple of strings where each string is an app. If set, only those applications will be synced to all your tenants. Here's a sample setting
 
-.. code-block:: django
+.. code-block:: python
 
     SHARED_APPS = (
         'tenant_schemas',  # mandatory
@@ -95,13 +95,13 @@ By default all apps will be synced to your ``public`` schema and to your tenant 
 
 You also have to set where your tenant model is.
 
-.. code-block:: django
+.. code-block:: python
 
     TENANT_MODEL = "customers.Client" # app.Model
     
 Now run ``sync_schemas``, this will create the shared apps on the ``public`` schema. Note: your database should be empty if this is the first time you're running this command.
 
-.. code-block:: django
+.. code-block:: bash
 
     python manage.py sync_schemas --shared
     
@@ -117,13 +117,13 @@ This app supports `South <http://south.aeracode.org/>`_  so if you haven't confi
 
 For Django 1.1 or below
 
-.. code-block:: django
+.. code-block:: python
 
     SOUTH_DATABASE_ADAPTER = 'south.db.postgresql_psycopg2'
 
 For Django 1.2 or above
 
-.. code-block:: django
+.. code-block:: python
 
     SOUTH_DATABASE_ADAPTERS = {
         'default': 'south.db.postgresql_psycopg2',
@@ -133,7 +133,7 @@ You can list ``south`` under ``TENANT_APPS`` and ``SHARED_APPS`` if you want.
 
 We override ``south``'s ``syncdb`` and ``migrate`` command, so you'll need to change your ``INSTALLED_APPS`` to
 
-.. code-block:: django
+.. code-block:: python
 
     INSTALLED_APPS = SHARED_APPS + TENANT_APPS + ('tenant_schemas',)
     
@@ -145,7 +145,9 @@ By default ``PUBLIC_SCHEMA_URL_TOKEN`` is set to ``None``, which means you can't
 
 Tenant View-Routing
 -------------------
-We have a goodie called ``PUBLIC_SCHEMA_URLCONF``. Suppose you have your main website at ``example.com`` and a customer at ``customer.example.com``. You probably want your user to be routed to different views when someone requests ``http://example.com/`` and ``http://customer.example.com/``. Because django only uses the string after the host name, this would be impossible, both would call the view at ``/``. This is where ``PUBLIC_SCHEMA_URLCONF`` comes in handy. If set, when the ``public`` schema is being requested, the value of this variable will be used instead of ``ROOT_URLCONF <https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-ROOT_URLCONF>``_. So for example, if you have::
+We have a goodie called ``PUBLIC_SCHEMA_URLCONF``. Suppose you have your main website at ``example.com`` and a customer at ``customer.example.com``. You probably want your user to be routed to different views when someone requests ``http://example.com/`` and ``http://customer.example.com/``. Because django only uses the string after the host name, this would be impossible, both would call the view at ``/``. This is where ``PUBLIC_SCHEMA_URLCONF`` comes in handy. If set, when the ``public`` schema is being requested, the value of this variable will be used instead of `ROOT_URLCONF <https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-ROOT_URLCONF>`_. So for example, if you have
+
+.. code-block:: python
 
     PUBLIC_SCHEMA_URLCONF = 'myproject.urls_public'
     
@@ -158,7 +160,7 @@ For example, `Django CMS <https://www.django-cms.org/>`_ want to take some contr
 Another example is when you put apps on the main website, which needs different settings than tenant websites.
 In these cases it might be much simpler if you just run the main website `example.com` as a separate wsgi application. For example, creating a ``wsgi_main_website.py`` next to the ``wsgi.py`` like this
 
-.. code-block:: django
+.. code-block:: python
 
     # wsgi_main_website.py
     import os

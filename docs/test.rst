@@ -5,7 +5,7 @@ Running the tests
 -----------------
 If you're using South, don't forget to set ``SOUTH_TESTS_MIGRATE = False``.
 
-.. code-block:: django
+.. code-block:: bash
 
     ./manage.py test tenant_schemas
 

@@ -5,7 +5,7 @@ Creating a Tenant
 -----------------
 This works just like any other model in django. The first thing we should do is to create the ``public`` tenant to make our main website available. We'll use the previous model we defined for ``Client``.
 
-.. code-block:: django
+.. code-block:: python
 
     from customers.models import Client
     
@@ -19,7 +19,7 @@ This works just like any other model in django. The first thing we should do is 
     
 Now we can create our first real tenant.
 
-.. code-block:: django
+.. code-block:: python
 
     from customers.models import Client
     
@@ -39,7 +39,7 @@ Management commands
 -------------------
 Every command except tenant_command runs by default on all tenants. You can also create your own commands that run on every tenant by inheriting ``BaseTenantCommand``. To run only a particular schema, there is an optional argument called ``--schema``.
 
-.. code-block:: django
+.. code-block:: bash
 
     ./manage.py sync_schemas --schema=customer1
 
@@ -51,31 +51,31 @@ The command ``sync_schemas`` is the most important command on this app. The way 
 
 The options given to ``sync_schemas`` are passed to every ``syncdb``. So if you use South, you may find this handy
 
-.. code-block:: django
+.. code-block:: bash
 
     ./manage.py sync_schemas --migrate
     
 You can also use the option ``--tenant`` to only sync tenant apps or ``--shared`` to only sync shared apps.
 
-.. code-block:: django
+.. code-block:: bash
 
 	./manage.py sync_schemas --shared # will only sync the public schema
 
 We've also packed south's migrate command in a compatible way with this app. It will also respect the ``SHARED_APPS`` and ``TENANT_APPS`` settings, so if you're migrating the ``public`` schema it will only migrate ``SHARED_APPS``. If you're migrating tenants, it will only migrate ``TENANT_APPS``.
 
-.. code-block:: django
+.. code-block:: bash
 
 	./manage.py migrate_schemas
 
 The options given to ``migrate_schemas`` are also passed to every ``migrate``. Hence you may find handy
 
-.. code-block:: django
+.. code-block:: bash
 
     ./manage.py migrate_schemas --list
 
 Or
 
-.. code-block:: django
+.. code-block:: bash
 
     ./manage.py migrate_schemas myapp 0001_initial --fake
 
@@ -83,12 +83,12 @@ in case you're just switching your ``myapp`` application to use South migrations
 
 To run any command on an individual schema, you can use the special ``tenant_command``, which creates a wrapper around your command so that it only runs on the schema you specify. For example
 
-.. code-block:: django
+.. code-block:: bash
 
     ./manage.py tenant_command createsuperuser
 
 If you don't specify a schema, you will be prompted to enter one. Otherwise, you may specify a schema preemptively
 
-.. code-block:: django
+.. code-block:: bash
 
     ./manage.py tenant_command createsuperuser --schema=customer1

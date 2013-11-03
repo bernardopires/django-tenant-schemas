@@ -1,7 +1,7 @@
 django-tenant-schemas
 ===============
-[![PyPi version](https://pypip.in/v/$REPO/badge.png)](https://crate.io/packages/$REPO/)
-[![PyPi downloads](https://pypip.in/d/$REPO/badge.png)](https://crate.io/packages/$REPO/)
+[![PyPi version](https://pypip.in/v/django-tenant-schemas/badge.png)](https://crate.io/packages/django-tenant-schemas/)
+[![PyPi downloads](https://pypip.in/d/django-tenant-schemas/badge.png)](https://crate.io/packages/django-tenant-schemas/)
 
 This application enables [django](https://www.djangoproject.com/) powered websites to have multiple tenants via [PostgreSQL schemas](http://www.postgresql.org/docs/9.1/static/ddl-schemas.html). A vital feature for every Software-as-a-Service website.
 

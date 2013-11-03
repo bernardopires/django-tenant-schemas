@@ -141,17 +141,27 @@ This makes sure ``tenant_schemas`` is the last on the list and therefore always 
 
 Optional Settings
 =================
-By default ``PUBLIC_SCHEMA_URL_TOKEN`` is set to ``None``, which means you can't serve different views on the same path. To be able to have tenant URL routing see the section below.
+
+.. attribute:: PUBLIC_SCHEMA_NAME
+
+    :Default: ``'public'``
+    
+    The schema name that will be treated as ``public``, that is, where the ``SHARED_APPS`` will be installed.
 
 Tenant View-Routing
 -------------------
-We have a goodie called ``PUBLIC_SCHEMA_URLCONF``. Suppose you have your main website at ``example.com`` and a customer at ``customer.example.com``. You probably want your user to be routed to different views when someone requests ``http://example.com/`` and ``http://customer.example.com/``. Because django only uses the string after the host name, this would be impossible, both would call the view at ``/``. This is where ``PUBLIC_SCHEMA_URLCONF`` comes in handy. If set, when the ``public`` schema is being requested, the value of this variable will be used instead of `ROOT_URLCONF <https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-ROOT_URLCONF>`_. So for example, if you have
 
-.. code-block:: python
+.. attribute:: PUBLIC_SCHEMA_URL_TOKEN
 
-    PUBLIC_SCHEMA_URLCONF = 'myproject.urls_public'
+    :Default: ``None``
+
+    We have a goodie called ``PUBLIC_SCHEMA_URLCONF``. Suppose you have your main website at ``example.com`` and a customer at ``customer.example.com``. You probably want your user to be routed to different views when someone requests ``http://example.com/`` and ``http://customer.example.com/``. Because django only uses the string after the host name, this would be impossible, both would call the view at ``/``. This is where ``PUBLIC_SCHEMA_URLCONF`` comes in handy. If set, when the ``public`` schema is being requested, the value of this variable will be used instead of `ROOT_URLCONF <https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-ROOT_URLCONF>`_. So for example, if you have
+
+    .. code-block:: python
+
+        PUBLIC_SCHEMA_URLCONF = 'myproject.urls_public'
     
-When requesting the view ``/login/`` from the public tenant (your main website), it will search for this path on ``PUBLIC_SCHEMA_URLCONF`` instead of ``ROOT_URLCONF``. 
+    When requesting the view ``/login/`` from the public tenant (your main website), it will search for this path on ``PUBLIC_SCHEMA_URLCONF`` instead of ``ROOT_URLCONF``. 
 
 Different WSGI for the main website
 -----------------------------------

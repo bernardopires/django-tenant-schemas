@@ -121,7 +121,6 @@ import os
 TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), '..', 'templates').replace('\\','/'),)
 
 SHARED_APPS = (
-    'tenant_schemas',  # mandatory
     'customers',  # you must list the app where your tenant model resides in
 
     'django.contrib.auth',
@@ -132,14 +131,15 @@ SHARED_APPS = (
 )
 
 TENANT_APPS = (
-    # The following Django contrib apps must be in TENANT_APPS
-    'django.contrib.contenttypes',
+    'django.contrib.contenttypes',  # must be in TENANT_APPS
     'django.contrib.auth',
 )
 
 TENANT_MODEL = "customers.Client"  # app.Model
 
-INSTALLED_APPS = SHARED_APPS + TENANT_APPS
+INSTALLED_APPS = SHARED_APPS + TENANT_APPS + ('tenant_schemas',)  # mandatory
+
+SHARED_MODELS = ('django.contrib.auth.User',)
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 

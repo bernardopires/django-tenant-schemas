@@ -60,12 +60,11 @@ Now we have to create your tenant model. To allow the flexibility of having any 
 
 Configure Tenant, Shared Applications and Shared Models
 =======================================================
-By default all apps will be synced to your ``public`` schema and to your tenant schemas. If you want to make use of shared, tenant-specific applications and shared models, there are three additional settings called ``SHARED_APPS``, ``TENANT_APPS`` and ``SHARED_MODELS``. ``SHARED_APPS`` is a tuple of strings just like ``INSTALLED_APPS`` and should contain all apps that you want to be synced to ``public``. If ``SHARED_APPS`` is set, then these are the only apps that will be to your ``public`` schema! The same applies for ``TENANT_APPS``, it expects a tuple of strings where each string is an app. If set, only those applications will be synced to all your tenants. If you specify ``SHARED_MODELS``, those models listed will be created in your ``public`` schema and all references will point to them. Here's a sample setting
+By default all apps will be synced to your ``public`` schema and to your tenant schemas. If you want to make use of shared, tenant-specific applications and shared models, there are three additional settings called ``SHARED_APPS``, ``TENANT_APPS`` and ``SHARED_MODELS``. ``SHARED_APPS`` is a tuple of strings just like ``INSTALLED_APPS`` and should contain all apps that you want to be synced to ``public``. If ``SHARED_APPS`` is set, then these are the only apps that will be to your ``public`` schema! The same applies for ``TENANT_APPS``, it expects a tuple of strings where each string is an app. If set, only those applications will be synced to all your tenants. If you specify ``SHARED_MODELS``, those models listed will be created in your ``public`` schema and all references will point to them. Tables of ``SHARED_MODELS`` will not be created on tenant schemas. Here's a sample setting
 
-..code-block:: python
+.. code-block:: python
 
     SHARED_APPS = (
-        'tenant_schemas',  # mandatory
         'customers', # you must list the app where your tenant model resides in
 
         'django.contrib.contenttypes',
@@ -73,7 +72,6 @@ By default all apps will be synced to your ``public`` schema and to your tenant 
         # everything below here is optional
         'django.contrib.auth',
         'django.contrib.sessions',
-        'django.contrib.sites',
         'django.contrib.messages',
         'django.contrib.admin',
     )
@@ -87,13 +85,15 @@ By default all apps will be synced to your ``public`` schema and to your tenant 
         'myapp.houses',
     )
 
-    INSTALLED_APPS = SHARED_APPS + TENANT_APPS
+    INSTALLED_APPS = SHARED_APPS + TENANT_APPS + ('tenant_schemas',)  # mandatory
 
-    SHARED_MODELS = ['hotels.Hotel', 'auth.User', 'sites.Site'] # app.model
+If you want a couple of models to force to the ``public`` schema, you can use the ``SHARED_MODELS`` setting like this:
 
-.. warning::
+.. code-block:: python
 
-   As of now it's not possible to have a centralized ``django.contrib.auth``.
+    SHARED_MODELS = ('myapp.hotels.Hotel', 'django.contrib.auth.User',)
+
+All other models from apps in ``TENANT_APPS`` will be created on tenant schemas.
 
 You also have to set where your tenant model is.
 
@@ -153,7 +153,7 @@ Optional Settings
 Tenant View-Routing
 -------------------
 
-.. attribute:: PUBLIC_SCHEMA_URL_TOKEN
+.. attribute:: PUBLIC_SCHEMA_URLCONF
 
     :Default: ``None``
 

@@ -8,7 +8,7 @@ if "south" in settings.INSTALLED_APPS:
     from south.management.commands.syncdb import Command as SyncdbCommand
 else:
     from django.core.management.commands.syncdb import Command as SyncdbCommand
-from django.db import connection
+from django.db import connection, utils
 
 from tenant_schemas.utils import get_tenant_model, get_public_schema_name
 from tenant_schemas.management.commands import SyncCommon
@@ -73,12 +73,20 @@ class Command(SyncCommon):
             tenant = get_tenant_model().objects.get(schema_name=schema_name)
             self._sync_tenant(tenant)
         else:
-            all_tenants = get_tenant_model().objects.exclude(schema_name=get_public_schema_name())
-            if not all_tenants:
-                self._notice("No tenants found!")
+            try:
+                # If the tenant_model uses migrations, the first `sync_schemas` will fail here
+                # because South only create migrated tables with the `migrate` command
+                # Django throws ProgrammingError when you try to lookup a table which doesn't exist
+                all_tenants = get_tenant_model().objects.exclude(schema_name=get_public_schema_name())
 
-            for tenant in all_tenants:
-                self._sync_tenant(tenant)
+                if not all_tenants:
+                    self._notice("No tenants found!")
+
+                for tenant in all_tenants:
+                    self._sync_tenant(tenant)
+            except utils.ProgrammingError:
+                self._notice("If you have migrations on tenant model, don't forget to run "
+                             "./manage.py migrate_schemas")
 
     def sync_public_models(self):
         self._set_managed_models(connection.shared_models)

@@ -102,20 +102,19 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         The results are cached in _shared_models attribute.
         SHARED_MODELS is an iterable which members are in a form of 'applabel.Model'.
         """
-        if not hasattr(self, '_shared_models'):
-            self._shared_models = []
+        self._shared_models = []
 
-            shared_apps = getattr(settings, 'SHARED_APPS') if hasattr(settings, 'SHARED_APPS') \
-                          else getattr(settings, 'INSTALLED_APPS')
+        shared_apps = getattr(settings, 'SHARED_APPS') if hasattr(settings, 'SHARED_APPS') else settings.INSTALLED_APPS
 
-            for app in shared_apps:
+        for app in shared_apps:
+            if app in settings.INSTALLED_APPS:
                 self._shared_models.extend(get_models_from_appstring(app))
 
-            # append the list of models generated from SHARED_MODELS setting
-            for modelstring in getattr(settings, 'SHARED_MODELS'):
-                model = get_model(*modelstring.split('.'))
-                if model and model not in self._shared_models:
-                    self._shared_models.append(model)
+        # append the list of models generated from SHARED_MODELS setting
+        for modelstring in getattr(settings, 'SHARED_MODELS'):
+            model = get_model(*modelstring.split('.'))
+            if model and model not in self._shared_models and model._meta.app_label in settings.INSTALLED_APPS:
+                self._shared_models.append(model)
 
         return self._shared_models
 
@@ -126,17 +125,17 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         But only those which are not in SHARED_MODELS.
         If a model is either in SHARED_APPS and TENANT_APPS, it will be included here.
         """
-        if not hasattr(self, '_tenant_models'):
-            self._tenant_models = []
-            tenant_apps = getattr(settings, 'TENANT_APPS') if hasattr(settings, 'TENANT_APPS') \
-                          else getattr(settings, 'INSTALLED_APPS')
-            shared_models = [get_model(*app.split('.')) for app in getattr(settings, 'SHARED_MODELS', None)]
+        self._tenant_models = []
+        tenant_apps = getattr(settings, 'TENANT_APPS') if hasattr(settings, 'TENANT_APPS') else settings.INSTALLED_APPS
+        shared_models = [get_model(*app.split('.')) for app in getattr(settings, 'SHARED_MODELS', None)]
 
-            for app in tenant_apps:
-                app_models = get_models_from_appstring(app)
-                # remove models which are in SHARED_MODELS setting, so those will be forced to public
-                models = filter(lambda mod: mod not in shared_models, app_models)
-                self._tenant_models.extend(models)
+        for app in tenant_apps:
+            if app not in settings.INSTALLED_APPS:
+                continue
+            app_models = get_models_from_appstring(app)
+            # remove models which are in SHARED_MODELS setting, so those will be forced to public
+            models = filter(lambda mod: mod not in shared_models, app_models)
+            self._tenant_models.extend(models)
 
         return self._tenant_models
 

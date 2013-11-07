@@ -22,9 +22,8 @@ class SharedDatabaseCreation(OriginalDatabaseCreation):
         qn = self.connection.ops.quote_name
         rel_to = field.rel.to
         if rel_to in known_models or rel_to == model:
-            if rel_to in self.connection.shared_models and rel_to not in self.connection.tenant_models:
+            if self._model_forced_to_public(rel_to):
                 table_prefix = style.SQL_TABLE(qn(get_public_schema_name())) + '.'
-                print rel_to, "FORCED TO PUBLIC"
             else:
                 table_prefix = ''
             output = [style.SQL_KEYWORD('REFERENCES') + ' ' +
@@ -47,10 +46,14 @@ class SharedDatabaseCreation(OriginalDatabaseCreation):
         """Returns any ALTER TABLE statements to add constraints after the fact.
 
         Original code copied from django.db.backends.creation.BaseDatabaseCreation.
-        It is modified only with public schema name insert before table name.
+        It is modified with public schema name insert before table name.
         """
         opts = model._meta
-        if (not opts.managed or opts.swapped) and model not in self.connection.shared_models:
+        # Check for the original state with was_managed.
+        # This way we can still instruct sycndb command to not create tables for desired models, but create foreign keys
+        # e.g. if 'django.contrib.auth.User' is in SHARED_MODELS, we set it managed to False, but
+        # was_managed is still True so in this case we create the foreign keys but not tables for them.
+        if not opts.was_managed or opts.swapped:
             return []
         qn = self.connection.ops.quote_name
         final_output = []
@@ -65,10 +68,7 @@ class SharedDatabaseCreation(OriginalDatabaseCreation):
                 # So we are careful with character usage here.
                 r_name = '%s_refs_%s_%s' % (
                     r_col, col, self._digest(r_table, table))
-                if model in self.connection.shared_models and model not in self.connection.tenant_models:
-                    table_prefix = qn(get_public_schema_name()) + "."
-                else:
-                    table_prefix = ''
+                table_prefix = qn(get_public_schema_name()) + "." if self._model_forced_to_public(model) else ''
                 final_output.append(style.SQL_KEYWORD('ALTER TABLE') +
                                     ' %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s%s (%s)%s;' %
                                     (qn(r_table),
@@ -81,3 +81,10 @@ class SharedDatabaseCreation(OriginalDatabaseCreation):
                                      self.connection.ops.deferrable_sql()))
             del pending_references[model]
         return final_output
+
+    def _model_forced_to_public(self, model):
+        """
+        Check if we need to force the model into public schema.
+        """
+        return ((model in self.connection.shared_apps_models and model not in self.connection.tenant_apps_models) or
+                        model in self.connection.shared_models)

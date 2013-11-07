@@ -95,49 +95,54 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
     # "triggers some setup which tries to load the backend which in turn will fail cause it tries to retrigger that"
     # Basically, we can only construct this list in runtime, after the database backend properly built.
     @property
-    def shared_models(self):
-        """Return the list of public models.
-
-        It is generated from the setting SHARED_APPS and SHARED_MODELS.
-        The results are cached in _shared_models attribute.
-        SHARED_MODELS is an iterable which members are in a form of 'applabel.Model'.
+    def shared_apps_models(self):
         """
-        self._shared_models = []
+        Return the list of shared models generated from the SHARED_APPS setting.
+        """
+        shared_models = []
+        # SHARED_APPS is optional, so INSTALLED_APPS will be used if not available
+        for appstr in getattr(settings, 'SHARED_APPS', settings.INSTALLED_APPS):
+            # South manipulate INSTALLED_APPS on sycdb, so this will just put those in
+            # which South needs right now
+            if appstr in settings.INSTALLED_APPS:
+                shared_models.extend(get_models_from_appstring(appstr))
 
-        shared_apps = getattr(settings, 'SHARED_APPS') if hasattr(settings, 'SHARED_APPS') else settings.INSTALLED_APPS
-
-        for app in shared_apps:
-            if app in settings.INSTALLED_APPS:
-                self._shared_models.extend(get_models_from_appstring(app))
-
-        # append the list of models generated from SHARED_MODELS setting
-        for modelstring in getattr(settings, 'SHARED_MODELS'):
-            model = get_model(*modelstring.split('.'))
-            if model and model not in self._shared_models and model._meta.app_label in settings.INSTALLED_APPS:
-                self._shared_models.append(model)
-
-        return self._shared_models
+        return shared_models
 
     @property
-    def tenant_models(self):
-        """Return the list of tenant models generated from the setting TENANT_APPS.
-
-        But only those which are not in SHARED_MODELS.
-        If a model is either in SHARED_APPS and TENANT_APPS, it will be included here.
+    def tenant_apps_models(self):
         """
-        self._tenant_models = []
-        tenant_apps = getattr(settings, 'TENANT_APPS') if hasattr(settings, 'TENANT_APPS') else settings.INSTALLED_APPS
-        shared_models = [get_model(*app.split('.')) for app in getattr(settings, 'SHARED_MODELS', None)]
+        Return the list of tenant models generated from TENANT_APPS setting.
+        """
+        tenant_models = []
+        # TENANT_APPS is optional, so INSTALLED_APPS will be used if not available
+        for appstr in getattr(settings, 'TENANT_APPS', settings.INSTALLED_APPS):
+            # check for South
+            if appstr in settings.INSTALLED_APPS:
+                tenant_models.extend(get_models_from_appstring(appstr))
 
-        for app in tenant_apps:
-            if app not in settings.INSTALLED_APPS:
-                continue
-            app_models = get_models_from_appstring(app)
-            # remove models which are in SHARED_MODELS setting, so those will be forced to public
-            models = filter(lambda mod: mod not in shared_models, app_models)
-            self._tenant_models.extend(models)
+        return tenant_models
 
-        return self._tenant_models
+    @property
+    def shared_models(self):
+        """
+        Return the list of models generated from SHARED_MODELS setting.
+
+        SHARED_MODELS is an iterable which members are in a form of 'applabel.Model'
+        e.g. 'django.contrib.auth.User' --> User model from django.contrib.auth app
+        note. shared_models managed will be bypassed
+        """
+        shared_models = []
+        # SHARED_MODELS is optional, so it will be empty if the setting is not available
+        for modelstr in getattr(settings, 'SHARED_MODELS', []):
+            # Get the full appstring from the modelstring, basically cut the model from the end.
+            model_appstr = ".".join(modelstr.split('.')[:-1])
+            # check for South
+            if model_appstr in settings.INSTALLED_APPS:
+                mod_split = modelstr.split('.')
+                shared_models.append(get_model(mod_split[-2], mod_split[-1]))
+
+        return shared_models
 
 
 DatabaseError = original_backend.DatabaseError

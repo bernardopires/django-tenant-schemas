@@ -66,7 +66,8 @@ class Command(SyncCommon):
         SyncdbCommand().execute(**self.options)
 
     def sync_tenant_models(self, schema_name=None):
-        self._set_managed_models(connection.tenant_models)
+        models_to_set = [mod for mod in connection.tenant_apps_models if mod not in connection.shared_models]
+        self._set_managed_models(models_to_set)
         self.options['load_initial_data'] = False
 
         if schema_name:
@@ -89,6 +90,8 @@ class Command(SyncCommon):
                              "./manage.py migrate_schemas")
 
     def sync_public_models(self):
-        self._set_managed_models(connection.shared_models)
+        models_to_set = connection.shared_apps_models
+        models_to_set += [mod for mod in connection.shared_models if mod not in connection.shared_apps_models]
+        self._set_managed_models(models_to_set)
         self._notice("=== Running syncdb for schema public")
         SyncdbCommand().execute(**self.options)

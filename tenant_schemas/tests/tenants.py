@@ -16,7 +16,6 @@ class TenantTestCase(TransactionTestCase):
     def setUp(self):
         # settings needs some patching
         settings.TENANT_MODEL = 'tenant_schemas.Tenant'
-        settings.PUBLIC_SCHEMA_URLCONF = '/public'
 
         # add the public tenant
         self.public_tenant_domain = 'test.com'

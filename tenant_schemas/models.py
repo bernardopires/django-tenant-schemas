@@ -26,12 +26,12 @@ class TenantMixin(models.Model):
     def save(self, verbosity=1, *args, **kwargs):
         is_new = self.pk is None
 
-        if is_new and connection.get_schema() != get_public_schema_name():
+        if is_new and connection.schema_name != get_public_schema_name():
             raise Exception("Can't create tenant outside the public schema. Current schema is %s."
-                            % connection.get_schema())
-        elif not is_new and connection.get_schema() not in (self.schema_name, get_public_schema_name()):
+                            % connection.schema_name)
+        elif not is_new and connection.schema_name not in (self.schema_name, get_public_schema_name()):
             raise Exception("Can't update tenant outside it's own schema or the public schema. Current schema is %s."
-                            % connection.get_schema())
+                            % connection.schema_name)
 
         super(TenantMixin, self).save(*args, **kwargs)
 
@@ -44,9 +44,9 @@ class TenantMixin(models.Model):
         Drops the schema related to the tenant instance. Just drop the schema if the parent
         class model has the attribute auto_drop_schema set to True.
         """
-        if connection.get_schema() not in (self.schema_name, get_public_schema_name()):
+        if connection.schema_name not in (self.schema_name, get_public_schema_name()):
             raise Exception("Can't delete tenant outside it's own schema or the public schema. Current schema is %s."
-                            % connection.get_schema())
+                            % connection.schema_name)
 
         if schema_exists(self.schema_name) and self.auto_drop_schema:
             cursor = connection.cursor()

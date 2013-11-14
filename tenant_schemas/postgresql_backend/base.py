@@ -21,34 +21,27 @@ def _check_identifier(identifier):
 
 
 class DatabaseWrapper(original_backend.DatabaseWrapper):
-    """
-    Adds the capability to manipulate the search_path using set_tenant and set_schema_name
-    """
-    include_public_schema = True
-
     def __init__(self, *args, **kwargs):
         super(DatabaseWrapper, self).__init__(*args, **kwargs)
 
         self.creation = SharedDatabaseCreation(self)
         self.set_schema_to_public()
 
-    def set_tenant(self, tenant, include_public=True):
-        """
-        Main API method to current database schema,
-        but it does not actually modify the db connection.
-        """
-        self.tenant = tenant
-        self.schema_name = tenant.schema_name
-        self.include_public_schema = include_public
-
-    def set_schema(self, schema_name, include_public=True):
+    def set_schema(self, schema_name):
         """
         Main API method to current database schema,
         but it does not actually modify the db connection.
         """
         self.tenant = None
         self.schema_name = schema_name
-        self.include_public_schema = include_public
+
+    def set_tenant(self, tenant):
+        """
+        Main API method to current database schema,
+        but it does not actually modify the db connection.
+        """
+        self.tenant = tenant
+        self.schema_name = tenant.schema_name
 
     def set_schema_to_public(self):
         """
@@ -83,11 +76,9 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         _check_identifier(self.schema_name)
         public_schema_name = get_public_schema_name()
         if self.schema_name == public_schema_name:
-            cursor.execute('SET search_path = %s' % public_schema_name)
-        elif self.include_public_schema:
-            cursor.execute('SET search_path = %s,%s', [self.schema_name, public_schema_name])
+            cursor.execute('SET search_path = %s', (public_schema_name,))
         else:
-            cursor.execute('SET search_path = %s', [self.schema_name])
+            cursor.execute('SET search_path = %s,%s', (self.schema_name, public_schema_name))
 
         return cursor
 

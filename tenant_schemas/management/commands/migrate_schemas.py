@@ -4,7 +4,7 @@ from south import migration
 from south.migration.base import Migrations
 from south.management.commands.migrate import Command as MigrateCommand
 from tenant_schemas.management.commands import SyncCommon
-from tenant_schemas.utils import get_tenant_model, get_public_schema_name
+from tenant_schemas.utils import get_tenant_model, get_public_schema_name, get_models_from_appstring
 
 
 class Command(SyncCommon):
@@ -31,15 +31,22 @@ class Command(SyncCommon):
             app_label = app.split('.')[-1]
             settings.SOUTH_MIGRATION_MODULES[app_label] = 'ignore'
 
+        # Disable introspection for included app tables, so they can be created on tenant schemas.
+        # Otherwise, every table would seem as created, because public schema is always in search path
+        apps_models = [mod for appstr in included_apps for mod in get_models_from_appstring(appstr)]
+        connection.introspection.ignored_tables = [mod._meta.db_table for mod in apps_models]
+
     def _save_south_settings(self):
         self._old_south_modules = None
         if hasattr(settings, "SOUTH_MIGRATION_MODULES") and settings.SOUTH_MIGRATION_MODULES is not None:
             self._old_south_modules = settings.SOUTH_MIGRATION_MODULES.copy()
         else:
             settings.SOUTH_MIGRATION_MODULES = dict()
+        self._old_ignored_tables = connection.introspection.ignored_tables
 
     def _restore_south_settings(self):
         settings.SOUTH_MIGRATION_MODULES = self._old_south_modules
+        connection.introspection.ignored_tables = self._old_ignored_tables
 
     def _clear_south_cache(self):
         for mig in list(migration.all_migrations()):
@@ -47,7 +54,7 @@ class Command(SyncCommon):
         Migrations._clear_cache()
 
     def _migrate_schema(self, tenant):
-        connection.set_tenant(tenant, include_public=False)
+        connection.set_tenant(tenant)
         MigrateCommand().execute(**self.options)
 
     def migrate_tenant_apps(self, schema_name=None):

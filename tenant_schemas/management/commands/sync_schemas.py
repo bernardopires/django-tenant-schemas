@@ -25,6 +25,7 @@ class Command(SyncCommon):
             self.options["migrate"] = False
 
         # save original settings
+        self._old_ignored_tables = connection.introspection.ignored_tables
         for model in get_models(include_auto_created=True):
             setattr(model._meta, 'was_managed', model._meta.managed)
 
@@ -43,6 +44,7 @@ class Command(SyncCommon):
         # restore settings
         for model in get_models(include_auto_created=True):
             model._meta.managed = model._meta.was_managed
+        connection.introspection.ignored_tables = self._old_ignored_tables
 
     def _set_managed_models(self, included_models):
         """Sets which models are managed by syncdb."""
@@ -62,12 +64,13 @@ class Command(SyncCommon):
 
     def _sync_tenant(self, tenant):
         self._notice("=== Running syncdb for schema: %s" % tenant.schema_name)
-        connection.set_tenant(tenant, include_public=False)
+        connection.set_tenant(tenant)
         SyncdbCommand().execute(**self.options)
 
     def sync_tenant_models(self, schema_name=None):
         models_to_set = [mod for mod in connection.tenant_apps_models if mod not in connection.shared_models]
         self._set_managed_models(models_to_set)
+        connection.introspection.ignored_tables = [mod._meta.db_table for mod in models_to_set]
         self.options['load_initial_data'] = False
 
         if schema_name:

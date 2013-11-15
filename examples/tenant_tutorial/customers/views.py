@@ -22,20 +22,22 @@ class TenantView(FormView):
 
         # generate five random users
         USERS_TO_GENERATE = 5
-        first_names = ["Aiden", "Jackson", "Ethan", "Liam", "Mason", "Noah", "Lucas",
-                       "Jacob", "Jayden", "Jack", "Sophia", "Emma", "Olivia", "Isabella",
-                       "Ava", "Lily", "Zoe", "Chloe", "Mia", "Madison"]
-        last_names = ["Smith", "Brown", "Lee	", "Wilson", "Martin", "Patel", "Taylor",
-                      "Wong", "Campbell", "Williams"]
+        first_names = ["Aiden", "Jackson", "Ethan", "Liam", "Mason", "Noah",
+                       "Lucas", "Jacob", "Jayden", "Jack", "Sophia", "Emma",
+                       "Olivia", "Isabella", "Ava", "Lily", "Zoe", "Chloe",
+                       "Mia", "Madison"]
+        last_names = ["Smith", "Brown", "Lee	", "Wilson", "Martin", "Patel",
+                      "Taylor", "Wong", "Campbell", "Williams"]
 
         while User.objects.count() != USERS_TO_GENERATE:
             first_name = choice(first_names)
             last_name = choice(last_names)
             try:
-                User.objects.create_user(username=(first_name+last_name).lower(),
-                                         email="%s@%s.com" % (first_name, last_name),
-                                         first_name=first_name,
-                                         last_name=last_name).save()
+                user = User(username=(first_name+last_name).lower(),
+                            email="%s@%s.com" % (first_name, last_name),
+                            first_name=first_name,
+                            last_name=last_name)
+                user.save()
             except DatabaseError:
                 pass
 

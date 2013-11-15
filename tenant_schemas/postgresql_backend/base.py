@@ -53,8 +53,8 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         self.tenant = None
         self.schema_name = get_public_schema_name()
 
-    def get_schema_name(self):
-        warnings.warn("connection.get_schema_name() is deprecated, use connection.schema_name instead.",
+    def get_schema(self):
+        warnings.warn("connection.get_schema() is deprecated, use connection.schema_name instead.",
                       category=DeprecationWarning)
         return self.schema_name
 

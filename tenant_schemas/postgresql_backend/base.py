@@ -1,4 +1,5 @@
 import re
+import warnings
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
@@ -19,12 +20,7 @@ def _check_identifier(identifier):
 
 class DatabaseWrapper(original_backend.DatabaseWrapper):
     """
-    Indicates if the public schema should be included on the search path.
-    When syncing the db for creating the tables, it's useful to exclude
-    the public schema so that all tables will be created.
-
-    This is a bad monkey patching resulting from the fact that we can't
-    separate public from shared apps right now. issue #1 on github
+    Adds the capability to manipulate the search_path using set_tenant and set_schema_name
     """
     include_public_schema = True
 
@@ -56,6 +52,16 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         """
         self.tenant = None
         self.schema_name = get_public_schema_name()
+
+    def get_schema_name(self):
+        warnings.warn("connection.get_schema_name() is deprecated, use connection.schema_name instead.",
+                      category=DeprecationWarning)
+        return self.schema_name
+
+    def get_tenant(self):
+        warnings.warn("connection.get_tenant() is deprecated, use connection.tenant instead.",
+              category=DeprecationWarning)
+        return self.tenant
 
     def _cursor(self):
         """

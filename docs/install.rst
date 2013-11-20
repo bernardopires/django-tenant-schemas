@@ -151,7 +151,7 @@ Optional Settings
 Tenant View-Routing
 -------------------
 
-.. attribute:: PUBLIC_SCHEMA_URL_TOKEN
+.. attribute:: PUBLIC_SCHEMA_URLCONF
 
     :Default: ``None``
 

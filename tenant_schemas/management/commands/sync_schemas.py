@@ -7,12 +7,12 @@ else:
     from django.core.management.commands.syncdb import Command as SyncdbCommand
 from django.db import connection
 from tenant_schemas.utils import get_tenant_model, get_public_schema_name
-from tenant_schemas.management.commands import SyncCommon
+from tenant_schemas.management.commands import SyncCommonNoArgs
 
 
-class Command(SyncCommon):
+class Command(SyncCommonNoArgs):
     help = "Sync schemas based on TENANT_APPS and SHARED_APPS settings"
-    option_list = SyncdbCommand.option_list + SyncCommon.option_list
+    option_list = SyncdbCommand.option_list + SyncCommonNoArgs.option_list
 
     def handle_noargs(self, **options):
         super(Command, self).handle_noargs(**options)

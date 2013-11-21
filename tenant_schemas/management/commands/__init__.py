@@ -123,8 +123,8 @@ class TenantWrappedCommand(InteractiveTenantOption, BaseCommand):
         self.command_instance.execute(*args, **options)
 
 
-class SyncCommon(NoArgsCommand):
-    option_list = (
+class SyncCommonMixin(object):
+    common_option_list = (
         make_option('--tenant', action='store_true', dest='tenant', default=False,
                     help='Tells Django to populate only tenant applications.'),
         make_option('--shared', action='store_true', dest='shared', default=False,
@@ -132,13 +132,15 @@ class SyncCommon(NoArgsCommand):
         make_option("-s", "--schema", dest="schema_name"),
     )
 
-    def handle_noargs(self, **options):
+    def _notice(self, output):
+        self.stdout.write(self.style.NOTICE(output))
+
+    def _setup_handle(self, **options):
         self.sync_tenant = options.get('tenant')
         self.sync_public = options.get('shared')
         self.schema_name = options.get('schema_name')
         self.installed_apps = settings.INSTALLED_APPS
         self.options = options
-
         if self.schema_name:
             if self.sync_public:
                 raise CommandError("schema should only be used with the --tenant switch.")
@@ -156,5 +158,17 @@ class SyncCommon(NoArgsCommand):
         if hasattr(settings, 'SHARED_APPS'):
             self.shared_apps = settings.SHARED_APPS
 
-    def _notice(self, output):
-        self.stdout.write(self.style.NOTICE(output))
+
+class SyncCommon(BaseCommand, SyncCommonMixin):
+    option_list = SyncCommonMixin.common_option_list
+
+    def handle(self, *args, **options):
+        self._setup_handle(**options)
+        self.args = args
+
+
+class SyncCommonNoArgs(NoArgsCommand, SyncCommonMixin):
+    option_list = SyncCommonMixin.common_option_list
+
+    def handle_noargs(self, **options):
+        self._setup_handle(**options)

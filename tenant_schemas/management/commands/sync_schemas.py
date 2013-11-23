@@ -51,7 +51,7 @@ class Command(SyncCommon):
 
     def _sync_tenant(self, tenant):
         self._notice("=== Running syncdb for schema: %s" % tenant.schema_name)
-        connection.set_tenant(tenant, include_public=False)
+        connection.set_tenant(tenant)
         SyncdbCommand().execute(**self.options)
 
     def sync_tenant_apps(self, schema_name=None):

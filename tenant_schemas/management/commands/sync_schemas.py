@@ -43,7 +43,7 @@ class Command(SyncCommon):
         verbosity = int(self.options.get('verbosity'))
         for app_model in get_apps():
             app_name = app_model.__name__.replace('.models', '')
-            if hasattr(app_model, 'models') and app_name in included_apps:
+            if app_name in included_apps:
                 for model in get_models(app_model, include_auto_created=True):
                     model._meta.managed = model._meta.was_managed
                     if model._meta.managed and verbosity >= 3:
@@ -51,7 +51,7 @@ class Command(SyncCommon):
 
     def _sync_tenant(self, tenant):
         self._notice("=== Running syncdb for schema: %s" % tenant.schema_name)
-        connection.set_tenant(tenant, include_public=False)
+        connection.set_tenant(tenant)
         SyncdbCommand().execute(**self.options)
 
     def sync_tenant_apps(self, schema_name=None):

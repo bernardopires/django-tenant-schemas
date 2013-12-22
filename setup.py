@@ -37,4 +37,5 @@ setup(
         'Django >= 1.2.0',
         'psycopg2',
     ],
+    zip_safe=False,
 )

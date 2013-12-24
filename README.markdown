@@ -1,8 +1,5 @@
 django-tenant-schemas
 ===============
-[![PyPi version](https://pypip.in/v/django-tenant-schemas/badge.png)](https://crate.io/packages/django-tenant-schemas/)
-[![PyPi downloads](https://pypip.in/d/django-tenant-schemas/badge.png)](https://crate.io/packages/django-tenant-schemas/)
-
 This application enables [django](https://www.djangoproject.com/) powered websites to have multiple tenants via [PostgreSQL schemas](http://www.postgresql.org/docs/9.1/static/ddl-schemas.html). A vital feature for every Software-as-a-Service website.
 
 Django provides currently no simple way to support multiple tenants using the same project instance, even when only the data is different. Because we don't want you running many copies of your project, you'll be able to have:
@@ -52,4 +49,56 @@ Everyone loves magic! You'll be able to have all this barely having to change yo
 
 Setup & Documentation
 -------------
-Can be found at [django-tenant-schemas.readthedocs.org](https://django-tenant-schemas.readthedocs.org/en/latest/).
+**This is just a short setup guide**, it is **strongly** recommended that you read the complete version at [django-tenant-schemas.readthedocs.org](https://django-tenant-schemas.readthedocs.org/en/latest/).
+
+Your `DATABASE_ENGINE` setting needs to be changed to
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'tenant_schemas.postgresql_backend',
+            # ..
+        }
+    }
+    
+Add the middleware `tenant_schemas.middleware.TenantMiddleware` to the top of `MIDDLEWARE_CLASSES`, so that each request can be set to use the correct schema.
+    
+    MIDDLEWARE_CLASSES = (
+        'tenant_schemas.middleware.TenantMiddleware',
+        #...
+    )
+    
+Add `tenant_schemas` to your `INSTALLED_APPS`.
+
+### Create your tenant model ###
+    from django.db import models
+    from tenant_schemas.models import TenantMixin
+    
+    class Client(TenantMixin):
+        name = models.CharField(max_length=100)
+        paid_until =  models.DateField()
+        on_trial = models.BooleanField()
+        created_on = models.DateField(auto_now_add=True)
+
+Define on `settings.py` which model is your tenant model. Assuming you created `Client` inside an app named `customers`, your `TENANT_MODEL` should look like this:
+
+    TENANT_MODEL = "customers.Client" # app.Model
+    
+Now run `sync_schemas`, this will sync your apps to the `public` schema.
+
+    python manage.py sync_schemas --shared
+    
+Create your tenants just like a normal django model. Calling `save` will automatically create and sync the schema.
+
+    from customers.models import Client
+
+    # create your public tenant
+    tenant = Client(domain_url='tenant.my-domain.com',
+                    schema_name='tenant1',
+                    name='My First Tenant',
+                    paid_until='2014-12-05',
+                    on_trial=True)
+    tenant.save()
+
+Any request made to `tenant.my-domain.com` will now automatically set your PostgreSQL's `search_path` to `tenant1` and `public`, making shared apps available too. This means that any call to the methods `filter`, `get`, `save`, `delete` or any other function involving a database connection will now be done at the tenant's schema, so you shouldn't need to change anything at your views.
+
+You're all set, but we have left key details outside of this short tutorial, such as creating the public tenant and configuring shared and tenant specific apps. Complete instructions can be found at [django-tenant-schemas.readthedocs.org](https://django-tenant-schemas.readthedocs.org/en/latest/).

@@ -12,7 +12,7 @@ def schema_context(schema_name):
         connection.set_schema(schema_name)
         yield
     finally:
-        connection.set_tenant(previous_tenant)
+        if previous_tenant: connection.set_tenant(previous_tenant)
 
 
 @contextmanager
@@ -22,7 +22,7 @@ def tenant_context(tenant):
         connection.set_tenant(tenant)
         yield
     finally:
-        connection.set_tenant(previous_tenant)
+        if previous_tenant: connection.set_tenant(previous_tenant)
 
 
 def get_tenant_model():

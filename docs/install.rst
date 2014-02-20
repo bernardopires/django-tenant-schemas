@@ -111,6 +111,22 @@ Now run ``sync_schemas``, this will create the shared apps on the ``public`` sch
     
 Lastly, you need to create a tenant whose schema is ``public`` and it's address is your domain URL. Please see the section on :doc:`use <use>`.
 
+You can also specify extra schemas that should be visible to all queries using
+``PG_EXTRA_SEARCH_PATHS`` setting.
+
+.. code-block:: python
+
+   PG_EXTRA_SEARCH_PATHS = ['extensions']
+
+``PG_EXTRA_SEARCH_PATHS`` should be a list of schemas you want to make visible
+globally.
+
+.. tip::
+
+   You can create a dedicated schema to hold postgresql extensions and make it
+   available globally. This helps avoid issues caused by hiding the public
+   schema from queries.
+
 South Migrations
 ================
 This app supports `South <http://south.aeracode.org/>`_  so if you haven't configured it yet and would like to:

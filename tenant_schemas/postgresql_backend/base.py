@@ -9,6 +9,8 @@ ORIGINAL_BACKEND = getattr(settings, 'ORIGINAL_BACKEND', 'django.db.backends.pos
 
 original_backend = import_module('.base', ORIGINAL_BACKEND)
 
+EXTRA_SEARCH_PATHS = getattr(settings, 'PG_EXTRA_SEARCH_PATHS', [])
+
 # from the postgresql doc
 SQL_IDENTIFIER_RE = re.compile('^[_a-zA-Z][_a-zA-Z0-9]{,62}$')
 
@@ -78,13 +80,17 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
                                        "to call set_schema() or set_tenant()?")
         _check_identifier(self.schema_name)
         public_schema_name = get_public_schema_name()
-        if self.schema_name == public_schema_name:
-            cursor.execute('SET search_path = %s' % public_schema_name)
-        elif self.include_public_schema:
-            cursor.execute('SET search_path = %s,%s', [self.schema_name, public_schema_name])
-        else:
-            cursor.execute('SET search_path = %s', [self.schema_name])
+        search_paths = []
 
+        if self.schema_name == public_schema_name:
+            search_paths = [public_schema_name]
+        elif self.include_public_schema:
+            search_paths = [self.schema_name, public_schema_name]
+        else:
+            search_paths = [self.schema_name]
+
+        search_paths.extend(EXTRA_SEARCH_PATHS)
+        cursor.execute('SET search_path = {}'.format(','.join(search_paths)))
         return cursor
 
 DatabaseError = original_backend.DatabaseError

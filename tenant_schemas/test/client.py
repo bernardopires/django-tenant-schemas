@@ -35,14 +35,14 @@ class TenantRequestFactory(RequestFactory):
         if 'content_type' not in extra:
             extra["content_type"] = "application/json"
 
-        return super(TenantRequestFactory, self).patch(path, data, **extra)
+        return super(TenantRequestFactory, self).put(path, data, **extra)
 
     def delete(self, path, data='', content_type='application/octet-stream',
             **extra):
         if 'HTTP_HOST' not in extra:
             extra['HTTP_HOST'] = self.tenant.domain_url
 
-        return super(TenantRequestFactory, self).patch(path, data, **extra)
+        return super(TenantRequestFactory, self).delete(path, data, **extra)
 
 class TenantClient(Client):
     tm = TenantMiddleware()
@@ -77,11 +77,11 @@ class TenantClient(Client):
         if 'content_type' not in extra:
             extra["content_type"] = "application/json"
 
-        return super(TenantClient, self).patch(path, data, **extra)
+        return super(TenantClient, self).put(path, data, **extra)
 
     def delete(self, path, data='', content_type='application/octet-stream',
             **extra):
         if 'HTTP_HOST' not in extra:
             extra['HTTP_HOST'] = self.tenant.domain_url
 
-        return super(TenantClient, self).patch(path, data, **extra)
+        return super(TenantClient, self).delete(path, data, **extra)

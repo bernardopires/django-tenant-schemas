@@ -14,13 +14,13 @@ class TenantRequestFactory(RequestFactory):
             extra['HTTP_HOST'] = self.tenant.domain_url
 
         return super(TenantRequestFactory, self).get(path, data, **extra)
-        
+
     def post(self, path, data={}, **extra):
         if 'HTTP_HOST' not in extra:
             extra['HTTP_HOST'] = self.tenant.domain_url
 
         return super(TenantRequestFactory, self).post(path, data, **extra)
-        
+
     def patch(self, path, data={}, **extra):
         if 'HTTP_HOST' not in extra:
             extra['HTTP_HOST'] = self.tenant.domain_url
@@ -38,11 +38,12 @@ class TenantRequestFactory(RequestFactory):
         return super(TenantRequestFactory, self).put(path, data, **extra)
 
     def delete(self, path, data='', content_type='application/octet-stream',
-            **extra):
+               **extra):
         if 'HTTP_HOST' not in extra:
             extra['HTTP_HOST'] = self.tenant.domain_url
 
         return super(TenantRequestFactory, self).delete(path, data, **extra)
+
 
 class TenantClient(Client):
     tm = TenantMiddleware()
@@ -54,13 +55,13 @@ class TenantClient(Client):
     def get(self, path, data={}, **extra):
         if 'HTTP_HOST' not in extra:
             extra['HTTP_HOST'] = self.tenant.domain_url
-            
+
         return super(TenantClient, self).get(path, data, **extra)
-            
+
     def post(self, path, data={}, **extra):
         if 'HTTP_HOST' not in extra:
             extra['HTTP_HOST'] = self.tenant.domain_url
-            
+
         return super(TenantClient, self).post(path, data, **extra)
 
     def patch(self, path, data={}, **extra):
@@ -80,7 +81,7 @@ class TenantClient(Client):
         return super(TenantClient, self).put(path, data, **extra)
 
     def delete(self, path, data='', content_type='application/octet-stream',
-            **extra):
+               **extra):
         if 'HTTP_HOST' not in extra:
             extra['HTTP_HOST'] = self.tenant.domain_url
 

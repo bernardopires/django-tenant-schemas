@@ -24,6 +24,7 @@ class TenantRequestFactory(RequestFactory):
     def patch(self, path, data={}, **extra):
         if 'HTTP_HOST' not in extra:
             extra['HTTP_HOST'] = self.tenant.domain_url
+        extra["content_type"] = "application/json"
 
         return super(TenantRequestFactory, self).patch(path, data, **extra)
 
@@ -49,5 +50,6 @@ class TenantClient(Client):
     def patch(self, path, data={}, **extra):
         if 'HTTP_HOST' not in extra:
             extra['HTTP_HOST'] = self.tenant.domain_url
+        extra["content_type"] = "application/json"
 
         return super(TenantClient, self).patch(path, data, **extra)

@@ -36,8 +36,11 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         but it does not actually modify the db connection.
         """
         self.tenant = tenant
-        self.schema_name = tenant.schema_name
-        self.include_public_schema = include_public
+        if tenant is None:
+            self.schema_name = get_public_schema_name()
+        else:
+            self.schema_name = tenant.schema_name
+            self.include_public_schema = include_public
 
     def set_schema(self, schema_name, include_public=True):
         """

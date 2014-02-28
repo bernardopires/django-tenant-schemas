@@ -7,7 +7,7 @@ from django.core import mail
 
 @contextmanager
 def schema_context(schema_name):
-    previous_tenant = connection.get_tenant()
+    previous_tenant = connection.tenant
     try:
         connection.set_schema(schema_name)
         yield
@@ -17,7 +17,7 @@ def schema_context(schema_name):
 
 @contextmanager
 def tenant_context(tenant):
-    previous_tenant = connection.get_tenant()
+    previous_tenant = connection.tenant
     try:
         connection.set_tenant(tenant)
         yield

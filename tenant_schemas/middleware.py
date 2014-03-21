@@ -12,14 +12,8 @@ class TenantMiddleware(object):
     various ways which is better than corrupting or revealing data...
     """
     def process_request(self, request):
-        """
-        Resets to public schema
-
-        Some nasty weird bugs happened at the production environment without this call.
-        connection.pg_thread.schema_name would already be set and then terrible errors
-        would occur. Any idea why? My theory is django implements connection as some sort
-        of threading local variable.
-        """
+        # connection needs first to be at the public schema, as this is where the
+        # tenant informations are saved
         connection.set_schema_to_public()
         hostname_without_port = remove_www_and_dev(request.get_host().split(':')[0])
 

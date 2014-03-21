@@ -44,7 +44,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         Main API method to current database schema,
         but it does not actually modify the db connection.
         """
-        self.tenant = None
+        self.tenant = FakeTenant(schema_name=schema_name)
         self.schema_name = schema_name
         self.include_public_schema = include_public
 
@@ -52,7 +52,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         """
         Instructs to stay in the common 'public' schema.
         """
-        self.tenant = None
+        self.tenant = FakeTenant(schema_name=get_public_schema_name())
         self.schema_name = get_public_schema_name()
 
     def get_schema(self):
@@ -62,7 +62,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
 
     def get_tenant(self):
         warnings.warn("connection.get_tenant() is deprecated, use connection.tenant instead.",
-              category=DeprecationWarning)
+                      category=DeprecationWarning)
         return self.tenant
 
     def _cursor(self):
@@ -76,7 +76,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         # search schemata from left to right when looking for the object
         # (table, index, sequence, etc.).
         if not self.schema_name:
-            raise ImproperlyConfigured("Database schema not set. Did your forget "
+            raise ImproperlyConfigured("Database schema not set. Did you forget "
                                        "to call set_schema() or set_tenant()?")
         _check_identifier(self.schema_name)
         public_schema_name = get_public_schema_name()
@@ -92,6 +92,15 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         search_paths.extend(EXTRA_SEARCH_PATHS)
         cursor.execute('SET search_path = {}'.format(','.join(search_paths)))
         return cursor
+
+
+class FakeTenant:
+    """
+    We can't import any db model in a backend (apparently?), so this class is used
+    for wrapping schema names in a tenant-like structure.
+    """
+    def __init__(self, schema_name):
+        self.schema_name = schema_name
 
 DatabaseError = original_backend.DatabaseError
 IntegrityError = original_backend.IntegrityError

@@ -4,6 +4,7 @@ from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from tenant_schemas.utils import get_public_schema_name
+from tenant_schemas.utils import get_tenant_model
 
 ORIGINAL_BACKEND = getattr(settings, 'ORIGINAL_BACKEND', 'django.db.backends.postgresql_psycopg2')
 
@@ -44,7 +45,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         Main API method to current database schema,
         but it does not actually modify the db connection.
         """
-        self.tenant = None
+        self.tenant = get_tenant_model()(schema_name=schema_name)
         self.schema_name = schema_name
         self.include_public_schema = include_public
 
@@ -52,6 +53,8 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         """
         Instructs to stay in the common 'public' schema.
         """
+        # Can't get tenant model here because this is called
+        # from the __init__
         self.tenant = None
         self.schema_name = get_public_schema_name()
 

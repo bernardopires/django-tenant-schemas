@@ -52,6 +52,7 @@ Contents
    install
    use
    examples
+   templates
    test
    involved
 

@@ -179,12 +179,11 @@ Tenant View-Routing
     
     When requesting the view ``/login/`` from the public tenant (your main website), it will search for this path on ``PUBLIC_SCHEMA_URLCONF`` instead of ``ROOT_URLCONF``. 
 
-Different WSGI for the main website
------------------------------------
-If you have a more complex setup in your project, using the ``PUBLIC_SCHEMA_URLCONF`` can be difficult.
-For example, `Django CMS <https://www.django-cms.org/>`_ want to take some control over the default Django url routing, and uses different middlewares, which the tenant websites don't need.
-Another example is when you put apps on the main website, which needs different settings than tenant websites.
-In these cases it might be much simpler if you just run the main website `example.com` as a separate wsgi application. For example, creating a ``wsgi_main_website.py`` next to the ``wsgi.py`` like this
+Separate projects for the main website and tenants (optional)
+-------------------------------------------------------------
+In some cases using the ``PUBLIC_SCHEMA_URLCONF`` can be difficult. For example, `Django CMS <https://www.django-cms.org/>`_ takes some control over the default Django URL routing by using middlewares that do not play well with the tenants. Another example would be when some apps on the main website need different settings than the tenants website. In these cases it is much simpler if you just run the main website `example.com` as a separate application. 
+
+If your projects are ran using a WSGI configuration, this can be done by creating a filed called ``wsgi_main_website.py`` in the same folder as ``wsgi.py``.
 
 .. code-block:: python
 
@@ -195,12 +194,12 @@ In these cases it might be much simpler if you just run the main website `exampl
     from django.core.wsgi import get_wsgi_application
     application = get_wsgi_application()
 
-If you put this in the same Django project, you can make a new ``settings_public.py`` which points to a different ``urls_public.py``. This has the advantage that you can use the same apps than you use for tenant websites.
+If you put this in the same Django project, you can make a new ``settings_public.py`` which points to a different ``urls_public.py``. This has the advantage that you can use the same apps that you use for your tenant websites.
 
-Or you can do a totally separate project for the main website, but be aware that if you specify a PostgreSQL database in the ``DATABASES`` setting in ``settings.py``, Django will use it's default ``public`` schema as `described in the PostgreSQL documentation <http://www.postgresql.org/docs/9.2/static/ddl-schemas.html#DDL-SCHEMAS-PUBLIC>`_.
+Or you can create a completely separate project for the main website, but be aware that if you specify a PostgreSQL database in the ``DATABASES`` setting in ``settings.py``, Django will use its default ``public`` schema as `described in the PostgreSQL documentation <http://www.postgresql.org/docs/9.2/static/ddl-schemas.html#DDL-SCHEMAS-PUBLIC>`_.
 
-Configuring your Apache Server
-==============================
+Configuring your Apache Server (optional)
+=========================================
 Here's how you can configure your Apache server to route all subdomains to your django project so you don't have to setup any subdomains manually.
 
 .. code-block:: apacheconf

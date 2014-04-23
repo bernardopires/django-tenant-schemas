@@ -74,18 +74,24 @@ class TenantMixin(models.Model):
         transaction.commit_unless_managed()
 
         if sync_schema:
+            # default is faking all migrations and syncing directly to the current models state
+            fake_all_migrations = getattr(settings, 'TENANT_CREATION_FAKES_MIGRATIONS', True)
+
             call_command('sync_schemas',
                          schema_name=self.schema_name,
                          tenant=True,
                          public=False,
                          interactive=False,  # don't ask to create an admin user
-                         migrate_all=True,  # migrate all apps directly to last version
+                         migrate_all=not fake_all_migrations,
                          verbosity=verbosity,
                          )
 
-            # fake all migrations
+            # run/fake all migrations
             if 'south' in settings.INSTALLED_APPS and not django_is_in_test_mode():
-                call_command('migrate_schemas', fake=True, schema_name=self.schema_name, verbosity=verbosity)
+                call_command('migrate_schemas',
+                             fake=fake_all_migrations,
+                             schema_name=self.schema_name,
+                             verbosity=verbosity)
 
         connection.set_schema_to_public()
         return True

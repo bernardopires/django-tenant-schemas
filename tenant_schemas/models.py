@@ -82,7 +82,7 @@ class TenantMixin(models.Model):
                          tenant=True,
                          public=False,
                          interactive=False,  # don't ask to create an admin user
-                         migrate_all=not fake_all_migrations,
+                         migrate_all=fake_all_migrations,
                          verbosity=verbosity,
                          )
 

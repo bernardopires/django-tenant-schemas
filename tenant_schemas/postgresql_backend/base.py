@@ -38,6 +38,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         self.tenant = tenant
         self.schema_name = tenant.schema_name
         self.include_public_schema = include_public
+        self.set_settings_schema(self.schema_name)
 
     def set_schema(self, schema_name, include_public=True):
         """
@@ -47,6 +48,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         self.tenant = FakeTenant(schema_name=schema_name)
         self.schema_name = schema_name
         self.include_public_schema = include_public
+        self.set_settings_schema(schema_name)
 
     def set_schema_to_public(self):
         """
@@ -54,6 +56,10 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         """
         self.tenant = FakeTenant(schema_name=get_public_schema_name())
         self.schema_name = get_public_schema_name()
+        self.set_settings_schema(self.schema_name)
+        
+    def set_settings_schema(self, schema_name):
+        self.settings_dict['SCHEMA'] = schema_name
 
     def get_schema(self):
         warnings.warn("connection.get_schema() is deprecated, use connection.schema_name instead.",

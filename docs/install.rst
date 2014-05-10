@@ -80,6 +80,7 @@ By default all apps will be synced to your ``public`` schema and to your tenant 
     
     TENANT_APPS = (
         # The following Django contrib apps must be in TENANT_APPS
+        'django.contrib.auth', 
         'django.contrib.contenttypes',
 
         # your tenant-specific apps

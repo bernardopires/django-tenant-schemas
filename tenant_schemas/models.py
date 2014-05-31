@@ -18,7 +18,7 @@ class TenantMixin(models.Model):
                                # created upon save.
 
     domain_url = models.CharField(max_length=128, unique=True)
-    schema_name = models.CharField(max_length=63)
+    schema_name = models.CharField(max_length=63, unique=True)
 
     class Meta:
         abstract = True

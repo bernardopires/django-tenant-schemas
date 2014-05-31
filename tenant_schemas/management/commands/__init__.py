@@ -48,10 +48,10 @@ class BaseTenantCommand(BaseCommand):
         verbosity = int(options.get('verbosity'))
 
         if verbosity >= 1:
-            print
-            print self.style.NOTICE("=== Switching to schema '") \
+            print()
+            print(self.style.NOTICE("=== Switching to schema '") \
                 + self.style.SQL_TABLE(tenant.schema_name)\
-                + self.style.NOTICE("' then calling %s:" % command_name)
+                + self.style.NOTICE("' then calling %s:" % command_name))
 
         connection.set_tenant(tenant)
 
@@ -94,7 +94,7 @@ https://django-tenant-schemas.readthedocs.org/en/latest/use.html#creating-a-tena
             while True:
                 tenant_schema = input("Enter Tenant Schema ('?' to list schemas): ")
                 if tenant_schema == '?':
-                    print '\n'.join(["%s - %s" % (t.schema_name, t.domain_url,) for t in all_tenants])
+                    print('\n'.join(["%s - %s" % (t.schema_name, t.domain_url,) for t in all_tenants]))
                 else:
                     break
 

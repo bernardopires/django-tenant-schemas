@@ -96,7 +96,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
             search_paths = [self.schema_name]
 
         search_paths.extend(EXTRA_SEARCH_PATHS)
-        cursor.execute('SET search_path = {}'.format(','.join(search_paths)))
+        cursor.execute('SET search_path = {0}'.format(','.join(search_paths)))
         return cursor
 
 

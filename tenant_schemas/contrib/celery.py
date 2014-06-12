@@ -54,13 +54,13 @@ except ImportError:
 
 from celery.app.task import Task
 from celery.signals import task_prerun
+from django.db import connection
+
+from ..utils import get_public_schema_name, get_tenant_model
 
 
 def switch_schema(kwargs, **kw):
     """ Switches schema of the task, before it has been run. """
-    from django.db import connection
-    from tenant_schemas.utils import get_public_schema_name, get_tenant_model
-
     # Pop it from the kwargs since tasks don't except the additional kwarg.
     # This change is transparent to the system.
     schema = kwargs.pop('_schema_name', get_public_schema_name())
@@ -76,8 +76,6 @@ class TenantTask(Task):
         keywords so that the worker can use the same schema.
     """
     def _add_current_schema(self, kwds):
-        from django.db import connection
-
         kwds.setdefault('_schema_name', connection.schema_name)
 
     def apply_async(self, args=(), kwargs={}, *arg, **kw):

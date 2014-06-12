@@ -15,7 +15,8 @@ setup(
     author='Bernardo Pires Carneiro',
     author_email='carneiro.be@gmail.com',
     packages=[
-    	'tenant_schemas',
+        'tenant_schemas',
+    	'tenant_schemas.contrib',
     	'tenant_schemas.postgresql_backend',
     	'tenant_schemas.management',
     	'tenant_schemas.management.commands',
@@ -28,7 +29,7 @@ setup(
     license='MIT',
     description='Tenant support for Django using PostgreSQL schemas.',
     long_description=open('README.markdown').read() if exists("README.markdown") else "",
-    classifiers=[	
+    classifiers=[
 		'License :: OSI Approved :: MIT License',
 		'Framework :: Django',
 		'Programming Language :: Python',

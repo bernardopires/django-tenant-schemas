@@ -19,17 +19,25 @@ Usage:
     * Replace your @task decorator with @app.task
 
         ::
+            from django.db import connection
             from myproject.celery import app
 
             @app.task
             def my_task():
-                print 1 + 1 == 2
+                print connection.schema_name
 
     * Run celery worker (`myproject.celery` is where you've defined the `app`
       variable)
 
         ::
             $ celery worker -A myproject.celery
+
+    * Post registered task. The schema name will get automatically added to the
+      task's arguments.
+
+        ::
+            from myproject.tasks import my_task
+            my_task.delay()
 
 The `TenantTask` class transparently inserts current connection's schema into
 the task's kwargs. The schema name is then popped from the task's kwargs in

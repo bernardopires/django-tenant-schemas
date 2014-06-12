@@ -11,13 +11,19 @@ class TenantMiddleware(object):
     Selects the proper database schema using the request host. Can fail in
     various ways which is better than corrupting or revealing data...
     """
+    def hostname_from_request(self, request):
+        """ Extracts hostname from request. Used for custom requests filtering.
+            By default removes the request's port and common prefixes.
+        """
+        return remove_www_and_dev(request.get_host().split(':')[0])
+
     def process_request(self, request):
         # connection needs first to be at the public schema, as this is where the
         # tenant informations are saved
         connection.set_schema_to_public()
-        hostname_without_port = remove_www_and_dev(request.get_host().split(':')[0])
+        hostname = self.hostname_from_request(request)
 
-        request.tenant = get_object_or_404(get_tenant_model(), domain_url=hostname_without_port)
+        request.tenant = get_object_or_404(get_tenant_model(), domain_url=hostname)
         connection.set_tenant(request.tenant)
 
         # content type can no longer be cached as public and tenant schemas have different

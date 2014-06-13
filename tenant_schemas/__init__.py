@@ -4,8 +4,8 @@ from tenant_schemas.utils import get_public_schema_name, get_tenant_model
 
 
 recommended_config = """
-Warning: You should put 'tenants' at the end of INSTALLED_APPS like this:
-INSTALLED_APPS = TENANT_APPS + SHARED_APPS + ('tenants',)
+Warning: You should put 'tenant_schemas' at the end of INSTALLED_APPS like this:
+INSTALLED_APPS = TENANT_APPS + SHARED_APPS + ('tenant_schemas',)
 This is neccesary to overwrite built-in django management commands with their schema-aware implementations.
 """
 # Make a bunch of tests for configuration recommendations
@@ -16,10 +16,7 @@ if not hasattr(settings, 'TENANT_APPS'):
 if not settings.TENANT_APPS:
     raise ImproperlyConfigured("TENANT_APPS is empty. Maybe you don't need this app?")
 
-if 'tenants' in settings.SHARED_APPS + settings.TENANT_APPS:
-    print recommended_config
-
-if not (settings.TENANT_APPS + settings.SHARED_APPS + ('tenants', ) == settings.INSTALLED_APPS):
+if settings.INSTALLED_APPS[-1] != 'tenant_schemas':
     print recommended_config
 
 if hasattr(settings, 'PG_EXTRA_SEARCH_PATHS'):

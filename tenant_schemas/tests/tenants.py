@@ -2,8 +2,8 @@ from django.conf import settings
 from django.db import connection
 from django.test.testcases import TransactionTestCase
 from tenant_schemas.tests.models import Tenant, NonAutoSyncTenant, DummyModel
-from tenant_schemas.utils import (tenant_context, schema_exists,
-                                  get_public_schema_name)
+from tenant_schemas.utils import (tenant_context, schema_context, 
+                                  schema_exists, get_public_schema_name)
 
 
 class TenantTestCase(TransactionTestCase):
@@ -125,3 +125,15 @@ class TenantTestCase(TransactionTestCase):
         # switch back to tenant2's path
         with tenant_context(tenant2):
             self.assertEqual(DummyModel.objects.count(), dummies_tenant2_count)
+
+    def test_switching_tenant_without_previous_tenant(self):
+        tenant = Tenant(domain_url='something.test.com', schema_name='test')
+        tenant.save()
+
+        connection.tenant = None
+        with tenant_context(tenant):
+            DummyModel(name="No exception please").save()
+
+        connection.tenant = None
+        with schema_context(tenant.schema_name):
+            DummyModel(name="Survived it!").save()

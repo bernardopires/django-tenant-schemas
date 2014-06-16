@@ -7,7 +7,7 @@ If you're using South, don't forget to set ``SOUTH_TESTS_MIGRATE = False``.
 
 .. code-block:: bash
 
-    ./manage.py test tenant_schemas
+    ./manage.py test tenant_schemas.tests
 
 Updating your app's tests to work with tenant-schemas
 -----------------------------------------------------

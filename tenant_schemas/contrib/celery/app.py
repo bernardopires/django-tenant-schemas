@@ -4,7 +4,7 @@ Usage:
     * Define a celery app using given `CeleryApp` class.
 
         ::
-            from tenant_schemas.contrib.celery import CeleryApp
+            from tenant_schemas.contrib.celery.app import CeleryApp
 
             os.environ.setdefault('DJANGO_SETTINGS_MODULE', '<your project settings>')
 
@@ -52,18 +52,21 @@ try:
 except ImportError:
     raise ImportError("celery is required to use tenant_schemas.contrib.celery")
 
-from celery.app.task import Task
-from celery.signals import task_prerun
 from django.db import connection
 
-from ..utils import get_public_schema_name, get_tenant_model
+from celery.signals import task_prerun
 
 
 def switch_schema(kwargs, **kw):
     """ Switches schema of the task, before it has been run. """
+    # Lazily load needed functions, as they import django model functions which
+    # in turn load modules that need settings to be loaded and we can't
+    # guarantee this module was loaded when the settings were ready.
+    from tenant_schemas.utils import get_public_schema_name, get_tenant_model
     # Pop it from the kwargs since tasks don't except the additional kwarg.
     # This change is transparent to the system.
     schema = kwargs.pop('_schema_name', get_public_schema_name())
+    connection.set_schema_to_public()
     tenant = get_tenant_model().objects.get(schema_name=schema)
     connection.set_tenant(tenant, include_public=True)
 
@@ -71,24 +74,8 @@ task_prerun.connect(switch_schema, sender=None,
                     dispatch_uid='tenant_schemas_switch_schema')
 
 
-class TenantTask(Task):
-    """ Custom Task class that injects db schema currently used to the task's
-        keywords so that the worker can use the same schema.
-    """
-    def _add_current_schema(self, kwds):
-        kwds.setdefault('_schema_name', connection.schema_name)
-
-    def apply_async(self, args=(), kwargs={}, *arg, **kw):
-        self._add_current_schema(kwargs)
-        return super(TenantTask, self).apply_async(args, kwargs, *arg, **kw)
-
-    def apply(self, args, kwargs, *arg, **kw):
-        self._add_current_schema(kwargs)
-        return super(TenantTask, self).apply(args, kwargs, *arg, **kw)
-
-
 class CeleryApp(Celery):
     def create_task_cls(self):
-        return self.subclass_with_self('tenant_schemas.contrib.celery:TenantTask',
+        return self.subclass_with_self('tenant_schemas.contrib.celery.task:TenantTask',
                                         abstract=True, name='TenantTask',
                                         attribute='_app')

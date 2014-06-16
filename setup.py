@@ -16,7 +16,8 @@ setup(
     author_email='carneiro.be@gmail.com',
     packages=[
         'tenant_schemas',
-    	'tenant_schemas.contrib',
+        'tenant_schemas.contrib',
+    	'tenant_schemas.contrib.celery',
     	'tenant_schemas.postgresql_backend',
     	'tenant_schemas.management',
     	'tenant_schemas.management.commands',

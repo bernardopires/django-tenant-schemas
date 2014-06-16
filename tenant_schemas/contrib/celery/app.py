@@ -4,9 +4,12 @@ Usage:
     * Define a celery app using given `CeleryApp` class.
 
         ::
-            from tenant_schemas.contrib.celery.app import CeleryApp
+            import os
+            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
 
-            os.environ.setdefault('DJANGO_SETTINGS_MODULE', '<your project settings>')
+            from django.conf import settings
+
+            from tenant_schemas.contrib.celery.app import CeleryApp
 
             app = CeleryApp()
             app.config_from_object('django.conf:settings')

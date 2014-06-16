@@ -1,49 +1,13 @@
-from django.conf import settings
 from django.db import connection
-from django.test.testcases import TransactionTestCase
+
 from tenant_schemas.tests.models import Tenant, NonAutoSyncTenant, DummyModel
-from tenant_schemas.utils import (tenant_context, schema_context, 
-                                  schema_exists, get_public_schema_name)
+from tenant_schemas.tests.testcases import BaseTestCase
+from tenant_schemas.utils import tenant_context, schema_context, schema_exists
 
 
-class TenantTestCase(TransactionTestCase):
-    @classmethod
-    def setUpClass(cls):
-        settings.TENANT_APPS = ('tenant_schemas',
-                                'django.contrib.contenttypes',
-                                'django.contrib.auth', )
-
-    def setUp(self):
-        # settings needs some patching
-        settings.TENANT_MODEL = 'tenant_schemas.Tenant'
-
-        # add the public tenant
-        self.public_tenant_domain = 'test.com'
-        self.public_tenant = Tenant(domain_url=self.public_tenant_domain,
-                                    schema_name='public')
-        self.public_tenant.save()
-
-        connection.set_schema_to_public()
-
+class TenantTestCase(BaseTestCase):
     def tearDown(self):
-        """
-        Delete all tenant schemas. Tenant schema are not deleted
-        automatically by django.
-        """
-        connection.set_schema_to_public()
-        do_not_delete = [get_public_schema_name(), 'information_schema']
-        cursor = connection.cursor()
-
-        # Use information_schema.schemata instead of pg_catalog.pg_namespace in
-        # utils.schema_exists, so that we only "see" schemas that we own
-        cursor.execute('SELECT schema_name FROM information_schema.schemata')
-
-        for row in cursor.fetchall():
-            if not row[0].startswith('pg_') and row[0] not in do_not_delete:
-                print("Deleting schema %s" % row[0])
-                cursor.execute('DROP SCHEMA %s CASCADE' % row[0])
-
-        Tenant.objects.all().delete()
+        super(TenantTestCase, self).tearDown()
         NonAutoSyncTenant.objects.all().delete()
 
     def test_tenant_schema_is_created(self):

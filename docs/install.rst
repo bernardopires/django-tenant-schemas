@@ -266,3 +266,9 @@ An example celery app config would look like this (assuming ``celery>=3.1.12``):
     @app.task
     def test_task():
         print connection.schema_name
+
+Now, you can run your celery worker:
+
+.. code-block:: bash
+
+    $ celery worker -A your_main_app

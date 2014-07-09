@@ -19,6 +19,7 @@ class TenantMixin(models.Model):
 
     domain_url = models.CharField(max_length=128, unique=True)
     schema_name = models.CharField(max_length=63, unique=True)
+    additional_schemas = models.CharField(max_length=512, blank=True) # e.g. 'group1,salesinfo,group2'
 
     class Meta:
         abstract = True

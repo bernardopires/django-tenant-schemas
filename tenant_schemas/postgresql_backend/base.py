@@ -37,6 +37,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         """
         self.tenant = tenant
         self.schema_name = tenant.schema_name
+        self.additional_schemas = self.tenant.additional_schemas
         self.include_public_schema = include_public
         self.set_settings_schema(self.schema_name)
 
@@ -47,6 +48,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         """
         self.tenant = FakeTenant(schema_name=schema_name)
         self.schema_name = schema_name
+        self.additional_schemas = self.tenant.additional_schemas
         self.include_public_schema = include_public
         self.set_settings_schema(schema_name)
 
@@ -56,6 +58,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         """
         self.tenant = FakeTenant(schema_name=get_public_schema_name())
         self.schema_name = get_public_schema_name()
+        self.additional_schemas = self.tenant.additional_schemas
         self.set_settings_schema(self.schema_name)
         
     def set_settings_schema(self, schema_name):
@@ -96,7 +99,9 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
             search_paths = [self.schema_name]
 
         search_paths.extend(EXTRA_SEARCH_PATHS)
-        cursor.execute('SET search_path = {0}'.format(','.join(search_paths)))
+        search_paths.extend(self.additional_schemas.split(','))
+        cursor.execute('SET search_path = {0}'.format(','.join(search_paths)).rstrip(','))
+        # ^when additional_schemas=='' the extend(additional_schemas.split(',')) will add an comma at the end of the string, which PostgreSQL doesn't like
         return cursor
 
 
@@ -107,6 +112,7 @@ class FakeTenant:
     """
     def __init__(self, schema_name):
         self.schema_name = schema_name
+        self.additional_schemas = ''
 
 DatabaseError = original_backend.DatabaseError
 IntegrityError = original_backend.IntegrityError

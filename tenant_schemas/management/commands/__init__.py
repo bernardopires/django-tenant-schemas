@@ -9,6 +9,37 @@ except ImportError:
     input = raw_input
 from tenant_schemas.utils import get_tenant_model, get_public_schema_name
 
+# There is a bug in newest south 0.8.4 but they are no longer fixing it
+# it's causing AppCache not working correctly after command is run
+# second time in one process
+try:
+    from south.migration.migrators import LoadInitialDataMigrator
+
+    def post_1_6(self, target, db):
+        import django.db.models.loading
+        ## build a new 'AppCache' object with just the app we care about.
+        old_cache = django.db.models.loading.cache
+        new_cache = django.db.models.loading.AppCache()
+        old_get_apps = new_cache.get_apps  # this was added
+        new_cache.get_apps = lambda: [new_cache.get_app(target.app_label())]
+
+        ## monkeypatch
+        django.db.models.loading.cache = new_cache
+        try:
+            call_command('loaddata', 'initial_data', verbosity=self.verbosity, database=db)
+        finally:
+            ## unmonkeypatch
+            new_cache.get_apps = old_get_apps  # this was added
+            django.db.models.loading.cache = old_cache
+
+    post_1_6._fixed = True
+
+    if hasattr(LoadInitialDataMigrator, 'post_1_6') and \
+            not hasattr(LoadInitialDataMigrator.post_1_6, '_fixed'):
+        LoadInitialDataMigrator.post_1_6 = post_1_6
+except ImportError:
+    pass  # do nothing it's only for south in proper version
+
 
 class BaseTenantCommand(BaseCommand):
     """

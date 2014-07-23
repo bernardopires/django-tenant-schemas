@@ -39,6 +39,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         self.schema_name = tenant.schema_name
         self.include_public_schema = include_public
         self.set_settings_schema(self.schema_name)
+        self._set_search_path()
 
     def set_schema(self, schema_name, include_public=True):
         """
@@ -49,6 +50,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         self.schema_name = schema_name
         self.include_public_schema = include_public
         self.set_settings_schema(schema_name)
+        self._set_search_path()
 
     def set_schema_to_public(self):
         """
@@ -57,6 +59,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         self.tenant = FakeTenant(schema_name=get_public_schema_name())
         self.schema_name = get_public_schema_name()
         self.set_settings_schema(self.schema_name)
+        self._set_search_path()
         
     def set_settings_schema(self, schema_name):
         self.settings_dict['SCHEMA'] = schema_name
@@ -71,19 +74,12 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
                       category=DeprecationWarning)
         return self.tenant
 
-    def _cursor(self):
-        """
-        Here it happens. We hope every Django db operation using PostgreSQL
-        must go through this to get the cursor handle. We change the path.
-        """
-        cursor = super(DatabaseWrapper, self)._cursor()
-
+    def _set_search_path(self):
         # Actual search_path modification for the cursor. Database will
         # search schemata from left to right when looking for the object
         # (table, index, sequence, etc.).
         if not self.schema_name:
-            raise ImproperlyConfigured("Database schema not set. Did you forget "
-                                       "to call set_schema() or set_tenant()?")
+            raise ImproperlyConfigured("Illegal tenant; database schema not set.")
         _check_identifier(self.schema_name)
         public_schema_name = get_public_schema_name()
         search_paths = []
@@ -96,8 +92,8 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
             search_paths = [self.schema_name]
 
         search_paths.extend(EXTRA_SEARCH_PATHS)
+        cursor = self._cursor()
         cursor.execute('SET search_path = {0}'.format(','.join(search_paths)))
-        return cursor
 
 
 class FakeTenant:

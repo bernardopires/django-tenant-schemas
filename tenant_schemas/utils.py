@@ -39,7 +39,7 @@ def get_public_schema_name():
     return getattr(settings, 'PUBLIC_SCHEMA_NAME', 'public')
 
 def get_paranoid():
-    return getattr(settings, 'TENANT_SCHEMAS_PARANOID', True)
+    return getattr(settings, 'TENANT_PARANOID', True)
 
 
 def clean_tenant_url(url_string):

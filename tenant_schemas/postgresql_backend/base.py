@@ -3,7 +3,7 @@ import warnings
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
-from tenant_schemas.utils import get_public_schema_name
+from tenant_schemas.utils import get_public_schema_name, get_paranoid
 
 ORIGINAL_BACKEND = getattr(settings, 'ORIGINAL_BACKEND', 'django.db.backends.postgresql_psycopg2')
 
@@ -82,7 +82,9 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         """
         cursor = super(DatabaseWrapper, self)._cursor()
 
-        if not self.search_path_set:
+        #optionally limit the number of executions - under load, the execution
+        #of `set search_path` be quite time consuming
+        if not self.search_path_set or get_paranoid():
             # Actual search_path modification for the cursor. Database will
             # search schemata from left to right when looking for the object
             # (table, index, sequence, etc.).

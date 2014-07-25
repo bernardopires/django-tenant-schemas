@@ -82,8 +82,8 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         """
         cursor = super(DatabaseWrapper, self)._cursor()
 
-        #optionally limit the number of executions - under load, the execution
-        #of `set search_path` be quite time consuming
+        # optionally limit the number of executions - under load, the execution
+        # of `set search_path` can be quite time consuming
         if not self.search_path_set or get_paranoid():
             # Actual search_path modification for the cursor. Database will
             # search schemata from left to right when looking for the object

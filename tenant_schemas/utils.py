@@ -3,7 +3,7 @@ from django.conf import settings
 from django.db import connection
 from django.db.models.loading import get_model
 from django.core import mail
-
+from django.core.exceptions import ImproperlyConfigured
 
 @contextmanager
 def schema_context(schema_name):
@@ -34,6 +34,24 @@ def tenant_context(tenant):
 def get_tenant_model():
     return get_model(*settings.TENANT_MODEL.split("."))
 
+def get_tenant_adapter():
+    adapter = getattr(settings, 'TENANT_ADAPTER',
+            'tenant_schemas.adapters.ModelTenantAdapter')
+    try:
+        module, name = adapter.rsplit('.', 1)
+    except ValueError:
+        raise ImproperlyConfigured('TENANT_ADAPTER must contain at least a dot: '
+                '%r' % adapter)
+    try:
+        module = __import__(module)
+    except ImportError, e:
+        raise ImproperlyConfigured('module "%s" in TENANT_ADAPTER does not '
+                'exist: %s' % (module, e))
+    try:
+        return getattr(module, name)
+    except AttributeError, e:
+        raise ImproperlyConfigured('module "%s" does not define a "%s" '
+                'TENANT_ADAPTER class: %s' % (module, name, e))
 
 def get_public_schema_name():
     return getattr(settings, 'PUBLIC_SCHEMA_NAME', 'public')

@@ -96,7 +96,7 @@ https://django-tenant-schemas.readthedocs.org/en/latest/use.html#creating-a-tena
             while True:
                 tenant_schema = input("Enter Tenant Schema ('?' to list schemas): ")
                 if tenant_schema == '?':
-                    print('\n'.join(["%s" % t.schema_name for t in all_tenants]))
+                    print('\n'.join(["%s" % t for t in all_tenants]))
                 else:
                     break
 

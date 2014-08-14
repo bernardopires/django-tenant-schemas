@@ -17,7 +17,9 @@ class TenantAdapterIface(object):
          tenant by name so there is get_tenant_by_name() method.
 
        The only interface for the returned tenant is that it must have a
-       property named 'schema_name'.
+       property named 'schema_name' and should define a __str__ method
+       which at least show the schema name. The default TenantMixin returns
+       "<schema_name> - <domain_url>".
     """
     __metaclass__ = ABCMeta
 

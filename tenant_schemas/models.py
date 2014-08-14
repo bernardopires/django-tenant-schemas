@@ -95,3 +95,6 @@ class TenantMixin(models.Model):
 
         connection.set_schema_to_public()
         return True
+
+    def __unicode__(self):
+        return u'%s - %s' % (self.schema_name, self.domain_url)

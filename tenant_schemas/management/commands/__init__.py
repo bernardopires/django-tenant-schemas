@@ -7,7 +7,7 @@ try:
     from django.utils.six.moves import input
 except ImportError:
     input = raw_input
-from tenant_schemas.utils import get_tenant_model, get_public_schema_name
+from tenant_schemas.utils import get_tenant_adapter, get_public_schema_name
 
 
 class BaseTenantCommand(BaseCommand):
@@ -62,12 +62,14 @@ class BaseTenantCommand(BaseCommand):
         """
         Iterates a command over all registered schemata.
         """
+        adapter = get_tenant_adapter()
         if options['schema_name']:
             # only run on a particular schema
             connection.set_schema_to_public()
-            self.execute_command(get_tenant_model().objects.get(schema_name=options['schema_name']), self.COMMAND_NAME, *args, **options)
+            tenant = adapter.get_tenant_for_name(options['schema_name'])
+            self.execute_command(tenant, self.COMMAND_NAME, *args, **options)
         else:
-            for tenant in get_tenant_model().objects.all():
+            for tenant in adapter.get_tenants():
                 if not(options['skip_public'] and tenant.schema_name == get_public_schema_name()):
                     self.execute_command(tenant, self.COMMAND_NAME, *args, **options)
 
@@ -80,8 +82,8 @@ class InteractiveTenantOption(object):
         )
 
     def get_tenant_from_options_or_interactive(self, **options):
-        TenantModel = get_tenant_model()
-        all_tenants = TenantModel.objects.all()
+        adapter = get_tenant_adapter()
+        all_tenants = adapter.get_tenants()
 
         if not all_tenants:
             raise CommandError("""There are no tenants in the system.
@@ -94,14 +96,14 @@ https://django-tenant-schemas.readthedocs.org/en/latest/use.html#creating-a-tena
             while True:
                 tenant_schema = input("Enter Tenant Schema ('?' to list schemas): ")
                 if tenant_schema == '?':
-                    print('\n'.join(["%s - %s" % (t.schema_name, t.domain_url,) for t in all_tenants]))
+                    print('\n'.join(["%s" % t for t in all_tenants]))
                 else:
                     break
 
         if tenant_schema not in [t.schema_name for t in all_tenants]:
             raise CommandError("Invalid tenant schema, '%s'" % (tenant_schema,))
 
-        return TenantModel.objects.get(schema_name=tenant_schema)
+        return adapter.get_tenant_for_name(tenant_schema)
 
 
 class TenantWrappedCommand(InteractiveTenantOption, BaseCommand):

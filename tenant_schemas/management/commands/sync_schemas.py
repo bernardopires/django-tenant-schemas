@@ -6,7 +6,7 @@ if "south" in settings.INSTALLED_APPS:
 else:
     from django.core.management.commands.syncdb import Command as SyncdbCommand
 from django.db import connection
-from tenant_schemas.utils import get_tenant_model, get_public_schema_name
+from tenant_schemas.utils import get_tenant_adapter, get_public_schema_name
 from tenant_schemas.management.commands import SyncCommon
 
 
@@ -57,11 +57,14 @@ class Command(SyncCommon):
     def sync_tenant_apps(self, schema_name=None):
         apps = self.tenant_apps or self.installed_apps
         self._set_managed_apps(apps)
+        adapter = get_tenant_adapter()
         if schema_name:
-            tenant = get_tenant_model().objects.filter(schema_name=schema_name).get()
+            tenant = adapter.get_tenant_for_name(schema_name)
             self._sync_tenant(tenant)
         else:
-            all_tenants = get_tenant_model().objects.exclude(schema_name=get_public_schema_name())
+            public_schema_name = get_public_schema_name()
+            all_tenants = (tenant for tenant in adapter.get_tenants()
+                    if tenant.schema_name != public_schema_name)
             if not all_tenants:
                 self._notice("No tenants found!")
 

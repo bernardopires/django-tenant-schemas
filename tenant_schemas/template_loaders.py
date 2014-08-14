@@ -89,7 +89,7 @@ class FilesystemLoader(BaseLoader):
                 raise ImproperlyConfigured('To use %s.%s you must define the MULTITENANT_TEMPLATE_DIRS' % (__name__, FilesystemLoader.__name__))
         for template_dir in template_dirs:
             try:
-                yield safe_join(template_dir, connection.tenant.domain_url, template_name)
+                yield safe_join(template_dir, connection.tenant.schema_name, template_name)
             except UnicodeDecodeError:
                 # The template dir name was a bytestring that wasn't valid UTF-8.
                 raise

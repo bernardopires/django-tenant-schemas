@@ -4,7 +4,7 @@ from south import migration
 from south.migration.base import Migrations
 from south.management.commands.migrate import Command as MigrateCommand
 from tenant_schemas.management.commands import SyncCommon
-from tenant_schemas.utils import get_tenant_model, get_public_schema_name
+from tenant_schemas.utils import get_tenant_adapter, get_public_schema_name
 
 
 class Command(SyncCommon):
@@ -52,17 +52,19 @@ class Command(SyncCommon):
 
     def migrate_tenant_apps(self, schema_name=None):
         self._save_south_settings()
+        adapter = get_tenant_adapter()
 
         apps = self.tenant_apps or self.installed_apps
         self._set_managed_apps(included_apps=apps, excluded_apps=self.shared_apps)
 
         if schema_name:
             self._notice("=== Running migrate for schema: %s" % schema_name)
-            connection.set_schema_to_public()
-            tenant = get_tenant_model().objects.get(schema_name=schema_name)
+            tenant = adapter.get_tenant_for_name(schema_name)
             self._migrate_schema(tenant)
         else:
-            all_tenants = get_tenant_model().objects.exclude(schema_name=get_public_schema_name())
+            public_schema_name = get_public_schema_name()
+            all_tenants = [tenant for tenant in adapter.get_tenants()
+                    if tenant.schema_name != public_schema_name]
             if not all_tenants:
                 self._notice("No tenants found")
 

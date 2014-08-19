@@ -2,9 +2,9 @@ from django.core.management.base import CommandError
 from django.conf import settings
 from tenant_schemas.utils import django_is_in_test_mode
 
-try:
+if 'south' in settings.INSTALLED_APPS:
     from south.management.commands import syncdb
-except ImportError:
+else:
     from django.core.management.commands import syncdb
 
 

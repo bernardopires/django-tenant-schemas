@@ -1,3 +1,4 @@
+import sys
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from tenant_schemas.utils import get_public_schema_name, get_tenant_model
@@ -16,8 +17,9 @@ if not hasattr(settings, 'TENANT_APPS'):
 if not settings.TENANT_APPS:
     raise ImproperlyConfigured("TENANT_APPS is empty. Maybe you don't need this app?")
 
-if settings.INSTALLED_APPS[-1] != 'tenant_schemas':
-    print recommended_config
+if 'tenant_schemas' in settings.INSTALLED_APPS and 'south' in settings.INSTALLED_APPS and \
+        settings.INSTALLED_APPS.index('tenant_schemas') < settings.INSTALLED_APPS.index('south'):
+    print >>sys.stderr, recommended_config
 
 if hasattr(settings, 'PG_EXTRA_SEARCH_PATHS'):
     if get_public_schema_name() in settings.PG_EXTRA_SEARCH_PATHS:

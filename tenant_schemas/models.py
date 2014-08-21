@@ -14,7 +14,7 @@ class TenantMixin(models.Model):
                                # removed after tenant remove.
 
     auto_create_schema = True  # set this flag to false on a parent class if
-                               # you dont want the schema to be automatically
+                               # you don't want the schema to be automatically
                                # created upon save.
 
     domain_url = models.CharField(max_length=128, unique=True)

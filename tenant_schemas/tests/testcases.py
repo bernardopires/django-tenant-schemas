@@ -7,7 +7,7 @@ from ..utils import get_public_schema_name
 
 
 class BaseTestCase(TransactionTestCase):
-    """ Base testcase that comes packed with overloaded INSTALLED_APPS,
+    """ Base test case that comes packed with overloaded INSTALLED_APPS,
         custom public tenant, and schemas cleanup on tearDown.
     """
     @classmethod

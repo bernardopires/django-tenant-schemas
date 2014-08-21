@@ -59,13 +59,13 @@ You can also use the option ``--tenant`` to only sync tenant apps or ``--shared`
 
 .. code-block:: bash
 
-	./manage.py sync_schemas --shared # will only sync the public schema
+    ./manage.py sync_schemas --shared # will only sync the public schema
 
 We've also packed south's migrate command in a compatible way with this app. It will also respect the ``SHARED_APPS`` and ``TENANT_APPS`` settings, so if you're migrating the ``public`` schema it will only migrate ``SHARED_APPS``. If you're migrating tenants, it will only migrate ``TENANT_APPS``.
 
 .. code-block:: bash
 
-	./manage.py migrate_schemas
+    ./manage.py migrate_schemas
 
 The options given to ``migrate_schemas`` are also passed to every ``migrate``. Hence you may find handy
 

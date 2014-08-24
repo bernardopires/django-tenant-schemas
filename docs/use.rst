@@ -105,3 +105,8 @@ The hook for ensuring the schema search_path is set properly is the ``DatabaseWr
     TENANT_LIMIT_SET_CALLS = True
 
 When set, ``django-tenant-schemas`` will set the search path only once per request. The default is ``False``.
+
+
+Third Party Apps
+----------------
+Support for Celery is available at `tenant-schemas-celery <https://github.com/maciej-gol/tenant-schemas-celery>`_.

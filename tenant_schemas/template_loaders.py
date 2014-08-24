@@ -12,6 +12,7 @@ from django.utils.encoding import force_bytes
 from django.utils._os import safe_join
 from django.db import connection
 
+
 class CachedLoader(BaseLoader):
     is_usable = True
 
@@ -49,7 +50,8 @@ class CachedLoader(BaseLoader):
         if template_dirs:
             # If template directories were specified, use a hash to differentiate
             if connection.tenant:
-                key = '-'.join([str(connection.tenant.pk), template_name, hashlib.sha1(force_bytes('|'.join(template_dirs))).hexdigest()])
+                key = '-'.join([str(connection.tenant.pk), template_name,
+                                hashlib.sha1(force_bytes('|'.join(template_dirs))).hexdigest()])
             else:
                 key = '-'.join([template_name, hashlib.sha1(force_bytes('|'.join(template_dirs))).hexdigest()])
 
@@ -71,6 +73,7 @@ class CachedLoader(BaseLoader):
         "Empty the template cache."
         self.template_cache.clear()
 
+
 class FilesystemLoader(BaseLoader):
     is_usable = True
 
@@ -86,7 +89,8 @@ class FilesystemLoader(BaseLoader):
             try:
                 template_dirs = settings.MULTITENANT_TEMPLATE_DIRS
             except AttributeError:
-                raise ImproperlyConfigured('To use %s.%s you must define the MULTITENANT_TEMPLATE_DIRS' % (__name__, FilesystemLoader.__name__))
+                raise ImproperlyConfigured('To use %s.%s you must define the MULTITENANT_TEMPLATE_DIRS' %
+                                           (__name__, FilesystemLoader.__name__))
         for template_dir in template_dirs:
             try:
                 yield safe_join(template_dir, connection.tenant.domain_url, template_name)

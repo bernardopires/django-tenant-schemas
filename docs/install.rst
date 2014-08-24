@@ -9,7 +9,7 @@ Assuming you have django installed, the first step is to install ``django-tenant
 
 Basic Settings
 ==============
-You'll have to make the following modifcations to your ``settings.py`` file.
+You'll have to make the following modifications to your ``settings.py`` file.
 
 Your ``DATABASE_ENGINE`` setting needs to be changed to
 
@@ -153,7 +153,7 @@ We override ``south``'s ``syncdb`` and ``migrate`` command, so you'll need to ch
 
     INSTALLED_APPS = SHARED_APPS + TENANT_APPS + ('tenant_schemas',)
     
-This makes sure ``tenant_schemas`` is the last on the list and therefore always has precedence when running an overriden command.
+This makes sure ``tenant_schemas`` is the last on the list and therefore always has precedence when running an overridden command.
 
 Optional Settings
 =================

@@ -41,7 +41,6 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         self.set_settings_schema(self.schema_name)
         self.search_path_set = False
 
-
     def set_schema(self, schema_name, include_public=True):
         """
         Main API method to current database schema,

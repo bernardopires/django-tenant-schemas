@@ -11,7 +11,7 @@ class Command(InteractiveTenantOption, BaseCommand):
     def run_from_argv(self, argv):
         """
         Changes the option_list to use the options from the wrapped command.
-        Adds schema parameter to specifiy which schema will be used when
+        Adds schema parameter to specify which schema will be used when
         executing the wrapped command.
         """
         # load the command object.

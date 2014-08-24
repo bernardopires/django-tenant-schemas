@@ -19,7 +19,7 @@ class TenantMiddleware(object):
 
     def process_request(self, request):
         # connection needs first to be at the public schema, as this is where the
-        # tenant informations are saved
+        # tenant metadata is stored
         connection.set_schema_to_public()
         hostname = self.hostname_from_request(request)
 

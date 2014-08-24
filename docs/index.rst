@@ -14,7 +14,7 @@ A schema can be seen as a directory in an operating system, each directory (sche
 
 Why schemas?
 ------------
-There are typically three solutions for solving the multinancy problem. 
+There are typically three solutions for solving the multitenancy problem.
 
 1. Isolated Approach: Separate Databases. Each tenant has it's own database.
 
@@ -27,7 +27,7 @@ This application implements the second approach, which in our opinion, represent
 * Simplicity: barely make any changes to your current code to support multitenancy. Plus, you only manage one database.
 * Performance: make use of shared connections, buffers and memory.
 
-Each solution has it's up and down sides, for a more in-depth discussion, see Microsoft's excelent article on `Multi-Tenant Data Architecture <http://msdn.microsoft.com/en-us/library/aa479086.aspx>`_.
+Each solution has it's up and down sides, for a more in-depth discussion, see Microsoft's excellent article on `Multi-Tenant Data Architecture <http://msdn.microsoft.com/en-us/library/aa479086.aspx>`_.
 
 How it works
 ------------

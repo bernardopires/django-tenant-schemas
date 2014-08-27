@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models, connection, transaction
 from django.core.management import call_command
-from tenant_schemas.postgresql_backend.base import _check_identifier
+from tenant_schemas.postgresql_backend.base import _check_schema_name
 from tenant_schemas.signals import post_schema_sync
 from tenant_schemas.utils import django_is_in_test_mode, schema_exists
 from tenant_schemas.utils import get_public_schema_name
@@ -18,7 +18,7 @@ class TenantMixin(models.Model):
                                # created upon save.
 
     domain_url = models.CharField(max_length=128, unique=True)
-    schema_name = models.CharField(max_length=63, unique=True)
+    schema_name = models.CharField(max_length=63, unique=True, validators=[_check_schema_name])
 
     class Meta:
         abstract = True
@@ -63,7 +63,7 @@ class TenantMixin(models.Model):
         """
 
         # safety check
-        _check_identifier(self.schema_name)
+        _check_schema_name(self.schema_name)
         cursor = connection.cursor()
 
         if check_if_exists and schema_exists(self.schema_name):

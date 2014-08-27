@@ -2,7 +2,7 @@ import re
 import warnings
 from django.conf import settings
 from django.utils.importlib import import_module
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured, ValidationError
 from tenant_schemas.utils import get_public_schema_name, get_limit_set_calls
 
 ORIGINAL_BACKEND = getattr(settings, 'ORIGINAL_BACKEND', 'django.db.backends.postgresql_psycopg2')
@@ -12,12 +12,26 @@ original_backend = import_module('.base', ORIGINAL_BACKEND)
 EXTRA_SEARCH_PATHS = getattr(settings, 'PG_EXTRA_SEARCH_PATHS', [])
 
 # from the postgresql doc
-SQL_IDENTIFIER_RE = re.compile('^[_a-zA-Z][_a-zA-Z0-9]{,62}$')
+SQL_IDENTIFIER_RE = re.compile(r'^[_a-zA-Z][_a-zA-Z0-9]{,62}$')
+SQL_SCHEMA_NAME_RESERVED_RE = re.compile(r'^pg_', re.IGNORECASE)
+
+
+def _is_valid_identifier(identifier):
+    return bool(SQL_IDENTIFIER_RE.match(identifier))
 
 
 def _check_identifier(identifier):
-    if not SQL_IDENTIFIER_RE.match(identifier):
-        raise RuntimeError("Invalid string used for the schema name.")
+    if not _is_valid_identifier(identifier):
+        raise ValidationError("Invalid string used for the identifier.")
+
+
+def _is_valid_schema_name(name):
+    return _is_valid_identifier(name) and not SQL_SCHEMA_NAME_RESERVED_RE.match(name)
+
+
+def _check_schema_name(name):
+    if not _is_valid_schema_name(name):
+        raise ValidationError("Invalid string used for the schema name.")
 
 
 class DatabaseWrapper(original_backend.DatabaseWrapper):
@@ -90,7 +104,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
             if not self.schema_name:
                 raise ImproperlyConfigured("Database schema not set. Did you forget "
                                            "to call set_schema() or set_tenant()?")
-            _check_identifier(self.schema_name)
+            _check_schema_name(self.schema_name)
             public_schema_name = get_public_schema_name()
             search_paths = []
 

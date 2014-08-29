@@ -1,7 +1,9 @@
+import django
 from django.conf import settings
 from django.db import models, connection, transaction
 from django.core.management import call_command
 from tenant_schemas.postgresql_backend.base import _check_schema_name
+from django.core.exceptions import ValidationError
 from tenant_schemas.signals import post_schema_sync
 from tenant_schemas.utils import django_is_in_test_mode, schema_exists
 from tenant_schemas.utils import get_public_schema_name
@@ -55,6 +57,12 @@ class TenantMixin(models.Model):
 
         super(TenantMixin, self).delete(*args, **kwargs)
 
+    def clean(self):
+        if self.schema_name in settings.PG_EXTRA_SEARCH_PATHS:
+            raise ValidationError('`{}` is a reserved schema name and cannot '
+                                  'be assigned to a tenant'.format(
+                                      self.schema_name))
+
     def create_schema(self, check_if_exists=False, sync_schema=True, verbosity=1):
         """
         Creates the schema 'schema_name' for this tenant. Optionally checks if the schema
@@ -74,24 +82,29 @@ class TenantMixin(models.Model):
         transaction.commit_unless_managed()
 
         if sync_schema:
-            # default is faking all migrations and syncing directly to the current models state
-            fake_all_migrations = getattr(settings, 'TENANT_CREATION_FAKES_MIGRATIONS', True)
-
-            call_command('sync_schemas',
-                         schema_name=self.schema_name,
-                         tenant=True,
-                         public=False,
-                         interactive=False,  # don't ask to create an admin user
-                         migrate_all=fake_all_migrations,
-                         verbosity=verbosity,
-                         )
-
-            # run/fake all migrations
-            if 'south' in settings.INSTALLED_APPS and not django_is_in_test_mode():
+            if django.VERSION >= (1, 7, 0,):
                 call_command('migrate_schemas',
-                             fake=fake_all_migrations,
-                             schema_name=self.schema_name,
-                             verbosity=verbosity)
+                            schema_name=self.schema_name,
+                            interactive=False,
+                            verbosity=verbosity)
+            else:
+                # default is faking all migrations and syncing directly to the current models state
+                fake_all_migrations = getattr(settings, 'TENANT_CREATION_FAKES_MIGRATIONS', True)
+                call_command('sync_schemas',
+                            schema_name=self.schema_name,
+                            tenant=True,
+                            public=False,
+                            interactive=False,  # don't ask to create an admin user
+                            migrate_all=fake_all_migrations,
+                            verbosity=verbosity,
+                            )
+
+                # run/fake all migrations
+                if 'south' in settings.INSTALLED_APPS and not django_is_in_test_mode():
+                    call_command('migrate_schemas',
+                                fake=fake_all_migrations,
+                                schema_name=self.schema_name,
+                                verbosity=verbosity)
 
         connection.set_schema_to_public()
         return True

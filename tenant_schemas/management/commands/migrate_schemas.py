@@ -1,86 +1,115 @@
-from django.conf import settings
+from optparse import make_option, NO_DEFAULT
+from collections import OrderedDict
+import django
+from django.apps import apps
+from django.core.management.commands.migrate import Command as MigrateCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
-from south import migration
-from south.migration.base import Migrations
-from south.management.commands.migrate import Command as MigrateCommand
-from tenant_schemas.management.commands import SyncCommon
-from tenant_schemas.utils import get_tenant_model, get_public_schema_name
+from django.conf import settings
+
+from tenant_schemas.utils import (get_tenant_model, get_public_schema_name,
+                                  schema_exists)
 
 
-class Command(SyncCommon):
-    help = "Migrate schemas with South"
-    option_list = MigrateCommand.option_list + SyncCommon.option_list
+class MigrateSchemasCommand(BaseCommand):
+    help = "Wrapper around django commands for use with an individual tenant"
+
+    option_list = (
+        make_option('--tenant', action='store_true', dest='tenant', default=False,
+                    help='Tells Django to populate only tenant applications.'),
+        make_option('--shared', action='store_true', dest='shared', default=False,
+                    help='Tells Django to populate only shared applications.'),
+        make_option("-s", "--schema", dest="schema_name"),
+    )
+
+
+    def run_from_argv(self, argv):
+        """
+        Changes the option_list to use the options from the wrapped command.
+        Adds schema parameter to specify which schema will be used when
+        executing the wrapped command.
+        """
+        self.option_list += MigrateCommand.option_list
+        super(MigrateSchemasCommand, self).run_from_argv(argv)
 
     def handle(self, *args, **options):
-        super(Command, self).handle(*args, **options)
+        self.non_tenant_schemas = settings.PG_EXTRA_SEARCH_PATHS + ['public']
+        self.sync_tenant = options.get('tenant')
+        self.sync_public = options.get('shared')
+        self.schema_name = options.get('schema_name')
+        self.args = args
+        self.options = options
+        self.PUBLIC_SCHEMA_NAME = get_public_schema_name()
+
+        if self.schema_name:
+            if self.sync_public:
+                raise CommandError("schema should only be used "
+                                   "with the --tenant switch.")
+            elif self.schema_name == self.PUBLIC_SCHEMA_NAME:
+                self.sync_public = True
+            else:
+                self.sync_tenant = True
+        elif not self.sync_public and not self.sync_tenant:
+            # no options set, sync both
+            self.sync_tenant = True
+            self.sync_public = True
+
+        if self.sync_public and not self.schema_name:
+            self.schema_name = self.PUBLIC_SCHEMA_NAME
 
         if self.sync_public:
-            self.migrate_public_apps()
+            self.run_migrations(self.schema_name, settings.SHARED_APPS)
         if self.sync_tenant:
-            self.migrate_tenant_apps(self.schema_name)
+            if self.schema_name and \
+                    (self.schema_name != self.PUBLIC_SCHEMA_NAME):
+                # Make sure the tenant exists and the schema belongs to
+                # a tenant; We don't want to sync to extensions schema by
+                # mistake
+                if not schema_exists(self.schema_name):
+                    raise RuntimeError('Schema "{}" does not exist'.format(
+                        self.schema_name))
+                elif self.schema_name in self.non_tenant_schemas:
+                    raise RuntimeError(
+                        'Schema "{}" does not belong to any tenant'.format(
+                            self.schema_name))
+                else:
+                    self.run_migrations(self.schema_name, settings.TENANT_APPS)
+            else:
+                all_tenants = get_tenant_model().objects.exclude(
+                    schema_name=get_public_schema_name())
+                for tenant in all_tenants:
+                    self.run_migrations(tenant.schema_name, settings.TENANT_APPS)
 
-    def _set_managed_apps(self, included_apps, excluded_apps):
-        """ while sync_schemas works by setting which apps are managed, on south we set which apps should be ignored """
-        ignored_apps = []
-        if excluded_apps:
-            for item in excluded_apps:
-                if item not in included_apps:
-                    ignored_apps.append(item)
+    def run_migrations(self, schema_name, included_apps):
+        self._notice("=== Running migrate for schema %s" % schema_name)
+        connection.set_schema(schema_name, include_public=False)
+        apps.app_configs = OrderedDict()
+        apps.clear_cache()
+        apps.set_installed_apps(included_apps)
 
-        for app in ignored_apps:
-            app_label = app.split('.')[-1]
-            settings.SOUTH_MIGRATION_MODULES[app_label] = 'ignore'
+        command = MigrateCommand()
 
-    def _save_south_settings(self):
-        self._old_south_modules = None
-        if hasattr(settings, "SOUTH_MIGRATION_MODULES") and settings.SOUTH_MIGRATION_MODULES is not None:
-            self._old_south_modules = settings.SOUTH_MIGRATION_MODULES.copy()
-        else:
-            settings.SOUTH_MIGRATION_MODULES = dict()
+        defaults = {}
+        for opt in MigrateCommand.option_list:
+            if opt.dest in self.options:
+                defaults[opt.dest] = self.options[opt.dest]
+            elif opt.default is NO_DEFAULT:
+                defaults[opt.dest] = None
+            else:
+                defaults[opt.dest] = opt.default
 
-    def _restore_south_settings(self):
-        settings.SOUTH_MIGRATION_MODULES = self._old_south_modules
+        command.execute(*self.args, **defaults)
 
-    def _clear_south_cache(self):
-        for mig in list(migration.all_migrations()):
-            delattr(mig._application, "migrations")
-        Migrations._clear_cache()
+        connection.set_schema('public', include_public=True)
+        apps.app_configs = OrderedDict()
+        apps.clear_cache()
+        apps.set_installed_apps(settings.SHARED_APPS)
 
-    def _migrate_schema(self, tenant):
-        connection.set_tenant(tenant, include_public=False)
-        MigrateCommand().execute(*self.args, **self.options)
+    def _notice(self, output):
+        self.stdout.write(self.style.NOTICE(output))
 
-    def migrate_tenant_apps(self, schema_name=None):
-        self._save_south_settings()
 
-        apps = self.tenant_apps or self.installed_apps
-        self._set_managed_apps(included_apps=apps, excluded_apps=self.shared_apps)
-
-        if schema_name:
-            self._notice("=== Running migrate for schema: %s" % schema_name)
-            connection.set_schema_to_public()
-            tenant = get_tenant_model().objects.get(schema_name=schema_name)
-            self._migrate_schema(tenant)
-        else:
-            all_tenants = get_tenant_model().objects.exclude(schema_name=get_public_schema_name())
-            if not all_tenants:
-                self._notice("No tenants found")
-
-            for tenant in all_tenants:
-                Migrations._dependencies_done = False  # very important, the dependencies need to be purged from cache
-                self._notice("=== Running migrate for schema %s" % tenant.schema_name)
-                self._migrate_schema(tenant)
-
-        self._restore_south_settings()
-
-    def migrate_public_apps(self):
-        self._save_south_settings()
-
-        apps = self.shared_apps or self.installed_apps
-        self._set_managed_apps(included_apps=apps, excluded_apps=self.tenant_apps)
-
-        self._notice("=== Running migrate for schema public")
-        MigrateCommand().execute(*self.args, **self.options)
-
-        self._clear_south_cache()
-        self._restore_south_settings()
+if django.VERSION >= (1, 7, 0):
+    Command = MigrateSchemasCommand
+else:
+    from .legacy.migrate_schemas import Command

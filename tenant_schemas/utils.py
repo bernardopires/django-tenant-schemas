@@ -78,7 +78,7 @@ def schema_exists(schema_name):
     cursor = connection.cursor()
 
     # check if this schema already exists in the db
-    sql = 'SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_namespace WHERE nspname = %s)'
+    sql = 'SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_namespace WHERE LOWER(nspname) = LOWER(%s))'
     cursor.execute(sql, (schema_name, ))
 
     row = cursor.fetchone()

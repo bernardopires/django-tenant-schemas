@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection
 from django.shortcuts import get_object_or_404
-from tenant_schemas.utils import get_tenant_model, remove_www_and_dev, get_public_schema_name
+from tenant_schemas.utils import get_tenant_model, remove_www, get_public_schema_name
 
 
 class TenantMiddleware(object):
@@ -15,7 +15,7 @@ class TenantMiddleware(object):
         """ Extracts hostname from request. Used for custom requests filtering.
             By default removes the request's port and common prefixes.
         """
-        return remove_www_and_dev(request.get_host().split(':')[0])
+        return remove_www(request.get_host().split(':')[0])
 
     def process_request(self, request):
         # connection needs first to be at the public schema, as this is where the

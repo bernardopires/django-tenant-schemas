@@ -55,12 +55,18 @@ def clean_tenant_url(url_string):
 
 
 def remove_www_and_dev(hostname):
+    """ 
+    Legacy function - just in case someone is still using the old name
     """
-    Removes www. and dev. from the beginning of the address. Only for
+    return remove_www(hostname)
+
+def remove_www(hostname):
+    """
+    Removes www. from the beginning of the address. Only for
     routing purposes. www.test.com/login/ and test.com/login/ should
     find the same tenant.
     """
-    if hostname.startswith("www.") or hostname.startswith("dev."):
+    if hostname.startswith("www."):
         return hostname[4:]
 
     return hostname

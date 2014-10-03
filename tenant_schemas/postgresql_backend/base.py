@@ -74,7 +74,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         self.schema_name = get_public_schema_name()
         self.set_settings_schema(self.schema_name)
         self.search_path_set = False
-        
+
     def set_settings_schema(self, schema_name):
         self.settings_dict['SCHEMA'] = schema_name
 
@@ -116,8 +116,16 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
                 search_paths = [self.schema_name]
 
             search_paths.extend(EXTRA_SEARCH_PATHS)
-            cursor.execute('SET search_path = {0}'.format(','.join(search_paths)))
-            self.search_path_set = True
+            # In the event that an error already happened in this transaction and we are going
+            # to rollback we should just ignore database error when setting the search_path
+            # if the next instruction is not a rollback it will just fail also, so
+            # we do not have to worry that it's not the good one
+            try:
+                cursor.execute('SET search_path = {0}'.format(','.join(search_paths)))
+            except DatabaseError:
+                self.search_path_set = False
+            else:
+                self.search_path_set = True
         return cursor
 
 

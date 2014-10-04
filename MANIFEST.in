@@ -1,6 +1,6 @@
 
 include LICENSE
-include README.markdown
+include README.rst
 include *.txt
 
 include version.py

@@ -1,3 +1,4 @@
+import warnings
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from tenant_schemas.utils import get_public_schema_name, get_tenant_model
@@ -17,7 +18,7 @@ if not settings.TENANT_APPS:
     raise ImproperlyConfigured("TENANT_APPS is empty. Maybe you don't need this app?")
 
 if settings.INSTALLED_APPS[-1] != 'tenant_schemas':
-    print(recommended_config)
+    warnings.warn(recommended_config, SyntaxWarning)
 
 if hasattr(settings, 'PG_EXTRA_SEARCH_PATHS'):
     if get_public_schema_name() in settings.PG_EXTRA_SEARCH_PATHS:

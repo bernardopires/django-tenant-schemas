@@ -14,7 +14,7 @@ class Command(syncdb.Command):
         database = options.get('database', 'default')
         if (settings.DATABASES[database]['ENGINE'] == 'tenant_schemas.postgresql_backend' and not
                 django_is_in_test_mode()):
-            raise CommandError("syncdb has been disabled, for database '{}'. "
+            raise CommandError("syncdb has been disabled, for database '{0}'. "
                                "Use sync_schemas instead. Please read the "
                                "documentation if you don't know why "
                                "you shouldn't call syncdb directly!".format(database))

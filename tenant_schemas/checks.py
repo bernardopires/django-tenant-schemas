@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import unicode_literals
 import warnings
 
 import django
@@ -46,7 +48,7 @@ def tenant_schemas_check(app_configs, **kwargs):
         ideal_app_position = -1
 
     if settings.INSTALLED_APPS[ideal_app_position] != 'tenant_schemas':
-        print _get_recommended_config()
+        print(_get_recommended_config())
 
     if hasattr(settings, 'PG_EXTRA_SEARCH_PATHS'):
         if get_public_schema_name() in settings.PG_EXTRA_SEARCH_PATHS:
@@ -69,9 +71,9 @@ def tenant_schemas_check(app_configs, **kwargs):
         try:
             schemas = list(TenantModel.objects.all().values_list(
                 'schema_name', flat=True))
-        except ProgrammingError, e:
+        except ProgrammingError as e:
             table = TenantModel._meta.db_table
-            if 'relation "{}" does not exist'.format(table) not in e:
+            if 'relation "{}" does not exist'.format(table) not in str(e):
                 errors.append(_make_error(
                     "Missing Tenants Table",
                     hint=_get_missing_tenants_table_message(),

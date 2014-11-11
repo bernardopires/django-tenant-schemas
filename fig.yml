@@ -1,0 +1,11 @@
+tests:
+  build: .
+  # send yes in case it asks whether to tear down the old test DB
+  command: "python manage.py test  --noinput tenant_schemas.tests"
+  working_dir: /usr/src/app/examples/tenant_tutorial
+  volumes:
+    - .:/usr/src/app
+  links:
+    - db
+db:
+  image: postgres

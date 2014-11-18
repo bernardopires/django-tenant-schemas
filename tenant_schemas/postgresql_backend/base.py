@@ -4,6 +4,7 @@ from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from tenant_schemas.utils import get_public_schema_name, get_limit_set_calls
+import django.db.utils
 
 ORIGINAL_BACKEND = getattr(settings, 'ORIGINAL_BACKEND', 'django.db.backends.postgresql_psycopg2')
 
@@ -122,7 +123,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
             # we do not have to worry that it's not the good one
             try:
                 cursor.execute('SET search_path = {0}'.format(','.join(search_paths)))
-            except DatabaseError:
+            except django.db.utils.DatabaseError:
                 self.search_path_set = False
             else:
                 self.search_path_set = True

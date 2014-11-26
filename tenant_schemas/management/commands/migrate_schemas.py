@@ -21,11 +21,7 @@ class Command(SyncCommon):
 
     def _set_managed_apps(self, included_apps, excluded_apps):
         """ while sync_schemas works by setting which apps are managed, on south we set which apps should be ignored """
-        ignored_apps = []
-        if excluded_apps:
-            for item in excluded_apps:
-                if item not in included_apps:
-                    ignored_apps.append(item)
+        ignored_apps = list(set(excluded_apps) - set(included_apps))
 
         for app in ignored_apps:
             app_label = app.split('.')[-1]
@@ -48,7 +44,9 @@ class Command(SyncCommon):
 
     def _migrate_schema(self, tenant):
         connection.set_tenant(tenant, include_public=False)
-        MigrateCommand().execute(*self.args, **self.options)
+        for app in self.tenant_apps:
+            args = (app,) + self.args
+            MigrateCommand().execute(*args, **self.options)
 
     def migrate_tenant_apps(self, schema_name=None):
         self._save_south_settings()

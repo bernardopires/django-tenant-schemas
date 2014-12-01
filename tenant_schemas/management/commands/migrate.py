@@ -1,3 +1,4 @@
+import django
 from django.conf import settings
 from django.core.management.base import CommandError, BaseCommand
 try:
@@ -16,3 +17,8 @@ class Command(MigrateCommand):
                                "instead. Please read the documentation if you don't know why you "
                                "shouldn't call migrate directly!".format(database))
         super(Command, self).handle(*args, **options)
+
+
+if django.VERSION >= (1, 7, 0):
+    from .migrate_schemas import MigrateSchemasCommand
+    Command = MigrateSchemasCommand

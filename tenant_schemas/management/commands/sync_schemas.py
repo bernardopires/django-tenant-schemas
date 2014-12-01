@@ -1,3 +1,4 @@
+import django
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import get_apps, get_models
@@ -15,6 +16,11 @@ class Command(SyncCommon):
     option_list = SyncdbCommand.option_list + SyncCommon.option_list
 
     def handle(self, *args, **options):
+        if django.VERSION >= (1, 7, 0):
+            raise RuntimeError('This command is only meant to be used for 1.6'
+                               ' and older version of django. For 1.7, use'
+                               ' `migrate_schemas` instead.')
+
         super(Command, self).handle(*args, **options)
 
         if "south" in settings.INSTALLED_APPS:

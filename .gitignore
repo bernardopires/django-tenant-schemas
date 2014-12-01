@@ -4,6 +4,8 @@
 .DS_Store
 VERSION
 _build/
+build/
 dist/
 django_tenant_schemas.egg-info
 .idea/
+.ropeproject

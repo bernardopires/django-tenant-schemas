@@ -102,8 +102,11 @@ You also have to set where your tenant model is.
 Now run ``sync_schemas``, this will create the shared apps on the ``public`` schema. Note: your database should be empty if this is the first time you're running this command.
 
 .. code-block:: bash
-
+    # < django 1.7
     python manage.py sync_schemas --shared
+
+    # >= django 1.7
+    python manage.py migrate_schemas --shared
     
 .. warning::
 
@@ -151,9 +154,14 @@ We override ``south``'s ``syncdb`` and ``migrate`` command, so you'll need to ch
 
 .. code-block:: python
 
+    # < django 1.7
     INSTALLED_APPS = SHARED_APPS + TENANT_APPS + ('tenant_schemas',)
+
+    # >= django 1.7
+    INSTALLED_APPS = ('tenant_schemas',) + SHARED_APPS + TENANT_APPS
     
-This makes sure ``tenant_schemas`` is the last on the list and therefore always has precedence when running an overridden command.
+This makes sure ``tenant_schemas`` is the last on the list and therefore always has precedence when running an overridden command. In Django 1.7 the precedence order was `reversed <https://docs.djangoproject.com/en/dev/releases/1.7/#management-commands-and-order-of-installed-apps>`_ so 'tenant_schemas' must be the first app instead of the last.
+
 
 Optional Settings
 =================

@@ -43,6 +43,9 @@ Every command except tenant_command runs by default on all tenants. You can also
 
     ./manage.py sync_schemas --schema=customer1
 
+sync_schemas    
+~~~~~~~~~~~~
+
 The command ``sync_schemas`` is the most important command on this app. The way it works is that it calls Django's ``syncdb`` in two different ways. First, it calls ``syncdb`` for the ``public`` schema, only syncing the shared apps. Then it runs ``syncdb`` for every tenant in the database, this time only syncing the tenant apps.
 
 .. warning::
@@ -60,6 +63,9 @@ You can also use the option ``--tenant`` to only sync tenant apps or ``--shared`
 .. code-block:: bash
 
     ./manage.py sync_schemas --shared # will only sync the public schema
+
+migrate_schemas    
+~~~~~~~~~~~~~~~
 
 We've also packed south's migrate command in a compatible way with this app. It will also respect the ``SHARED_APPS`` and ``TENANT_APPS`` settings, so if you're migrating the ``public`` schema it will only migrate ``SHARED_APPS``. If you're migrating tenants, it will only migrate ``TENANT_APPS``.
 
@@ -81,17 +87,29 @@ Or
 
 in case you're just switching your ``myapp`` application to use South migrations.
 
+tenant_command    
+~~~~~~~~~~~~~~
+
 To run any command on an individual schema, you can use the special ``tenant_command``, which creates a wrapper around your command so that it only runs on the schema you specify. For example
 
 .. code-block:: bash
 
-    ./manage.py tenant_command createsuperuser
+    ./manage.py tenant_command loaddata
 
 If you don't specify a schema, you will be prompted to enter one. Otherwise, you may specify a schema preemptively
 
 .. code-block:: bash
 
-    ./manage.py tenant_command createsuperuser --schema=customer1
+    ./manage.py tenant_command loaddata --schema=customer1
+    
+createsuperuser   
+~~~~~~~~~~~~~~~
+
+The command ``createsuperuser`` is already automatically wrapped to have a ``schema`` flag. Create a new super user with
+
+.. code-block:: bash
+
+    ./manage.py createsuperuser --username='admin' --schema=customer1
 
 
 Performance Considerations

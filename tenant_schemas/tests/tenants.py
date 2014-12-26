@@ -1,13 +1,14 @@
+from django.conf import settings
 from django.db import connection
 
 from tenant_schemas.tests.models import Tenant, NonAutoSyncTenant, DummyModel
 from tenant_schemas.tests.testcases import BaseTestCase
-from tenant_schemas.utils import tenant_context, schema_context, schema_exists
+from tenant_schemas.utils import tenant_context, schema_context, schema_exists, get_tenant_model
+from tenant_schemas.test.cases import TenantTestCase
 
-
-class TenantTestCase(BaseTestCase):
+class TenantTest(BaseTestCase):
     def tearDown(self):
-        super(TenantTestCase, self).tearDown()
+        super(TenantTest, self).tearDown()
         NonAutoSyncTenant.objects.all().delete()
 
     def test_tenant_schema_is_created(self):
@@ -101,3 +102,12 @@ class TenantTestCase(BaseTestCase):
         connection.tenant = None
         with schema_context(tenant.schema_name):
             DummyModel(name="Survived it!").save()
+
+
+class TenantTestCaseTest(BaseTestCase, TenantTestCase):
+    def test_tenant_survives_after_method1(self):
+       # There are two tenants (public plus the one created by TenantTestCase)
+       self.assertEquals(1 + 1, get_tenant_model().objects.all().count())
+
+    def test_tenant_survives_after_method2(self):
+       self.assertEquals(1 + 1, get_tenant_model().objects.all().count())

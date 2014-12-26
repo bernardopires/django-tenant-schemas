@@ -12,13 +12,15 @@ class BaseTestCase(TransactionTestCase):
     """
     @classmethod
     def setUpClass(cls):
+        # settings needs some patching
+        settings.TENANT_MODEL = 'tenant_schemas.Tenant'
         settings.TENANT_APPS = ('tenant_schemas',
                                 'django.contrib.contenttypes',
                                 'django.contrib.auth', )
+        super(BaseTestCase, cls).setUpClass()
 
     def setUp(self):
-        # settings needs some patching
-        settings.TENANT_MODEL = 'tenant_schemas.Tenant'
+        connection.set_schema_to_public()
 
         # add the public tenant
         self.public_tenant_domain = 'test.com'

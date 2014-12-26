@@ -1,9 +1,9 @@
 from django.db import connection
-from django.test import TransactionTestCase
+from django.test import TestCase
 from tenant_schemas.utils import get_tenant_model
 
 
-class TenantTestCase(TransactionTestCase):
+class TenantTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         # create a tenant

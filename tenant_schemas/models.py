@@ -39,8 +39,10 @@ class TenantMixin(models.Model):
             try:
                 self.create_schema(check_if_exists=True, verbosity=verbosity)
                 post_schema_sync.send(sender=TenantMixin, tenant=self)
-            finally:
+            except:
+                # We failed creating the tenant, delete what we created and re-raise the exception
                 self.delete(force_drop=True)
+                raise
 
     def delete(self, force_drop=False, *args, **kwargs):
         """

@@ -36,10 +36,13 @@ class TenantMixin(models.Model):
         super(TenantMixin, self).save(*args, **kwargs)
 
         if is_new and self.auto_create_schema:
-            self.create_schema(check_if_exists=True, verbosity=verbosity)
-            post_schema_sync.send(sender=TenantMixin, tenant=self)
+            try:
+                self.create_schema(check_if_exists=True, verbosity=verbosity)
+                post_schema_sync.send(sender=TenantMixin, tenant=self)
+            finally:
+                self.delete(force_drop=True)
 
-    def delete(self, *args, **kwargs):
+    def delete(self, force_drop=False, *args, **kwargs):
         """
         Drops the schema related to the tenant instance. Just drop the schema if the parent
         class model has the attribute auto_drop_schema set to True.
@@ -48,7 +51,7 @@ class TenantMixin(models.Model):
             raise Exception("Can't delete tenant outside it's own schema or the public schema. Current schema is %s."
                             % connection.schema_name)
 
-        if schema_exists(self.schema_name) and self.auto_drop_schema:
+        if schema_exists(self.schema_name) and (self.auto_drop_schema or force_drop):
             cursor = connection.cursor()
             cursor.execute('DROP SCHEMA %s CASCADE' % self.schema_name)
             transaction.commit_unless_managed()

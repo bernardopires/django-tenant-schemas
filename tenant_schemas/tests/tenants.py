@@ -106,8 +106,8 @@ class TenantTest(BaseTestCase):
 
 class TenantTestCaseTest(BaseTestCase, TenantTestCase):
     def test_tenant_survives_after_method1(self):
-       # There are two tenants (public plus the one created by TenantTestCase)
-       self.assertEquals(1 + 1, get_tenant_model().objects.all().count())
+        # There are two tenants (public plus the one created by TenantTestCase)
+        self.assertEquals(1 + 1, get_tenant_model().objects.all().count())
 
     def test_tenant_survives_after_method2(self):
-       self.assertEquals(1 + 1, get_tenant_model().objects.all().count())
+        self.assertEquals(1 + 1, get_tenant_model().objects.all().count())

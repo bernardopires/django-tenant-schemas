@@ -30,7 +30,7 @@ class Command(SyncCommon):
         for app in ignored_apps:
             app_label = app.split('.')[-1]
             settings.SOUTH_MIGRATION_MODULES[app_label] = 'ignore'
-            
+
         self._clear_south_cache()
 
     def _save_south_settings(self):

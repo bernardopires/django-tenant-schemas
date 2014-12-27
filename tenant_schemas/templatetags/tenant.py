@@ -16,4 +16,4 @@ class SchemaURLNode(URLNode):
 
 @register.tag
 def url(parser, token):
-    return SchemaURLNode(default_url(parser,token))
+    return SchemaURLNode(default_url(parser, token))

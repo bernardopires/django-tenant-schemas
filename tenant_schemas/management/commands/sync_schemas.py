@@ -18,10 +18,6 @@ class Command(SyncCommon):
     def handle(self, *args, **options):
         super(Command, self).handle(*args, **options)
 
-        if 'tenant_schemas.routers.TenantSyncRouter' not in settings.DATABASE_ROUTERS:
-            raise ImproperlyConfigured("DATABASE_ROUTERS setting must contain "
-                                       "'tenant_schemas.routers.TenantSyncRouter'.")
-
         if "south" in settings.INSTALLED_APPS:
             self.options["migrate"] = False
 

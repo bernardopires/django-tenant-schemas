@@ -55,10 +55,11 @@ def clean_tenant_url(url_string):
 
 
 def remove_www_and_dev(hostname):
-    """ 
+    """
     Legacy function - just in case someone is still using the old name
     """
     return remove_www(hostname)
+
 
 def remove_www(hostname):
     """

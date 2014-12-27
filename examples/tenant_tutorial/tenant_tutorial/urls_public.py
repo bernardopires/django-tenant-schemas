@@ -1,6 +1,6 @@
-from django.conf.urls import patterns
+from django.conf.urls import patterns, url
 from tenant_tutorial.views import HomeView
 
 urlpatterns = patterns('',
-   (r'^$', HomeView.as_view()),
-)
+                       url(r'^$', HomeView.as_view()),
+                       )

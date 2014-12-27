@@ -177,7 +177,7 @@ class TenantSyncTest(BaseTestCase):
         self.assertIn('django_session', tenant_tables)
 
     def test_content_types_is_not_mandatory(self):
-        """ 
+        """
         Tests that even if content types is in SHARED_APPS, it's
         not required in TENANT_APPS.
         """

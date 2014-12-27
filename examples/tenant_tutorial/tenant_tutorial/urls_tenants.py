@@ -1,6 +1,6 @@
-from django.conf.urls import patterns
+from django.conf.urls import patterns, url
 from customers.views import TenantView
 
 urlpatterns = patterns('',
-   (r'^$', TenantView.as_view()),
-)
+                       url(r'^$', TenantView.as_view()),
+                       )

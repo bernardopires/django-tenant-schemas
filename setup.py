@@ -35,7 +35,7 @@ setup(
         'Programming Language :: Python',
     ],
     install_requires=[
-        'Django >= 1.2.0',
+        'Django >= 1.2.0, < 1.7',
         'psycopg2',
     ],
     zip_safe=False,

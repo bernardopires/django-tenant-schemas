@@ -38,7 +38,7 @@ Add the middleware ``tenant_schemas.middleware.TenantMiddleware`` to the top of 
         #...
     )
     
-Make sure you have ``django.core.context_processors.request`` listed under ``TEMPLATE_CONTEXT_PROCESSORS`` else the tenant will not be available at ``request``.
+Make sure you have ``django.core.context_processors.request`` listed under ``TEMPLATE_CONTEXT_PROCESSORS`` else the tenant will not be available on ``request``.
 
 .. code-block:: python
 
@@ -49,7 +49,7 @@ Make sure you have ``django.core.context_processors.request`` listed under ``TEM
     
 The Tenant Model
 ================
-Now we have to create your tenant model. To allow the flexibility of having any data in you want in your tenant, we have a mixin called ``TenantMixin`` which you **have to** inherit from. This Mixin only has two fields (``domain_url`` and ``schema_name``) and both are required. Here's an example, suppose we have an app named ``customers`` and we want to create a model called ``Client``.
+Now we have to create your tenant model. Your tenant model can contain whichever fields you want, however, you **must** inherit from ``TenantMixin``. This Mixin only has two fields (``domain_url`` and ``schema_name``) and both are required. Here's an example, suppose we have an app named ``customers`` and we want to create a model called ``Client``.
 
 .. code-block:: python
 
@@ -67,7 +67,7 @@ Now we have to create your tenant model. To allow the flexibility of having any 
 
 Configure Tenant and Shared Applications
 ========================================
-By default all apps will be synced to your ``public`` schema and to your tenant schemas. If you want to make use of shared and tenant-specific applications, there are two additional settings called ``SHARED_APPS`` and ``TENANT_APPS``. ``SHARED_APPS`` is a tuple of strings just like ``INSTALLED_APPS`` and should contain all apps that you want to be synced to ``public``. If ``SHARED_APPS`` is set, then these are the only apps that will be to your ``public`` schema! The same applies for ``TENANT_APPS``, it expects a tuple of strings where each string is an app. If set, only those applications will be synced to all your tenants. Here's a sample setting
+To make use of shared and tenant-specific applications, there are two settings called ``SHARED_APPS`` and ``TENANT_APPS``. ``SHARED_APPS`` is a tuple of strings just like ``INSTALLED_APPS`` and should contain all apps that you want to be synced to ``public``. If ``SHARED_APPS`` is set, then these are the only apps that will be synced to your ``public`` schema! The same applies for ``TENANT_APPS``, it expects a tuple of strings where each string is an app. If set, only those applications will be synced to all your tenants. Here's a sample setting
 
 .. code-block:: python
 
@@ -95,10 +95,6 @@ By default all apps will be synced to your ``public`` schema and to your tenant 
     )
 
     INSTALLED_APPS = SHARED_APPS + TENANT_APPS
-    
-.. warning::
-
-   As of now it's not possible to have a centralized ``django.contrib.auth``.
 
 You also have to set where your tenant model is.
 
@@ -106,7 +102,7 @@ You also have to set where your tenant model is.
 
     TENANT_MODEL = "customers.Client" # app.Model
     
-Now run ``sync_schemas``, this will create the shared apps on the ``public`` schema. Note: your database should be empty if this is the first time you're running this command.
+Now run ``sync_schemas --shared``, this will create the shared apps on the ``public`` schema. Note: your database should be empty if this is the first time you're running this command.
 
 .. code-block:: bash
 
@@ -169,7 +165,7 @@ Optional Settings
 
     :Default: ``'public'``
     
-    The schema name that will be treated as ``public``, that is, where the ``SHARED_APPS`` will be installed.
+    The schema name that will be treated as ``public``, that is, where the ``SHARED_APPS`` will be created.
     
 .. attribute:: TENANT_CREATION_FAKES_MIGRATIONS
 
@@ -209,7 +205,7 @@ If your projects are ran using a WSGI configuration, this can be done by creatin
 
 If you put this in the same Django project, you can make a new ``settings_public.py`` which points to a different ``urls_public.py``. This has the advantage that you can use the same apps that you use for your tenant websites.
 
-Or you can create a completely separate project for the main website, but be aware that if you specify a PostgreSQL database in the ``DATABASES`` setting in ``settings.py``, Django will use its default ``public`` schema as `described in the PostgreSQL documentation <http://www.postgresql.org/docs/9.2/static/ddl-schemas.html#DDL-SCHEMAS-PUBLIC>`_.
+Or you can create a completely separate project for the main website.
 
 Configuring your Apache Server (optional)
 =========================================

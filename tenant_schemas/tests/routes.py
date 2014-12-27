@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.test.client import RequestFactory
+from tenant_schemas import get_public_schema_name
 
 from tenant_schemas.middleware import TenantMiddleware
 from tenant_schemas.tests.models import Tenant
@@ -6,6 +8,18 @@ from tenant_schemas.tests.testcases import BaseTestCase
 
 
 class RoutesTestCase(BaseTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super(RoutesTestCase, cls).setUpClass()
+        settings.SHARED_APPS = ('tenant_schemas', )
+        settings.TENANT_APPS = ('dts_test_app',
+                                'django.contrib.contenttypes',
+                                'django.contrib.auth', )
+        settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
+        cls.sync_shared()
+        cls.public_tenant = Tenant(domain_url='test.com', schema_name=get_public_schema_name())
+        cls.public_tenant.save()
+
     def setUp(self):
         super(RoutesTestCase, self).setUp()
         self.factory = RequestFactory()
@@ -17,7 +31,7 @@ class RoutesTestCase(BaseTestCase):
 
     def test_tenant_routing(self):
         """
-        request path should not be altered
+        Request path should not be altered.
         """
         request_url = '/any/request/'
         request = self.factory.get('/any/request/',
@@ -31,11 +45,11 @@ class RoutesTestCase(BaseTestCase):
 
     def test_public_schema_routing(self):
         """
-        request path should not be altered
+        Request path should not be altered.
         """
         request_url = '/any/request/'
         request = self.factory.get('/any/request/',
-                                   HTTP_HOST=self.public_tenant_domain)
+                                   HTTP_HOST=self.public_tenant.domain_url)
         self.tm.process_request(request)
 
         self.assertEquals(request.path_info, request_url)

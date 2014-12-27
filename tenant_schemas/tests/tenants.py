@@ -1,19 +1,33 @@
 from django.conf import settings
 from django.db import connection
 
-from tenant_schemas.tests.models import Tenant, NonAutoSyncTenant, DummyModel
-from tenant_schemas.tests.testcases import BaseTestCase
-from tenant_schemas.utils import tenant_context, schema_context, schema_exists, get_tenant_model
+from dts_test_app.models import DummyModel
 from tenant_schemas.test.cases import TenantTestCase
+from tenant_schemas.tests.models import Tenant, NonAutoSyncTenant
+from tenant_schemas.tests.testcases import BaseTestCase
+from tenant_schemas.utils import tenant_context, schema_context, schema_exists, get_tenant_model, get_public_schema_name
 
-class TenantTest(BaseTestCase):
-    def tearDown(self):
-        super(TenantTest, self).tearDown()
-        NonAutoSyncTenant.objects.all().delete()
+
+class TenantDataAndSettingsTest(BaseTestCase):
+    """
+    Tests if the tenant model settings work properly and if data can be saved
+    and persisted to different tenants.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super(TenantDataAndSettingsTest, cls).setUpClass()
+        settings.SHARED_APPS = ('tenant_schemas', )
+        settings.TENANT_APPS = ('dts_test_app',
+                                'django.contrib.contenttypes',
+                                'django.contrib.auth', )
+        settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
+        cls.sync_shared()
+        Tenant(domain_url='test.com', schema_name=get_public_schema_name()).save()
 
     def test_tenant_schema_is_created(self):
         """
-        when saving a tenant, it's schema should be created
+        When saving a tenant, it's schema should be created.
         """
         tenant = Tenant(domain_url='something.test.com', schema_name='test')
         tenant.save()
@@ -22,8 +36,8 @@ class TenantTest(BaseTestCase):
 
     def test_non_auto_sync_tenant(self):
         """
-        when saving a tenant that has the flag auto_create_schema as
-        False, the schema should not be created when saving the tenant
+        When saving a tenant that has the flag auto_create_schema as
+        False, the schema should not be created when saving the tenant.
         """
         self.assertFalse(schema_exists('non_auto_sync_tenant'))
 
@@ -35,7 +49,7 @@ class TenantTest(BaseTestCase):
 
     def test_sync_tenant(self):
         """
-        when editing an existing tenant, all data should be kept
+        When editing an existing tenant, all data should be kept.
         """
         tenant = Tenant(domain_url='something.test.com', schema_name='test')
         tenant.save()
@@ -58,8 +72,6 @@ class TenantTest(BaseTestCase):
         self.assertEquals(DummyModel.objects.count(), 2)
 
     def test_switching_search_path(self):
-        dummies_tenant1_count, dummies_tenant2_count = 0, 0
-
         tenant1 = Tenant(domain_url='something.test.com',
                          schema_name='tenant1')
         tenant1.save()
@@ -71,25 +83,23 @@ class TenantTest(BaseTestCase):
         # go to tenant1's path
         connection.set_tenant(tenant1)
 
-        # add some data
+        # add some data, 2 DummyModels for tenant1
         DummyModel(name="Schemas are").save()
         DummyModel(name="awesome!").save()
-        dummies_tenant1_count = DummyModel.objects.count()
 
         # switch temporarily to tenant2's path
         with tenant_context(tenant2):
-            # add some data
+            # add some data, 3 DummyModels for tenant2
             DummyModel(name="Man,").save()
             DummyModel(name="testing").save()
             DummyModel(name="is great!").save()
-            dummies_tenant2_count = DummyModel.objects.count()
 
         # we should be back to tenant1's path, test what we have
-        self.assertEqual(DummyModel.objects.count(), dummies_tenant1_count)
+        self.assertEqual(2, DummyModel.objects.count())
 
         # switch back to tenant2's path
         with tenant_context(tenant2):
-            self.assertEqual(DummyModel.objects.count(), dummies_tenant2_count)
+            self.assertEqual(3, DummyModel.objects.count())
 
     def test_switching_tenant_without_previous_tenant(self):
         tenant = Tenant(domain_url='something.test.com', schema_name='test')
@@ -104,10 +114,99 @@ class TenantTest(BaseTestCase):
             DummyModel(name="Survived it!").save()
 
 
+class TenantSyncTest(BaseTestCase):
+    """
+    Tests if the shared apps and the tenant apps get synced correctly
+    depending on if the public schema or a tenant is being synced.
+    """
+
+    def test_shared_apps_does_not_sync_tenant_apps(self):
+        """
+        Tests that if an app is in SHARED_APPS, it does not get synced to
+        the a tenant schema.
+        """
+        settings.SHARED_APPS = ('tenant_schemas',  # 2 tables
+                                'django.contrib.auth',  # 6 tables
+                                'django.contrib.contenttypes', )  # 1 table
+        settings.TENANT_APPS = ('django.contrib.sessions', )
+        settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
+        self.sync_shared()
+
+        shared_tables = self.get_tables_list_in_schema(get_public_schema_name())
+        self.assertEqual(2+6+1, len(shared_tables))
+        self.assertNotIn('django_session', shared_tables)
+
+    def test_tenant_apps_does_not_sync_shared_apps(self):
+        """
+        Tests that if an app is in TENANT_APPS, it does not get synced to
+        the public schema.
+        """
+        settings.SHARED_APPS = ('tenant_schemas',
+                                'django.contrib.auth',
+                                'django.contrib.contenttypes', )
+        settings.TENANT_APPS = ('django.contrib.sessions', )  # 1 table
+        settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
+        self.sync_shared()
+        tenant = Tenant(domain_url='arbitrary.test.com', schema_name='test')
+        tenant.save()
+
+        tenant_tables = self.get_tables_list_in_schema(tenant.schema_name)
+        self.assertEqual(1, len(tenant_tables))
+        self.assertIn('django_session', tenant_tables)
+
+    def test_tenant_apps_and_shared_apps_can_have_the_same_apps(self):
+        """
+        Tests that both SHARED_APPS and TENANT_APPS can have apps in common.
+        In this case they should get synced to both tenant and public schemas.
+        """
+        settings.SHARED_APPS = ('tenant_schemas',  # 2 tables
+                                'django.contrib.auth',  # 6 tables
+                                'django.contrib.contenttypes',  # 1 table
+                                'django.contrib.sessions', )  # 1 table
+        settings.TENANT_APPS = ('django.contrib.sessions', )  # 1 table
+        settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
+        self.sync_shared()
+        tenant = Tenant(domain_url='arbitrary.test.com', schema_name='test')
+        tenant.save()
+
+        shared_tables = self.get_tables_list_in_schema(get_public_schema_name())
+        tenant_tables = self.get_tables_list_in_schema(tenant.schema_name)
+        self.assertEqual(2+6+1+1, len(shared_tables))
+        self.assertIn('django_session', tenant_tables)
+        self.assertEqual(1, len(tenant_tables))
+        self.assertIn('django_session', tenant_tables)
+
+    def test_content_types_is_not_mandatory(self):
+        """ 
+        Tests that even if content types is in SHARED_APPS, it's
+        not required in TENANT_APPS.
+        """
+        settings.SHARED_APPS = ('tenant_schemas',  # 2 tables
+                                'django.contrib.contenttypes', )  # 1 table
+        settings.TENANT_APPS = ('django.contrib.sessions', )  # 1 table
+        settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
+        self.sync_shared()
+        tenant = Tenant(domain_url='something.test.com', schema_name='test')
+        tenant.save()
+
+        shared_tables = self.get_tables_list_in_schema(get_public_schema_name())
+        tenant_tables = self.get_tables_list_in_schema(tenant.schema_name)
+        self.assertEqual(2+1, len(shared_tables))
+        self.assertIn('django_session', tenant_tables)
+        self.assertEqual(1, len(tenant_tables))
+        self.assertIn('django_session', tenant_tables)
+
+
 class TenantTestCaseTest(BaseTestCase, TenantTestCase):
+    """
+    Tests that the tenant created inside TenantTestCase persists on
+    all functions.
+    """
+
     def test_tenant_survives_after_method1(self):
-        # There are two tenants (public plus the one created by TenantTestCase)
-        self.assertEquals(1 + 1, get_tenant_model().objects.all().count())
+        # There is one tenant in the database, the one created by TenantTestCase
+        self.assertEquals(1, get_tenant_model().objects.all().count())
 
     def test_tenant_survives_after_method2(self):
-        self.assertEquals(1 + 1, get_tenant_model().objects.all().count())
+        # The same tenant still exists even after the previous method call
+        self.assertEquals(1, get_tenant_model().objects.all().count())

@@ -1,51 +1,52 @@
 from django.conf import settings
+from django.core.management import call_command
 from django.db import connection
-from django.test import TransactionTestCase
+from django.test import TestCase
 
-from .models import Tenant
-from ..utils import get_public_schema_name
+from tenant_schemas.utils import get_public_schema_name
 
 
-class BaseTestCase(TransactionTestCase):
-    """ Base test case that comes packed with overloaded INSTALLED_APPS,
-        custom public tenant, and schemas cleanup on tearDown.
+class BaseTestCase(TestCase):
+    """
+    Base test case that comes packed with overloaded INSTALLED_APPS,
+    custom public tenant, and schemas cleanup on tearDown.
     """
     @classmethod
     def setUpClass(cls):
-        # settings needs some patching
         settings.TENANT_MODEL = 'tenant_schemas.Tenant'
-        settings.TENANT_APPS = ('tenant_schemas',
+        settings.SHARED_APPS = ('tenant_schemas', )
+        settings.TENANT_APPS = ('dts_test_app',
                                 'django.contrib.contenttypes',
                                 'django.contrib.auth', )
+        settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
+
+        # Django calls syncdb by default for the test database, but we want
+        # a blank public schema for this set of tests.
+        connection.set_schema_to_public()
+        cursor = connection.cursor()
+        cursor.execute('DROP SCHEMA %s CASCADE; CREATE SCHEMA %s;'
+                       % (get_public_schema_name(), get_public_schema_name(), ))
         super(BaseTestCase, cls).setUpClass()
 
     def setUp(self):
         connection.set_schema_to_public()
+        super(BaseTestCase, self).setUp()
 
-        # add the public tenant
-        self.public_tenant_domain = 'test.com'
-        self.public_tenant = Tenant(domain_url=self.public_tenant_domain,
-                                    schema_name='public')
-        self.public_tenant.save()
-
-        connection.set_schema_to_public()
-
-    def tearDown(self):
-        """
-        Delete all tenant schemas. Tenant schema are not deleted
-        automatically by django.
-        """
-        connection.set_schema_to_public()
-        do_not_delete = [get_public_schema_name(), 'information_schema']
+    @classmethod
+    def get_tables_list_in_schema(cls, schema_name):
         cursor = connection.cursor()
+        sql = """SELECT table_name FROM information_schema.tables
+              WHERE table_schema = %s"""
+        cursor.execute(sql, (schema_name, ))
+        return [row[0] for row in cursor.fetchall()]
 
-        # Use information_schema.schemata instead of pg_catalog.pg_namespace in
-        # utils.schema_exists, so that we only "see" schemas that we own
-        cursor.execute('SELECT schema_name FROM information_schema.schemata')
-
-        for row in cursor.fetchall():
-            if not row[0].startswith('pg_') and row[0] not in do_not_delete:
-                print("Deleting schema %s" % row[0])
-                cursor.execute('DROP SCHEMA %s CASCADE' % row[0])
-
-        Tenant.objects.all().delete()
+    @classmethod
+    def sync_shared(cls):
+        call_command('sync_schemas',
+                     schema_name=get_public_schema_name(),
+                     tenant=False,
+                     public=True,
+                     interactive=False,
+                     migrate_all=True,
+                     verbosity=0,
+                     )

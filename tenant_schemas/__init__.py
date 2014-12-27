@@ -19,6 +19,9 @@ if not settings.TENANT_APPS:
     raise ImproperlyConfigured("TENANT_APPS is empty. "
                                "Maybe you don't need this app?")
 
+if not hasattr(settings, 'TENANT_MODEL'):
+    raise ImproperlyConfigured('TENANT_MODEL setting not set')
+
 if settings.INSTALLED_APPS[-1] != 'tenant_schemas':
     warnings.warn(recommended_config, SyntaxWarning)
 

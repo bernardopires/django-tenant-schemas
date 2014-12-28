@@ -1,7 +1,8 @@
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.db import connection
 
-from dts_test_app.models import DummyModel
+from dts_test_app.models import DummyModel, ModelWithFkToPublicUser
 from tenant_schemas.test.cases import TenantTestCase
 from tenant_schemas.tests.models import Tenant, NonAutoSyncTenant
 from tenant_schemas.tests.testcases import BaseTestCase
@@ -195,6 +196,85 @@ class TenantSyncTest(BaseTestCase):
         self.assertIn('django_session', tenant_tables)
         self.assertEqual(1, len(tenant_tables))
         self.assertIn('django_session', tenant_tables)
+
+
+class SharedAuthTest(BaseTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super(SharedAuthTest, cls).setUpClass()
+        settings.SHARED_APPS = ('tenant_schemas',
+                                'django.contrib.auth',
+                                'django.contrib.contenttypes', )
+        settings.TENANT_APPS = ('dts_test_app', )
+        settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
+        cls.sync_shared()
+        Tenant(domain_url='test.com', schema_name=get_public_schema_name()).save()
+
+        # Create a tenant
+        cls.tenant = Tenant(domain_url='tenant.test.com', schema_name='tenant')
+        cls.tenant.save()
+
+        # Create some users
+        with schema_context(get_public_schema_name()):  # this could actually also be executed inside a tenant
+            cls.user1 = User(username='arbitrary-1', email="arb1@test.com")
+            cls.user1.save()
+            cls.user2 = User(username='arbitrary-2', email="arb2@test.com")
+            cls.user2.save()
+
+        # Create instances on the tenant that point to the users on public
+        with tenant_context(cls.tenant):
+            cls.d1 = ModelWithFkToPublicUser(user=cls.user1)
+            cls.d1.save()
+            cls.d2 = ModelWithFkToPublicUser(user=cls.user2)
+            cls.d2.save()
+
+    def test_cross_schema_constraint_gets_created(self):
+        """
+        Tests that a foreign key constraint gets created even for cross schema references.
+        """
+        sql = """
+        SELECT
+            tc.constraint_name, tc.table_name, kcu.column_name,
+            ccu.table_name AS foreign_table_name,
+            ccu.column_name AS foreign_column_name
+        FROM
+            information_schema.table_constraints AS tc
+            JOIN information_schema.key_column_usage AS kcu
+              ON tc.constraint_name = kcu.constraint_name
+            JOIN information_schema.constraint_column_usage AS ccu
+              ON ccu.constraint_name = tc.constraint_name
+        WHERE constraint_type = 'FOREIGN KEY' AND tc.table_name=%s
+        """
+        cursor = connection.cursor()
+        cursor.execute(sql, (ModelWithFkToPublicUser._meta.db_table, ))
+        fk_constraints = cursor.fetchall()
+        self.assertEqual(1, len(fk_constraints))
+
+        # The foreign key should reference the primary key of the user table
+        fk = fk_constraints[0]
+        self.assertEqual(User._meta.db_table, fk[3])
+        self.assertEqual('id', fk[4])
+
+    def test_direct_relation_to_public(self):
+        """
+        Tests that a forward relationship through a foreign key to public from a model inside TENANT_APPS works.
+        """
+        with tenant_context(self.tenant):
+            self.assertEqual(User.objects.get(pk=self.user1.id),
+                             ModelWithFkToPublicUser.objects.get(pk=self.d1.id).user)
+            self.assertEqual(User.objects.get(pk=self.user2.id),
+                             ModelWithFkToPublicUser.objects.get(pk=self.d2.id).user)
+
+    def test_reverse_relation_to_public(self):
+        """
+        Tests that a reverse relationship through a foreign keys to public from a model inside TENANT_APPS works.
+        """
+        with tenant_context(self.tenant):
+            users = User.objects.all().select_related().order_by('id')
+            self.assertEqual(ModelWithFkToPublicUser.objects.get(pk=self.d1.id),
+                             users[0].modelwithfktopublicuser_set.all()[:1].get())
+            self.assertEqual(ModelWithFkToPublicUser.objects.get(pk=self.d2.id),
+                             users[1].modelwithfktopublicuser_set.all()[:1].get())
 
 
 class TenantTestCaseTest(BaseTestCase, TenantTestCase):

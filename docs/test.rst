@@ -3,7 +3,7 @@ Tests
 ==================
 Running the tests
 -----------------
-If you're using South, don't forget to set ``SOUTH_TESTS_MIGRATE = False``.
+If you're using South, don't forget to set ``SOUTH_TESTS_MIGRATE = False``. Run these tests from the project ``dts_test_project``, it comes prepacked with the correct settings file and extra apps to enable tests to ensure different apps can exist in ``SHARED_APPS`` and ``TENANT_APPS``.
 
 .. code-block:: bash
 

@@ -7,7 +7,7 @@ include version.py
 include VERSION
 recursive-include docs *
 recursive-include examples *
-recursive-include dts_test_project
+recursive-include dts_test_project *
 
 # exclude all bytecode
 global-exclude *.pyo

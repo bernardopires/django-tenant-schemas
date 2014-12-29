@@ -113,7 +113,7 @@ Your ``DATABASE_ENGINE`` setting needs to be changed to
             'ENGINE': 'tenant_schemas.postgresql_backend',
             # ..
         }
-    }
+    }    
 
 Add the middleware ``tenant_schemas.middleware.TenantMiddleware`` to the
 top of ``MIDDLEWARE_CLASSES``, so that each request can be set to use
@@ -124,6 +124,16 @@ the correct schema.
     MIDDLEWARE_CLASSES = (
         'tenant_schemas.middleware.TenantMiddleware',
         #...
+    )
+    
+Add ``tenant_schemas.routers.TenantSyncRouter`` to your `DATABASE_ROUTERS` 
+setting, so that the correct apps can be synced, depending on what's 
+being synced (shared or tenant).
+
+::
+
+    DATABASE_ROUTERS = (
+        'tenant_schemas.routers.TenantSyncRouter',
     )
 
 Add ``tenant_schemas`` to your ``INSTALLED_APPS``.

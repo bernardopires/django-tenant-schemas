@@ -34,19 +34,26 @@ class Command(SyncCommon):
         self._clear_south_cache()
 
     def _save_south_settings(self):
-        self._old_south_modules = None
         if hasattr(settings, "SOUTH_MIGRATION_MODULES") and settings.SOUTH_MIGRATION_MODULES is not None:
             self._old_south_modules = settings.SOUTH_MIGRATION_MODULES.copy()
         else:
+            self._old_south_modules = None
             settings.SOUTH_MIGRATION_MODULES = dict()
 
     def _restore_south_settings(self):
-        settings.SOUTH_MIGRATION_MODULES = self._old_south_modules
+        if self._old_south_modules is None and hasattr(settings, "SOUTH_MIGRATION_MODULES"):
+            del settings.SOUTH_MIGRATION_MODULES
+        else:
+            settings.SOUTH_MIGRATION_MODULES = self._old_south_modules
 
     def _clear_south_cache(self):
         for mig in list(migration.all_migrations()):
             delattr(mig._application, "migrations")
         Migrations._clear_cache()
+        for mig in list(migration.all_migrations()):
+            for m in mig:
+                m.calculate_dependencies()
+            mig._dependencies_done = False
 
     def _migrate_schema(self, tenant):
         connection.set_tenant(tenant, include_public=True)

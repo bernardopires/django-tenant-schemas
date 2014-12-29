@@ -49,7 +49,7 @@ class Command(SyncCommon):
         Migrations._clear_cache()
 
     def _migrate_schema(self, tenant):
-        connection.set_tenant(tenant, include_public=False)
+        connection.set_tenant(tenant, include_public=True)
         MigrateCommand().execute(*self.args, **self.options)
 
     def migrate_tenant_apps(self, schema_name=None):

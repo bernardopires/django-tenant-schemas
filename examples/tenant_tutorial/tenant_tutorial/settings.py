@@ -89,6 +89,10 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.app_directories.Loader',
 )
 
+DATABASE_ROUTERS = (
+    'tenant_schemas.routers.TenantSyncRouter',
+)
+
 MIDDLEWARE_CLASSES = (
     'tenant_tutorial.middleware.TenantTutorialMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -137,7 +141,11 @@ TENANT_APPS = (
 
 TENANT_MODEL = "customers.Client"  # app.Model
 
-INSTALLED_APPS = TENANT_APPS + SHARED_APPS + ('tenant_schemas',)
+import django
+if django.VERSION >= (1, 7, 0):
+    INSTALLED_APPS = list(set(TENANT_APPS + SHARED_APPS))
+else:
+    INSTALLED_APPS = TENANT_APPS + SHARED_APPS + ('tenant_schemas',)
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 

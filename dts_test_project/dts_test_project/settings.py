@@ -46,7 +46,11 @@ TENANT_APPS = (
 
 TENANT_MODEL = "customers.Client"  # app.Model
 
-INSTALLED_APPS = TENANT_APPS + SHARED_APPS + ('tenant_schemas',)
+import django
+if django.VERSION >= (1, 7, 0):
+    INSTALLED_APPS = list(set(TENANT_APPS + SHARED_APPS))
+else:
+    INSTALLED_APPS = TENANT_APPS + SHARED_APPS + ('tenant_schemas',)
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',

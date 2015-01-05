@@ -46,13 +46,7 @@ class MigrateSchemasCommand(SyncCommon):
 
     def run_migrations(self, schema_name, included_apps):
         self._notice("=== Running migrate for schema %s" % schema_name)
-        # The first step is ensuring the tenant schema already has a migrations table.
-        connection.set_schema(schema_name, include_public=False)
-        MigrationRecorder(connection).ensure_schema()  # Creates a migrations table if it doesn't exist.
-
-        # Now that the tenant schema has for sure a migrations table, we can include public and Django will only
-        # know about the migrations that were done on the tenant.
-        connection.set_schema(schema_name, include_public=True)
+        connection.set_schema(schema_name)
         command = MigrateCommand()
 
         defaults = {}

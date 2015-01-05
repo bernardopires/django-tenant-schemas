@@ -4,6 +4,7 @@ from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from tenant_schemas.utils import get_public_schema_name, get_limit_set_calls
+from tenant_schemas.postgresql_backend.introspection import DatabaseSchemaIntrospection
 import django.db.utils
 import psycopg2
 
@@ -44,6 +45,10 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
 
     def __init__(self, *args, **kwargs):
         super(DatabaseWrapper, self).__init__(*args, **kwargs)
+
+        # Use a patched version of the DatabaseIntrospection that only returns the table list for the
+        # currently selected schema.
+        self.introspection = DatabaseSchemaIntrospection(self)
         self.set_schema_to_public()
 
     def set_tenant(self, tenant, include_public=True):

@@ -95,7 +95,7 @@ To make use of shared and tenant-specific applications, there are two settings c
         'myapp.houses', 
     )
 
-    INSTALLED_APPS = SHARED_APPS + TENANT_APPS
+    INSTALLED_APPS = list(set(SHARED_APPS + TENANT_APPS))
 
 You also have to set where your tenant model is.
 
@@ -103,15 +103,19 @@ You also have to set where your tenant model is.
 
     TENANT_MODEL = "customers.Client" # app.Model
     
-Now run ``sync_schemas --shared``, this will create the shared apps on the ``public`` schema. Note: your database should be empty if this is the first time you're running this command.
+Now run ``migrate_schemas --shared`` (``sync_schemas --shared`` if you're on Django 1.6 or older), this will create the shared apps on the ``public`` schema. Note: your database should be empty if this is the first time you're running this command.
 
 .. code-block:: bash
 
+    # Django >= 1.7
+    python manage.py migrate_schemas --shared
+
+    # Django < 1.7
     python manage.py sync_schemas --shared
     
 .. warning::
 
-   Never use ``syncdb`` as it would sync *all* your apps to ``public``!
+   Never use ``migrate`` or ``syncdb`` as it would sync *all* your apps to ``public``!
     
 Lastly, you need to create a tenant whose schema is ``public`` and it's address is your domain URL. Please see the section on :doc:`use <use>`.
 
@@ -133,7 +137,7 @@ globally.
 
 South Migrations
 ================
-This app supports `South <http://south.aeracode.org/>`_  so if you haven't configured it yet and would like to:
+If you're on Django 1.6 or older, this app supports `South <http://south.aeracode.org/>`_  so if you haven't configured it yet and would like to:
 
 For Django 1.1 or below
 

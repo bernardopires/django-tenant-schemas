@@ -7,7 +7,7 @@ class TenantSyncRouter(object):
     depending if we are syncing the shared apps or the tenant apps.
     """
 
-    def allow_syncdb(self, db, model):
+    def allow_migrate(self, db, model):
         # the imports below need to be done here else django <1.5 goes crazy
         # https://code.djangoproject.com/ticket/20704
         from django.db import connection
@@ -21,3 +21,7 @@ class TenantSyncRouter(object):
                 return False
 
         return None
+
+    def allow_syncdb(self, db, model):
+        # allow_syncdb was changed to allow_migrate in django 1.7
+        return self.allow_migrate(db, model)

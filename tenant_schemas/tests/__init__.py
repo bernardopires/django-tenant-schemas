@@ -1,3 +1,2 @@
-from models import *
-from routes import *
-from tenants import *
+from test_routes import *
+from test_tenants import *

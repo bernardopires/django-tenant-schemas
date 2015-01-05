@@ -46,6 +46,8 @@ TENANT_APPS = (
 
 TENANT_MODEL = "customers.Client"  # app.Model
 
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+
 import django
 if django.VERSION >= (1, 7, 0):
     INSTALLED_APPS = list(set(TENANT_APPS + SHARED_APPS))

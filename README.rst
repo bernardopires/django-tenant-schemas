@@ -106,7 +106,7 @@ that you read the complete version at
 
 Your ``DATABASE_ENGINE`` setting needs to be changed to
 
-::
+.. code-block:: python
 
     DATABASES = {
         'default': {
@@ -119,7 +119,7 @@ Add the middleware ``tenant_schemas.middleware.TenantMiddleware`` to the
 top of ``MIDDLEWARE_CLASSES``, so that each request can be set to use
 the correct schema.
 
-::
+.. code-block:: python
 
     MIDDLEWARE_CLASSES = (
         'tenant_schemas.middleware.TenantMiddleware',
@@ -130,7 +130,7 @@ Add ``tenant_schemas.routers.TenantSyncRouter`` to your `DATABASE_ROUTERS`
 setting, so that the correct apps can be synced, depending on what's 
 being synced (shared or tenant).
 
-::
+.. code-block:: python
 
     DATABASE_ROUTERS = (
         'tenant_schemas.routers.TenantSyncRouter',
@@ -141,7 +141,7 @@ Add ``tenant_schemas`` to your ``INSTALLED_APPS``.
 Create your tenant model
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-::
+.. code-block:: python
 
     from django.db import models
     from tenant_schemas.models import TenantMixin
@@ -156,7 +156,7 @@ Define on ``settings.py`` which model is your tenant model. Assuming you
 created ``Client`` inside an app named ``customers``, your
 ``TENANT_MODEL`` should look like this:
 
-::
+.. code-block:: python
 
     TENANT_MODEL = "customers.Client" # app.Model
 
@@ -170,7 +170,7 @@ schema.
 Create your tenants just like a normal django model. Calling ``save``
 will automatically create and sync the schema.
 
-::
+.. code-block:: python
 
     from customers.models import Client
 

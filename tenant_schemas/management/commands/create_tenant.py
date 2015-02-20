@@ -3,7 +3,6 @@ from django.core import exceptions
 from django.core.management.base import BaseCommand
 from django.utils.encoding import force_str
 from django.utils.six.moves import input
-from django.conf import settings
 from django.db.utils import IntegrityError
 from tenant_schemas.utils import get_tenant_model
 
@@ -11,65 +10,51 @@ from tenant_schemas.utils import get_tenant_model
 class Command(BaseCommand):
     help = 'Create a tenant'
 
+    # Only use editable fields
+    fields = [field for field in get_tenant_model()._meta.fields if field.editable and not field.primary_key]
+
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
-        self.option_list = BaseCommand.option_list + (
-            make_option('--schema-name', help='Specifies the schema name for the tenant (e.g. "new_tenant").'),
-            make_option('--domain-url', help='Specifies the domain_url for the tenant (e.g. "new-tenant.localhost").'),
-        )
+
+        self.option_list = BaseCommand.option_list
+
+        for field in self.fields:
+            self.option_list += (make_option('--%s' % field.name,
+                                                 help='Specifies the %s for tenant.' % field.verbose_name), )
 
     def handle(self, *args, **options):
-        schema_name = options.get('schema_name', None)
-        domain_url = options.get('domain_url', None)
 
-        if schema_name:
-            if not domain_url:
-                base_domain = getattr(settings, 'TENANT_BASE_DOMAIN', 'localhost')
-                domain_url='{0}.{1}'.format(schema_name, base_domain)
+        tenant = {}
+        for field in self.fields:
+            tenant[field.name] = options.get(field.name, None)
 
-            tenant = self.store_tenant(
-                domain_url=domain_url,
-                schema_name=schema_name
-            )
-            if not tenant:
-                schema_name = None
+        saved = False
 
-        while schema_name is None:
-            if not schema_name:
-                input_msg = 'Schema name'
-                schema_name = input(force_str('%s: ' % input_msg))
+        while not saved:
+            for field in self.fields:
+                if not getattr(tenant, field.name, None):
+                    input_msg = field.verbose_name
+                    default = field.get_default()
+                    if default:
+                        input_msg = "%s (leave blank to use '%s')" % (input_msg, default)
+                    tenant[field.name] = input(force_str('%s: ' % input_msg)) or default
 
-            base_domain = getattr(settings, 'TENANT_BASE_DOMAIN', 'localhost')
-            default_domain_url='{0}.{1}'.format(schema_name, base_domain)
 
-            while domain_url is None:
-                if not domain_url:
-                    input_msg = 'Domain url'
-                    input_msg = "%s (leave blank to use '%s')" % (input_msg, default_domain_url)
-                    domain_url = input(force_str('%s: ' % input_msg)) or default_domain_url
-
-            tenant = self.store_tenant(
-                domain_url=domain_url,
-                schema_name=schema_name
-            )
-
-            if not tenant:
-                name = None
+            saved = self.store_tenant(**tenant)
+            if not saved:
+                tenant = {}
                 continue
 
 
-    def store_tenant(self, domain_url, schema_name):
+    def store_tenant(self, **fields):
         try:
-            client = get_tenant_model().objects.create(
-                domain_url=domain_url,
-                schema_name=schema_name
-            )
-            client.save()
-            return client
+            tenant = get_tenant_model().objects.create(**fields)
+            tenant.save()
+            return True
         except exceptions.ValidationError as e:
             self.stderr.write("Error: %s" % '; '.join(e.messages))
             name = None
             return False
         except IntegrityError as e:
-            self.stderr.write("Error: We've already got a tenant with that name or property.")
+            self.stderr.write("Error: Invalid value(s).")
             return False

@@ -1,5 +1,6 @@
 from optparse import make_option
 from django.core import exceptions
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils.encoding import force_str
 from django.utils.six.moves import input
@@ -20,7 +21,9 @@ class Command(BaseCommand):
 
         for field in self.fields:
             self.option_list += (make_option('--%s' % field.name,
-                                                 help='Specifies the %s for tenant.' % field.verbose_name), )
+                                             help='Specifies the %s for tenant.' % field.verbose_name), )
+        self.option_list += (make_option('-s', action="store_true",
+                                         help='Create a superuser afterwards.'),)
 
     def handle(self, *args, **options):
 
@@ -45,6 +48,9 @@ class Command(BaseCommand):
                 tenant = {}
                 continue
 
+        if options.get('s', None):
+            print "Create superuser for %s" % tenant['schema_name']
+            call_command('createsuperuser', schema_name=tenant['schema_name'])
 
     def store_tenant(self, **fields):
         try:

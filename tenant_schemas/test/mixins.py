@@ -4,15 +4,16 @@ from django.db import connection
 
 from tenant_schemas.utils import get_tenant_model
 from tenant_schemas.utils import get_public_schema_name
-from tenant_schemas.middleware import TenantMiddleware
 
 
 class TenantRequestFactoryMixin(object):
-    tm = TenantMiddleware()
 
-    def __init__(self, tenant, **defaults):
+    def __init__(self, **defaults):
         super(TenantRequestFactoryMixin, self).__init__(**defaults)
-        self.tenant = tenant
+        # we will deduct the tenant from the db backend, which will be
+        # initialized by the test case class setup method, before the factory
+        # initialization
+        self.tenant = connection.tenant
 
     def get(self, path, data={}, **extra):
         if 'HTTP_HOST' not in extra:
@@ -44,45 +45,6 @@ class TenantRequestFactoryMixin(object):
             extra['HTTP_HOST'] = self.tenant.domain_url
 
         return super(TenantRequestFactoryMixin, self).delete(path, data, **extra)
-
-
-class TenantClientMixin(object):
-    tm = TenantMiddleware()
-
-    def __init__(self, tenant, enforce_csrf_checks=False, **defaults):
-        super(TenantClientMixin, self).__init__(enforce_csrf_checks, **defaults)
-        self.tenant = tenant
-
-    def get(self, path, data={}, **extra):
-        if 'HTTP_HOST' not in extra:
-            extra['HTTP_HOST'] = self.tenant.domain_url
-
-        return super(TenantClientMixin, self).get(path, data, **extra)
-
-    def post(self, path, data={}, **extra):
-        if 'HTTP_HOST' not in extra:
-            extra['HTTP_HOST'] = self.tenant.domain_url
-
-        return super(TenantClientMixin, self).post(path, data, **extra)
-
-    def patch(self, path, data={}, **extra):
-        if 'HTTP_HOST' not in extra:
-            extra['HTTP_HOST'] = self.tenant.domain_url
-
-        return super(TenantClientMixin, self).patch(path, data, **extra)
-
-    def put(self, path, data={}, **extra):
-        if 'HTTP_HOST' not in extra:
-            extra['HTTP_HOST'] = self.tenant.domain_url
-
-        return super(TenantClientMixin, self).put(path, data, **extra)
-
-    def delete(self, path, data='', content_type='application/octet-stream',
-               **extra):
-        if 'HTTP_HOST' not in extra:
-            extra['HTTP_HOST'] = self.tenant.domain_url
-
-        return super(TenantClientMixin, self).delete(path, data, **extra)
 
 
 class TenantTestCaseMixin(object):

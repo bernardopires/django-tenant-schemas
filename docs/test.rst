@@ -15,16 +15,30 @@ Because django will not create tenants for you during your tests, we have packed
 
 .. code-block:: python
 
+    from django.conf import settings
     from tenant_schemas.test.cases import TenantTestCase
-    from tenant_schemas.test.client import TenantClient
+
+    User = settings.AUTH_USER_MODEL
 
     class BaseSetup(TenantTestCase):
         def setUp(self):
-            self.c = TenantClient(self.tenant)
+            self.user = User.objects.create_user(
+                username='john.doe',
+                email='john.doe@nowhere.com',
+                password='qwerty'
+            )
             
         def test_user_profile_view(self):
-            response = self.c.get(reverse('user_profile'))
+            credentials = dict(
+                username='john.doe',
+                password='qwerty'
+            )
+            self.client.login(**credentials)
+            response = self.client.get(reverse('user_profile'))
             self.assertEqual(response.status_code, 200)
+            self.client.logout()
+
+Compared with version 1.5.2, we've specified the ``client_class`` for the ``TenantTestCase`` definition, therefor we have the client accessible from within the test case. Previous constructions where the client was instantiated explicitly should still work.
 
 Using Tom Christie's Django Rest Framework
 ------------------------------------------

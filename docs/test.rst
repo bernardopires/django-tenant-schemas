@@ -25,3 +25,30 @@ Because django will not create tenants for you during your tests, we have packed
         def test_user_profile_view(self):
             response = self.c.get(reverse('user_profile'))
             self.assertEqual(response.status_code, 200)
+
+Using Tom Christie's Django Rest Framework
+------------------------------------------
+If by any chance you're using Django Rest Framework, then you might want to use the particular unitary test classes from that package. In order to do that, just subclass your test cases from the specialized API class ``APITenantTestCase``. The example from above can be adapted like so
+
+.. code-block:: python
+
+    from django.conf import settings
+    from rest_framework import status
+    from tenant_schemas.test.drf.cases import APITenantTestCase
+
+    User = settings.AUTH_USER_MODEL
+
+    class BaseSetup(APITenantTestCase):
+        def setUp(self):
+            self.user = User.objects.create_user(
+                username='john.doe',
+                email='john.doe@nowhere.com',
+                password='qwerty'
+            )
+
+        def test_user_profile_view(self):
+            self.client.force_authenticate(self.user)
+            response = self.client.get(reverse('user_profile'))
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+By default, the APITestCase class has the client already embedded inside it's definition.

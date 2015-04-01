@@ -48,7 +48,7 @@ If by any chance you're using Django Rest Framework, then you might want to use 
 
     from django.conf import settings
     from rest_framework import status
-    from tenant_schemas.test.drf.cases import APITenantTestCase
+    from tenant_schemas.test.drf import APITenantTestCase
 
     User = settings.AUTH_USER_MODEL
 

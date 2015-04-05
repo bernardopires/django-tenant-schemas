@@ -128,13 +128,12 @@ class TenantWrappedCommand(InteractiveTenantOption, BaseCommand):
 
 
 class SyncCommon(BaseCommand):
-    option_list = (
-        make_option('--tenant', action='store_true', dest='tenant', default=False,
-                    help='Tells Django to populate only tenant applications.'),
-        make_option('--shared', action='store_true', dest='shared', default=False,
-                    help='Tells Django to populate only shared applications.'),
-        make_option("-s", "--schema", dest="schema_name"),
-    )
+    def add_arguments(self, parser):
+        parser.add_argument('--tenant', action='store_true', dest='tenant', default=False,
+                    help='Tells Django to populate only tenant applications.')
+        parser.add_argument('--shared', action='store_true', dest='shared', default=False,
+                    help='Tells Django to populate only shared applications.')
+        parser.add_argument("-s", "--schema", dest="schema_name")
 
     def handle(self, *args, **options):
         self.sync_tenant = options.get('tenant')

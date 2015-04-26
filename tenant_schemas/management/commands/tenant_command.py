@@ -33,3 +33,6 @@ class Command(InteractiveTenantOption, BaseCommand):
         connection.set_tenant(tenant)
 
         call_command(*args, **options)
+
+
+

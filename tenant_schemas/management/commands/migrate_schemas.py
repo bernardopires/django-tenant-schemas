@@ -1,9 +1,7 @@
 import django
-from optparse import NO_DEFAULT
 
 if django.VERSION >= (1, 7, 0):
     from django.core.management.commands.migrate import Command as MigrateCommand
-    from django.db.migrations.recorder import MigrationRecorder
 from django.db import connection, DEFAULT_DB_ALIAS
 from django.conf import settings
 
@@ -14,41 +12,30 @@ from tenant_schemas.management.commands import SyncCommon
 class MigrateSchemasCommand(SyncCommon):
     help = "Updates database schema. Manages both apps with migrations and those without."
 
-
     def add_arguments(self, parser):
         super(MigrateSchemasCommand, self).add_arguments(parser)
         parser.add_argument('app_label', nargs='?',
-            help='App label of an application to synchronize the state.')
+                            help='App label of an application to synchronize the state.')
         parser.add_argument('migration_name', nargs='?',
-            help=(
-                'Database state will be brought to the state after that '
-                'migration. Use the name "zero" to unapply all migrations.'
-            ),
-        )
+                            help=(
+                                'Database state will be brought to the state after that '
+                                'migration. Use the name "zero" to unapply all migrations.'
+                            ),)
         parser.add_argument('--noinput', action='store_false', dest='interactive', default=True,
-            help='Tells Django to NOT prompt the user for input of any kind.')
+                            help='Tells Django to NOT prompt the user for input of any kind.')
         parser.add_argument('--no-initial-data', action='store_false', dest='load_initial_data', default=True,
-            help='Tells Django not to load any initial data after database synchronization.')
+                            help='Tells Django not to load any initial data after database synchronization.')
         parser.add_argument('--database', action='store', dest='database',
-            default=DEFAULT_DB_ALIAS, help='Nominates a database to synchronize. '
-                'Defaults to the "default" database.')
+                            default=DEFAULT_DB_ALIAS, help='Nominates a database to synchronize. '
+                            'Defaults to the "default" database.')
         parser.add_argument('--fake', action='store_true', dest='fake', default=False,
-            help='Mark migrations as run without actually running them')
+                            help='Mark migrations as run without actually running them')
         parser.add_argument('--fake-initial', action='store_true', dest='fake_initial', default=False,
-            help='Detect if tables already exist and fake-apply initial migrations if so. Make sure '
-                 'that the current database schema matches your initial migration before using this '
-                 'flag. Django will only check for an existing table name.')
+                            help='Detect if tables already exist and fake-apply initial migrations if so. Make sure '
+                                 'that the current database schema matches your initial migration before using this '
+                                 'flag. Django will only check for an existing table name.')
         parser.add_argument('--list', '-l', action='store_true', dest='list', default=False,
-            help='Show a list of all known migrations and which are applied')
-
-    # def run_from_argv(self, argv):
-    #     """
-    #     Changes the option_list to use the options from the wrapped command.
-    #     Adds schema parameter to specify which schema will be used when
-    #     executing the wrapped command.
-    #     """
-    #     self.option_list += MigrateCommand.option_list
-    #     super(MigrateSchemasCommand, self).run_from_argv(argv)
+                            help='Show a list of all known migrations and which are applied')
 
     def handle(self, *args, **options):
         super(MigrateSchemasCommand, self).handle(*args, **options)
@@ -76,20 +63,14 @@ class MigrateSchemasCommand(SyncCommon):
         connection.set_schema(schema_name)
         command = MigrateCommand()
 
-        defaults = {}
-
-        # for key, opt in options.iteritems():
-        #     if opt.dest in options:
-        #         defaults[opt.dest] = self.options[opt.dest]
-        #     elif opt.default is NO_DEFAULT:
-        #         defaults[opt.dest] = None
-        #     else:
-        #         defaults[opt.dest] = opt.default
         command.execute(*self.args, **options)
         connection.set_schema_to_public()
 
 
-if django.VERSION >= (1, 7, 0):
+if django.VERSION >= (1, 8, 0):
     Command = MigrateSchemasCommand
+elif django.VERSION >= (1, 7, 0):
+    from .legacy.migrate_schemas_1_7 import MigrateSchemasCommand as MigrateSchemasCommand_1_7
+    Command = MigrateSchemasCommand_1_7
 else:
     from .legacy.migrate_schemas import Command

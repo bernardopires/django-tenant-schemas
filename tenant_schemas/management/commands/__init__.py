@@ -1,8 +1,10 @@
+import django
 from optparse import make_option
 from django.conf import settings
 from django.core.management import call_command, get_commands, load_command_class
 from django.core.management.base import BaseCommand, NoArgsCommand, CommandError
 from django.db import connection
+
 
 try:
     from django.utils.six.moves import input
@@ -128,7 +130,19 @@ class TenantWrappedCommand(InteractiveTenantOption, BaseCommand):
 
 
 class SyncCommon(BaseCommand):
+    # for django 1.7 and before
+    if django.VERSION < (1, 8, 0):
+
+        option_list = (
+            make_option('--tenant', action='store_true', dest='tenant', default=False,
+                        help='Tells Django to populate only tenant applications.'),
+            make_option('--shared', action='store_true', dest='shared', default=False,
+                        help='Tells Django to populate only shared applications.'),
+            make_option("-s", "--schema", dest="schema_name"),
+        )
+
     def add_arguments(self, parser):
+        # for django 1.7 and above
         parser.add_argument('--tenant', action='store_true', dest='tenant', default=False,
                     help='Tells Django to populate only tenant applications.')
         parser.add_argument('--shared', action='store_true', dest='shared', default=False,

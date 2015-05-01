@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.conf.global_settings import AUTH_USER_MODEL
 from django.db import models
 
 
@@ -13,4 +13,4 @@ class DummyModel(models.Model):
 
 
 class ModelWithFkToPublicUser(models.Model):
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(AUTH_USER_MODEL)

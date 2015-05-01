@@ -21,7 +21,7 @@ class Command(BaseCommand):
 
         for field in self.fields:
             self.option_list += (make_option('--%s' % field.name,
-                                             help='Specifies the %s for tenant.' % field.verbose_name), )
+                                             help='Specifies the %s for tenant.' % field.name), )
         self.option_list += (make_option('-s', action="store_true",
                                          help='Create a superuser afterwards.'),)
 
@@ -32,10 +32,9 @@ class Command(BaseCommand):
             tenant[field.name] = options.get(field.name, None)
 
         saved = False
-
         while not saved:
             for field in self.fields:
-                if not getattr(tenant, field.name, None):
+                if tenant.get(field.name, '') == '':
                     input_msg = field.verbose_name
                     default = field.get_default()
                     if default:

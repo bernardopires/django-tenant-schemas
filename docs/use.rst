@@ -112,6 +112,17 @@ The command ``createsuperuser`` is already automatically wrapped to have a ``sch
     ./manage.py createsuperuser --username='admin' --schema=customer1
 
 
+    
+create_tenant   
+~~~~~~~~~~~~~~~
+
+The command ``create_tenant`` creates a new schema
+
+.. code-block:: bash
+
+    ./manage.py create_tenant --domain_url=newtenant.net --schema_name=new_tenant --name=new_tenant --description="New tenant"
+
+
 Performance Considerations
 --------------------------
 

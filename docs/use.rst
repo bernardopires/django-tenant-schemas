@@ -112,15 +112,20 @@ The command ``createsuperuser`` is already automatically wrapped to have a ``sch
     ./manage.py createsuperuser --username='admin' --schema=customer1
 
 
-    
 create_tenant   
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 The command ``create_tenant`` creates a new schema
 
 .. code-block:: bash
 
     ./manage.py create_tenant --domain_url=newtenant.net --schema_name=new_tenant --name=new_tenant --description="New tenant"
+
+The argument are dynamic depending on the fields that are in the Client model.
+For example if you have a field in the client model called company you will be able to set this using --company=MyCompany.
+If no argument are specified for a field then you be promted for the values.
+There is an additional argument of -s which sets up a superuser for that tenant.
+
 
 
 Performance Considerations

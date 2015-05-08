@@ -3,7 +3,6 @@ from django.core import exceptions
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils.encoding import force_str
-from django.utils.six.moves import input
 from django.db.utils import IntegrityError
 from tenant_schemas.utils import get_tenant_model
 
@@ -41,14 +40,13 @@ class Command(BaseCommand):
                         input_msg = "%s (leave blank to use '%s')" % (input_msg, default)
                     tenant[field.name] = input(force_str('%s: ' % input_msg)) or default
 
-
             saved = self.store_tenant(**tenant)
             if not saved:
                 tenant = {}
                 continue
 
         if options.get('s', None):
-            print "Create superuser for %s" % tenant['schema_name']
+            self.stderr.write("Create superuser for %s" % tenant['schema_name'])
             call_command('createsuperuser', schema_name=tenant['schema_name'])
 
     def store_tenant(self, **fields):
@@ -58,8 +56,7 @@ class Command(BaseCommand):
             return True
         except exceptions.ValidationError as e:
             self.stderr.write("Error: %s" % '; '.join(e.messages))
-            name = None
             return False
-        except IntegrityError as e:
+        except IntegrityError:
             self.stderr.write("Error: Invalid value(s).")
             return False

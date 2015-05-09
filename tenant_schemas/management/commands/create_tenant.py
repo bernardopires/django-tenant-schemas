@@ -47,7 +47,7 @@ class Command(BaseCommand):
                 continue
 
         if options.get('s', None):
-            self.stderr.write("Create superuser for %s" % tenant['schema_name'])
+            self.stdout.write("Create superuser for %s" % tenant['schema_name'])
             call_command('createsuperuser', schema_name=tenant['schema_name'])
 
     def store_tenant(self, **fields):

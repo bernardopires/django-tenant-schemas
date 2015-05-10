@@ -25,6 +25,8 @@ class Command(BaseCommand):
         self.option_list += (make_option('-s', action="store_true",
                                          help='Create a superuser afterwards.'),)
 
+
+
     def handle(self, *args, **options):
 
         tenant = {}
@@ -48,7 +50,7 @@ class Command(BaseCommand):
 
         if options.get('s', None):
             self.stdout.write("Create superuser for %s" % tenant['schema_name'])
-            call_command('createsuperuser', schema_name=tenant['schema_name'])
+            call_command('create_tenant_superuser', schema_name=tenant['schema_name'], interactive=True)
 
     def store_tenant(self, **fields):
         try:

@@ -35,6 +35,11 @@ Because you have the tenant middleware installed, any request made to ``tenant.m
 
 Any call to the methods ``filter``, ``get``, ``save``, ``delete`` or any other function involving a database connection will now be done at the tenant's schema, so you shouldn't need to change anything at your views.
 
+Signals
+-------
+There is a signal called ```post_schema_sync``` that get called after the schema been migrated.
+
+
 Management commands
 -------------------
 Every command except tenant_command runs by default on all tenants. You can also create your own commands that run on every tenant by inheriting ``BaseTenantCommand``. To run only a particular schema, there is an optional argument called ``--schema``.

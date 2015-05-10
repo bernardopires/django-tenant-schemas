@@ -50,7 +50,6 @@ class TenantMixin(models.Model):
         if is_new and self.auto_create_schema:
             try:
                 self.create_schema(check_if_exists=True, verbosity=verbosity)
-                post_schema_sync.send(sender=TenantMixin, tenant=self)
             except:
                 # We failed creating the tenant, delete what we created and
                 # re-raise the exception
@@ -116,3 +115,4 @@ class TenantMixin(models.Model):
                                  verbosity=verbosity)
 
         connection.set_schema_to_public()
+        post_schema_sync.send(sender=TenantMixin, tenant=self)

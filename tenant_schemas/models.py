@@ -4,7 +4,7 @@ from django.db import models, connection
 from django.core.management import call_command
 
 from tenant_schemas.postgresql_backend.base import _check_schema_name
-from tenant_schemas.signals import post_schema_sync
+from tenant_schemas.signals import post_schema_sync, schema_needs_to_be_sync
 from tenant_schemas.utils import django_is_in_test_mode, schema_exists
 from tenant_schemas.utils import get_public_schema_name
 
@@ -55,6 +55,8 @@ class TenantMixin(models.Model):
                 # re-raise the exception
                 self.delete(force_drop=True)
                 raise
+        elif is_new:
+            schema_needs_to_be_sync.send(sender=TenantMixin, tenant=self)
 
     def delete(self, force_drop=False, *args, **kwargs):
         """

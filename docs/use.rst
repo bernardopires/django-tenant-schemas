@@ -37,7 +37,13 @@ Any call to the methods ``filter``, ``get``, ``save``, ``delete`` or any other f
 
 Signals
 -------
-There is a signal called ```post_schema_sync``` that get called after the schema been migrated.
+
+
+There are two signal one called ```post_schema_sync``` and the other called ```schema_needs_to_be_sync```
+
+```post_schema_sync``` get called after the schema been migrated.
+
+```schema_needs_to_be_sync``` get called if the schema needs to be migrated.
 
 
 Management commands

@@ -212,6 +212,24 @@ If you put this in the same Django project, you can make a new ``settings_public
 
 Or you can create a completely separate project for the main website.
 
+Caching
+-------
+
+To enable tenant aware caching you can set the `KEY_FUNCTION <https://docs.djangoproject.com/en/1.8/ref/settings/#std:setting-CACHES-KEY_FUNCTION>`_ setting to use the provided ``make_key`` helper function which
+adds the tenants ``schema_name`` as the first key prefix.
+
+.. code-block:: python
+
+    CACHES = {
+        "default": {
+            ...
+            'KEY_FUNCTION': 'tenant_schemas.cache.make_key',
+            'REVERSE_KEY_FUNCTION': 'tenant_schemas.cache.reverse_key',
+        },
+    }
+
+The ``REVERSE_KEY_FUNCTION`` setting is only required if you are using the `django-redis <https://github.com/niwinz/django-redis>`_ cache backend.
+
 Configuring your Apache Server (optional)
 =========================================
 Here's how you can configure your Apache server to route all subdomains to your django project so you don't have to setup any subdomains manually.
@@ -238,3 +256,4 @@ formats using `Sphinx <http://pypi.python.org/pypi/Sphinx>`_. To get started
     make html
 
 This creates the documentation in HTML format at ``docs/_build/html``.
+

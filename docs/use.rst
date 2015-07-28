@@ -111,6 +111,24 @@ The command ``createsuperuser`` is already automatically wrapped to have a ``sch
 
     ./manage.py createsuperuser --username='admin' --schema=customer1
 
+dumpdata
+~~~~~~~~
+
+The command ``dumpdata`` is already automatically wrapped to have a ``schema`` flag.
+
+.. code-block:: bash
+
+    ./manage.py dumpdata --schema=customer1
+
+loaddata
+~~~~~~~~
+
+The command ``loaddata`` is already automatically wrapped to have a ``schema`` flag.
+
+.. code-block:: bash
+
+    ./manage.py loaddata --schema=customer1
+
 
 Performance Considerations
 --------------------------

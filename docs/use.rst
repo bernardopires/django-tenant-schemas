@@ -129,6 +129,18 @@ The command ``loaddata`` is already automatically wrapped to have a ``schema`` f
 
     ./manage.py loaddata --schema=customer1
 
+list_tenants
+~~~~~~~~~~~~
+
+Prints to standard output a tab separated list of schema:domain_url values for each tenant.
+
+.. code-block:: bash
+
+    for t in $(./manage.py list_tenants | cut -f1);
+    do
+        ./manage.py dumpdata --schema=$t --indent=2 auth.user > ${t}_users.json;
+    done
+
 
 Performance Considerations
 --------------------------

@@ -35,6 +35,17 @@ Because you have the tenant middleware installed, any request made to ``tenant.m
 
 Any call to the methods ``filter``, ``get``, ``save``, ``delete`` or any other function involving a database connection will now be done at the tenant's schema, so you shouldn't need to change anything at your views.
 
+Signals
+-------
+
+
+There are two signal one called ```post_schema_sync``` and the other called ```schema_needs_to_be_sync```
+
+```post_schema_sync``` get called after the schema been migrated.
+
+```schema_needs_to_be_sync``` get called if the schema needs to be migrated.
+
+
 Management commands
 -------------------
 Every command except tenant_command runs by default on all tenants. You can also create your own commands that run on every tenant by inheriting ``BaseTenantCommand``. To run only a particular schema, there is an optional argument called ``--schema``.
@@ -102,14 +113,30 @@ If you don't specify a schema, you will be prompted to enter one. Otherwise, you
 
     ./manage.py tenant_command loaddata --schema=customer1
     
-createsuperuser   
-~~~~~~~~~~~~~~~
+create_tenant_superuser
+~~~~~~~~~~~~~~~~~~~~~~~
 
-The command ``createsuperuser`` is already automatically wrapped to have a ``schema`` flag. Create a new super user with
+The command ``create_tenant_superuser`` is already automatically wrapped to have a ``schema`` flag. Create a new super user with
 
 .. code-block:: bash
 
-    ./manage.py createsuperuser --username='admin' --schema=customer1
+    ./manage.py create_tenant_superuser --username='admin' --schema=customer1
+
+
+create_tenant   
+~~~~~~~~~~~~~
+
+The command ``create_tenant`` creates a new schema
+
+.. code-block:: bash
+
+    ./manage.py create_tenant --domain_url=newtenant.net --schema_name=new_tenant --name=new_tenant --description="New tenant"
+
+The argument are dynamic depending on the fields that are in the ``TenantMixin`` model.
+For example if you have a field in the ``TenantMixin`` model called company you will be able to set this using --company=MyCompany.
+If no argument are specified for a field then you be promted for the values.
+There is an additional argument of -s which sets up a superuser for that tenant.
+
 
 
 Performance Considerations

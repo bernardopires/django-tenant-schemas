@@ -1,4 +1,5 @@
 # Django settings for tenant_tutorial project.
+import sys
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -8,6 +9,12 @@ ADMINS = (
 )
 
 MANAGERS = ADMINS
+import os
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+PROJECT_DIR = os.path.join(BASE_DIR, os.pardir)
+
+TENANT_APPS_DIR = os.path.join(PROJECT_DIR, os.pardir)
+sys.path.insert(0, TENANT_APPS_DIR)
 
 DATABASES = {
     'default': {

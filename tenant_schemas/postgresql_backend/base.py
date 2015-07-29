@@ -1,7 +1,11 @@
 import re
 import warnings
 from django.conf import settings
-from django.utils.importlib import import_module
+try:
+    from importlib import import_module
+except ImportError:
+    from django.utils.importlib import import_module  # allows python 2.6 to work
+
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from tenant_schemas.utils import get_public_schema_name, get_limit_set_calls
 from tenant_schemas.postgresql_backend.introspection import DatabaseSchemaIntrospection

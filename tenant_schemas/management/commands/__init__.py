@@ -1,8 +1,10 @@
+import django
 from optparse import make_option
 from django.conf import settings
 from django.core.management import call_command, get_commands, load_command_class
 from django.core.management.base import BaseCommand, NoArgsCommand, CommandError
 from django.db import connection
+
 
 try:
     from django.utils.six.moves import input
@@ -32,19 +34,28 @@ class BaseTenantCommand(BaseCommand):
             cmdclass = load_command_class(app_name, obj.COMMAND_NAME)
 
         # inherit the options from the original command
-        obj.option_list = cmdclass.option_list
-        obj.option_list += (
-            make_option("-s", "--schema", dest="schema_name"),
-        )
-        obj.option_list += (
-            make_option("-p", "--skip-public", dest="skip_public", action="store_true", default=False),
-        )
+
+        if django.VERSION < (1, 8, 0):
+            obj.option_list = cmdclass.option_list
+
+
+            obj.option_list += (
+                make_option("-s", "--schema", dest="schema_name"),
+            )
+            obj.option_list += (
+                make_option("-p", "--skip-public", dest="skip_public", action="store_true", default=False),
+            )
 
         # prepend the command's original help with the info about schemata iteration
         obj.help = "Calls %s for all registered schemata. You can use regular %s options. " \
                    "Original help for %s: %s" % (obj.COMMAND_NAME, obj.COMMAND_NAME, obj.COMMAND_NAME,
                                                  getattr(cmdclass, 'help', 'none'))
         return obj
+
+    def add_arguments(self, parser):
+        super(BaseTenantCommand, self).add_arguments(parser)
+        parser.add_argument("-s", "--schema", dest="schema_name")
+        parser.add_argument("-p", "--skip-public", dest="skip_public", action="store_true", default=False)
 
     def execute_command(self, tenant, command_name, *args, **options):
         verbosity = int(options.get('verbosity'))
@@ -78,9 +89,13 @@ class BaseTenantCommand(BaseCommand):
 class InteractiveTenantOption(object):
     def __init__(self, *args, **kwargs):
         super(InteractiveTenantOption, self).__init__(*args, **kwargs)
-        self.option_list += (
-            make_option("-s", "--schema", dest="schema_name", help="specify tenant schema"),
-        )
+        if django.VERSION < (1, 8, 0):
+            self.option_list += (
+                make_option("-s", "--schema", dest="schema_name", help="specify tenant schema"),
+            )
+
+    def add_arguments(self, parser):
+        parser.add_argument("-s", "--schema", dest="schema_name", help="specify tenant schema")
 
     def get_tenant_from_options_or_interactive(self, **options):
         TenantModel = get_tenant_model()
@@ -126,15 +141,30 @@ class TenantWrappedCommand(InteractiveTenantOption, BaseCommand):
 
         self.command_instance.execute(*args, **options)
 
+    def add_arguments(self, parser):
+        super(TenantWrappedCommand, self).add_arguments(parser)
+        self.command_instance.add_arguments(parser)
+
 
 class SyncCommon(BaseCommand):
-    option_list = (
-        make_option('--tenant', action='store_true', dest='tenant', default=False,
-                    help='Tells Django to populate only tenant applications.'),
-        make_option('--shared', action='store_true', dest='shared', default=False,
-                    help='Tells Django to populate only shared applications.'),
-        make_option("-s", "--schema", dest="schema_name"),
-    )
+    # for django 1.7 and before
+    if django.VERSION < (1, 8, 0):
+
+        option_list = (
+            make_option('--tenant', action='store_true', dest='tenant', default=False,
+                        help='Tells Django to populate only tenant applications.'),
+            make_option('--shared', action='store_true', dest='shared', default=False,
+                        help='Tells Django to populate only shared applications.'),
+            make_option("-s", "--schema", dest="schema_name"),
+        )
+
+    def add_arguments(self, parser):
+        # for django 1.8 and above
+        parser.add_argument('--tenant', action='store_true', dest='tenant', default=False,
+                            help='Tells Django to populate only tenant applications.')
+        parser.add_argument('--shared', action='store_true', dest='shared', default=False,
+                            help='Tells Django to populate only shared applications.')
+        parser.add_argument("-s", "--schema", dest="schema_name")
 
     def handle(self, *args, **options):
         self.sync_tenant = options.get('tenant')

@@ -111,23 +111,23 @@ The command ``createsuperuser`` is already automatically wrapped to have a ``sch
 
     ./manage.py createsuperuser --username='admin' --schema=customer1
 
-dumpdata
-~~~~~~~~
+dumpdata_schemas
+~~~~~~~~~~~~~~~~
 
-The command ``dumpdata`` is already automatically wrapped to have a ``schema`` flag.
-
-.. code-block:: bash
-
-    ./manage.py dumpdata --schema=customer1
-
-loaddata
-~~~~~~~~
-
-The command ``loaddata`` is already automatically wrapped to have a ``schema`` flag.
+The command ``dumpdata`` is wrapped as ``dumpdata_schemas`` to have a ``schema`` flag.
 
 .. code-block:: bash
 
-    ./manage.py loaddata --schema=customer1
+    ./manage.py dumpdata_schemas --schema=customer1
+
+loaddata_schemas
+~~~~~~~~~~~~~~~~
+
+The command ``loaddata`` is wrapped as ``loaddata_schemas`` to have a ``schema`` flag.
+
+.. code-block:: bash
+
+    ./manage.py loaddata_schemas --schema=customer1
 
 list_tenants
 ~~~~~~~~~~~~
@@ -138,7 +138,7 @@ Prints to standard output a tab separated list of schema:domain_url values for e
 
     for t in $(./manage.py list_tenants | cut -f1);
     do
-        ./manage.py dumpdata --schema=$t --indent=2 auth.user > ${t}_users.json;
+        ./manage.py dumpdata_schemas --schema=$t --indent=2 auth.user > ${t}_users.json;
     done
 
 

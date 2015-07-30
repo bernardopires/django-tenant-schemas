@@ -2,7 +2,7 @@ from optparse import make_option
 from django.conf import settings
 from django.core.management import call_command, get_commands, load_command_class
 from django.core.management.base import BaseCommand, NoArgsCommand, CommandError
-from django.db import connection
+from django.db import connection, DEFAULT_DB_ALIAS
 
 try:
     from django.utils.six.moves import input
@@ -133,6 +133,14 @@ class SyncCommon(BaseCommand):
                     help='Tells Django to populate only tenant applications.'),
         make_option('--shared', action='store_true', dest='shared', default=False,
                     help='Tells Django to populate only shared applications.'),
+        make_option('--app_label', action='store', dest='app_label', nargs='?',
+                    help='App label of an application to synchronize the state.'),
+        make_option('--migration_name', action='store', dest='migration_name', nargs='?',
+                    help=('Database state will be brought to the state after that '
+                          'migration. Use the name "zero" to unapply all migrations.' ),
+        ),
+        make_option('--database', action='store', dest='database', default=DEFAULT_DB_ALIAS,
+                    help='Nominates a database to synchronize. Defaults to the "default" database.'),
         make_option("-s", "--schema", dest="schema_name"),
     )
 

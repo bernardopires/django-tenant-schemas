@@ -37,7 +37,32 @@ Any call to the methods ``filter``, ``get``, ``save``, ``delete`` or any other f
 
 Management commands
 -------------------
-Every command except tenant_command runs by default on all tenants. You can also create your own commands that run on every tenant by inheriting ``BaseTenantCommand``. To run only a particular schema, there is an optional argument called ``--schema``.
+Every command except tenant_command runs by default on all tenants. You can also create your own commands that run on every tenant by inheriting ``BaseTenantCommand``.
+
+For example, if you have the following ```do_foo``` command in the ```foo``` app:
+
+```foo/management/commands/do_foo.py```
+
+.. code-block:: python
+
+    from django.core.management.base import BaseCommand
+
+    class Command(BaseCommand):
+        def handle(self, *args, **options):
+            do_foo()
+
+You could create a wrapper command ```tenant_do_foo``` by using ```BaseTenantCommand``` like so:
+
+```foo/management/commands/tenant_do_foo.py```
+
+.. code-block:: python
+
+    from tenant_schemas.management.commands import BaseTenantCommand
+
+    class Command(BaseTenantCommand):
+        COMMAND_NAME = 'do_foo'
+
+To run only a particular schema, there is an optional argument called ``--schema``.
 
 .. code-block:: bash
 

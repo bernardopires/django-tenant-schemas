@@ -1,4 +1,5 @@
 import django
+import inspect
 from django.conf import settings
 from django.core.management import call_command
 from django.db import connection
@@ -34,6 +35,14 @@ class BaseTestCase(TestCase):
         super(BaseTestCase, self).setUp()
 
     @classmethod
+    def get_verbosity(self):
+        for s in reversed(inspect.stack()):
+            options = s[0].f_locals.get('options')
+            if isinstance(options, dict):
+                return int(options['verbosity'])
+        return 1
+
+    @classmethod
     def get_tables_list_in_schema(cls, schema_name):
         cursor = connection.cursor()
         sql = """SELECT table_name FROM information_schema.tables
@@ -47,7 +56,7 @@ class BaseTestCase(TestCase):
             call_command('migrate_schemas',
                          schema_name=get_public_schema_name(),
                          interactive=False,
-                         verbosity=0)
+                         verbosity=cls.get_verbosity())
         else:
             call_command('sync_schemas',
                          schema_name=get_public_schema_name(),
@@ -55,5 +64,4 @@ class BaseTestCase(TestCase):
                          public=True,
                          interactive=False,
                          migrate_all=True,
-                         verbosity=0,
-                         )
+                         verbosity=cls.get_verbosity())

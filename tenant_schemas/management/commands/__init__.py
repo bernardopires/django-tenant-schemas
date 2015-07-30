@@ -169,4 +169,5 @@ class SyncCommon(BaseCommand):
             self.shared_apps = settings.SHARED_APPS
 
     def _notice(self, output):
-        self.stdout.write(self.style.NOTICE(output))
+        if int(self.options.get('verbosity', 1)) >= 1:
+            self.stdout.write(self.style.NOTICE(output))

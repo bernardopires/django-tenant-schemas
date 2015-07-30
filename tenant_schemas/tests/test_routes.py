@@ -18,7 +18,7 @@ class RoutesTestCase(BaseTestCase):
         settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
         cls.sync_shared()
         cls.public_tenant = Tenant(domain_url='test.com', schema_name=get_public_schema_name())
-        cls.public_tenant.save()
+        cls.public_tenant.save(verbosity=BaseTestCase.get_verbosity())
 
     def setUp(self):
         super(RoutesTestCase, self).setUp()
@@ -27,7 +27,7 @@ class RoutesTestCase(BaseTestCase):
 
         self.tenant_domain = 'tenant.test.com'
         self.tenant = Tenant(domain_url=self.tenant_domain, schema_name='test')
-        self.tenant.save()
+        self.tenant.save(verbosity=BaseTestCase.get_verbosity())
 
     def test_tenant_routing(self):
         """

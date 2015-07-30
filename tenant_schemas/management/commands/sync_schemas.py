@@ -35,7 +35,8 @@ class Command(SyncCommon):
             self.sync_tenant_apps(self.schema_name)
 
     def _sync_tenant(self, tenant):
-        self._notice("=== Running syncdb for schema: %s" % tenant.schema_name)
+        if int(self.options.get('verbosity', 1)) >= 1:
+            self._notice("=== Running syncdb for schema: %s" % tenant.schema_name)
         connection.set_tenant(tenant, include_public=False)
         SyncdbCommand().execute(**self.options)
 

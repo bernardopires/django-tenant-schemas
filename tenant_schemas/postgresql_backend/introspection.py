@@ -3,6 +3,7 @@ from django.db.backends.postgresql_psycopg2.introspection import DatabaseIntrosp
 if django.VERSION >= (1, 8, 0):
     from django.db.backends.base.introspection import TableInfo
 
+
 class DatabaseSchemaIntrospection(DatabaseIntrospection):
     def get_table_list(self, cursor):
         "Returns a list of table names in the current database and schema."

@@ -136,7 +136,7 @@ class TenantSyncTest(BaseTestCase):
         self.sync_shared()
 
         shared_tables = self.get_tables_list_in_schema(get_public_schema_name())
-        self.assertEqual(2+6+1+self.MIGRATION_TABLE_SIZE, len(shared_tables))
+        self.assertEqual(2 + 6 + 1 + self.MIGRATION_TABLE_SIZE, len(shared_tables))
         self.assertNotIn('django_session', shared_tables)
 
     def test_tenant_apps_does_not_sync_shared_apps(self):
@@ -154,7 +154,7 @@ class TenantSyncTest(BaseTestCase):
         tenant.save()
 
         tenant_tables = self.get_tables_list_in_schema(tenant.schema_name)
-        self.assertEqual(1+self.MIGRATION_TABLE_SIZE, len(tenant_tables))
+        self.assertEqual(1 + self.MIGRATION_TABLE_SIZE, len(tenant_tables))
         self.assertIn('django_session', tenant_tables)
 
     def test_tenant_apps_and_shared_apps_can_have_the_same_apps(self):
@@ -174,9 +174,9 @@ class TenantSyncTest(BaseTestCase):
 
         shared_tables = self.get_tables_list_in_schema(get_public_schema_name())
         tenant_tables = self.get_tables_list_in_schema(tenant.schema_name)
-        self.assertEqual(2+6+1+1+self.MIGRATION_TABLE_SIZE, len(shared_tables))
+        self.assertEqual(2 + 6 + 1 + 1 + self.MIGRATION_TABLE_SIZE, len(shared_tables))
         self.assertIn('django_session', shared_tables)
-        self.assertEqual(1+self.MIGRATION_TABLE_SIZE, len(tenant_tables))
+        self.assertEqual(1 + self.MIGRATION_TABLE_SIZE, len(tenant_tables))
         self.assertIn('django_session', tenant_tables)
 
     def test_content_types_is_not_mandatory(self):
@@ -194,9 +194,9 @@ class TenantSyncTest(BaseTestCase):
 
         shared_tables = self.get_tables_list_in_schema(get_public_schema_name())
         tenant_tables = self.get_tables_list_in_schema(tenant.schema_name)
-        self.assertEqual(2+1+self.MIGRATION_TABLE_SIZE, len(shared_tables))
+        self.assertEqual(2 + 1 + self.MIGRATION_TABLE_SIZE, len(shared_tables))
         self.assertIn('django_session', tenant_tables)
-        self.assertEqual(1+self.MIGRATION_TABLE_SIZE, len(tenant_tables))
+        self.assertEqual(1 + self.MIGRATION_TABLE_SIZE, len(tenant_tables))
         self.assertIn('django_session', tenant_tables)
 
 

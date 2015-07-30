@@ -33,7 +33,7 @@ class TenantView(FormView):
             first_name = choice(first_names)
             last_name = choice(last_names)
             try:
-                user = User(username=(first_name+last_name).lower(),
+                user = User(username=(first_name + last_name).lower(),
                             email="%s@%s.com" % (first_name, last_name),
                             first_name=first_name,
                             last_name=last_name)

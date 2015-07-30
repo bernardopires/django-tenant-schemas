@@ -11,7 +11,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import sys
+import os
 import datetime
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -177,8 +178,7 @@ htmlhelp_basename = 'tenantschemasdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'tenantschema.tex', 'tenantschemaDocumentation',
-   'Bernardo Pires Carneiro', 'manual'),
+    ('index', 'tenantschema.tex', 'tenantschemaDocumentation', 'Bernardo Pires Carneiro', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

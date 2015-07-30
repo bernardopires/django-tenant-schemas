@@ -218,11 +218,11 @@ class TenantCommandTest(BaseTestCase):
 
         out = StringIO()
         call_command('tenant_command', 'dumpdata', 'tenant_schemas', natural_foreign=True,
-                schema_name=get_public_schema_name(), stdout=out)
+                     schema_name=get_public_schema_name(), stdout=out)
         self.assertItemsEqual(
-                json.loads('[{"fields": {"domain_url": "localhost", "schema_name": "public"}, '
-                    '"model": "tenant_schemas.tenant", "pk": 1}]'),
-                json.loads(out.getvalue()))
+            json.loads('[{"fields": {"domain_url": "localhost", "schema_name": "public"}, '
+                       '"model": "tenant_schemas.tenant", "pk": 1}]'),
+            json.loads(out.getvalue()))
 
 
 class SharedAuthTest(BaseTestCase):

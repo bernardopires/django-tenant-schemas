@@ -1,7 +1,10 @@
 import django
+import json
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.management import call_command
 from django.db import connection
+from StringIO import StringIO
 
 from dts_test_app.models import DummyModel, ModelWithFkToPublicUser
 from tenant_schemas.test.cases import TenantTestCase
@@ -198,6 +201,28 @@ class TenantSyncTest(BaseTestCase):
         self.assertIn('django_session', tenant_tables)
         self.assertEqual(1 + self.MIGRATION_TABLE_SIZE, len(tenant_tables))
         self.assertIn('django_session', tenant_tables)
+
+
+class TenantCommandTest(BaseTestCase):
+    def test_command(self):
+        """
+        Tests that tenant_command is capable of wrapping commands
+        and its parameters.
+        """
+        settings.SHARED_APPS = ('tenant_schemas',
+                                'django.contrib.contenttypes', )
+        settings.TENANT_APPS = ()
+        settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
+        self.sync_shared()
+        Tenant(domain_url='localhost', schema_name='public').save()
+
+        out = StringIO()
+        call_command('tenant_command', 'dumpdata', 'tenant_schemas', natural_foreign=True,
+                schema_name=get_public_schema_name(), stdout=out)
+        self.assertItemsEqual(
+                json.loads('[{"fields": {"domain_url": "localhost", "schema_name": "public"}, '
+                    '"model": "tenant_schemas.tenant", "pk": 1}]'),
+                json.loads(out.getvalue()))
 
 
 class SharedAuthTest(BaseTestCase):

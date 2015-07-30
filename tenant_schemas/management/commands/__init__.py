@@ -137,8 +137,7 @@ class SyncCommon(BaseCommand):
                     help='App label of an application to synchronize the state.'),
         make_option('--migration_name', action='store', dest='migration_name', nargs='?',
                     help=('Database state will be brought to the state after that '
-                          'migration. Use the name "zero" to unapply all migrations.' ),
-        ),
+                          'migration. Use the name "zero" to unapply all migrations.')),
         make_option('--database', action='store', dest='database', default=DEFAULT_DB_ALIAS,
                     help='Nominates a database to synchronize. Defaults to the "default" database.'),
         make_option("-s", "--schema", dest="schema_name"),

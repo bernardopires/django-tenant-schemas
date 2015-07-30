@@ -4,7 +4,7 @@ from optparse import NO_DEFAULT
 if django.VERSION >= (1, 7, 0):
     from django.core.management.commands.migrate import Command as MigrateCommand
     from django.db.migrations.recorder import MigrationRecorder
-from django.db import connection
+from django.db import connection, DEFAULT_DB_ALIAS
 from django.conf import settings
 
 from tenant_schemas.utils import get_tenant_model, get_public_schema_name, schema_exists
@@ -58,6 +58,9 @@ class MigrateSchemasCommand(SyncCommon):
             else:
                 defaults[opt.dest] = opt.default
 
+        defaults['database'] = DEFAULT_DB_ALIAS
+        defaults['app_label'] = None
+        defaults['migration_name'] = None
         command.execute(*self.args, **defaults)
         connection.set_schema_to_public()
 

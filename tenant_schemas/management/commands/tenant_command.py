@@ -1,4 +1,4 @@
-from optparse import make_option
+import argparse
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management import call_command, get_commands, load_command_class
 from django.db import connection
@@ -26,10 +26,18 @@ class Command(InteractiveTenantOption, BaseCommand):
         else:
             klass = load_command_class(app_name, argv[2])
 
-        super(Command, self).run_from_argv(argv)
+        # Ugly, but works. Delete tenant_command from the argv, parse the schema manually
+        # and forward the rest of the arguments to the actual command being wrapped.
+        del argv[1]
+        schema_parser = argparse.ArgumentParser()
+        schema_parser.add_argument("-s", "--schema", dest="schema_name", help="specify tenant schema")
+        schema_namespace, args = schema_parser.parse_known_args(argv)
+
+        tenant = self.get_tenant_from_options_or_interactive(schema_name=schema_namespace.schema_name)
+        connection.set_tenant(tenant)
+        klass.run_from_argv(args)
 
     def handle(self, *args, **options):
         tenant = self.get_tenant_from_options_or_interactive(**options)
         connection.set_tenant(tenant)
-
         call_command(*args, **options)

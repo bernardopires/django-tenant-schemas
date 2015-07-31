@@ -160,15 +160,15 @@ created ``Client`` inside an app named ``customers``, your
 
     TENANT_MODEL = "customers.Client" # app.Model
 
-Now run ``sync_schemas``, this will sync your apps to the ``public``
-schema.
+Now run ``migrate_schemas`` (``sync_schemas`` if you're on Django 1.6 and older), 
+this will sync your apps to the ``public`` schema.
 
 ::
 
-    python manage.py sync_schemas --shared
+    python manage.py migrate_schemas --shared
 
 Create your tenants just like a normal django model. Calling ``save``
-will automatically create and sync the schema.
+will automatically create and sync/migrate the schema.
 
 .. code-block:: python
 

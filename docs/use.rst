@@ -39,9 +39,9 @@ Management commands
 -------------------
 Every command except tenant_command runs by default on all tenants. You can also create your own commands that run on every tenant by inheriting ``BaseTenantCommand``.
 
-For example, if you have the following ```do_foo``` command in the ```foo``` app:
+For example, if you have the following ``do_foo`` command in the ``foo`` app:
 
-```foo/management/commands/do_foo.py```
+``foo/management/commands/do_foo.py``
 
 .. code-block:: python
 
@@ -51,9 +51,9 @@ For example, if you have the following ```do_foo``` command in the ```foo``` app
         def handle(self, *args, **options):
             do_foo()
 
-You could create a wrapper command ```tenant_do_foo``` by using ```BaseTenantCommand``` like so:
+You could create a wrapper command ``tenant_do_foo`` by using ``BaseTenantCommand`` like so:
 
-```foo/management/commands/tenant_do_foo.py```
+``foo/management/commands/tenant_do_foo.py``
 
 .. code-block:: python
 
@@ -68,7 +68,7 @@ To run only a particular schema, there is an optional argument called ``--schema
 
     ./manage.py sync_schemas --schema=customer1
 
-sync_schemas    
+sync_schemas
 ~~~~~~~~~~~~
 
 The command ``sync_schemas`` is the most important command on this app. The way it works is that it calls Django's ``syncdb`` in two different ways. First, it calls ``syncdb`` for the ``public`` schema, only syncing the shared apps. Then it runs ``syncdb`` for every tenant in the database, this time only syncing the tenant apps.
@@ -161,7 +161,7 @@ Support for Celery is available at `tenant-schemas-celery <https://github.com/ma
 django-debug-toolbar
 ~~~~~~~~~~~~~~~~~~~~
 
-`django-debug-toolbar` routes need to be added to `urls.py` (both public and tenant) manually.
+`django-debug-toolbar <https://github.com/django-debug-toolbar/django-debug-toolbar>`_ routes need to be added to ``urls.py`` (both public and tenant) manually.
 
 .. code-block:: python
 

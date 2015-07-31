@@ -152,4 +152,25 @@ When set, ``django-tenant-schemas`` will set the search path only once per reque
 
 Third Party Apps
 ----------------
+
+Celery
+~~~~~~
+
 Support for Celery is available at `tenant-schemas-celery <https://github.com/maciej-gol/tenant-schemas-celery>`_.
+
+django-debug-toolbar
+~~~~~~~~~~~~~~~~~~~~
+
+`django-debug-toolbar` routes need to be added to `urls.py` (both public and tenant) manually.
+
+.. code-block:: python
+
+    from django.conf import settings
+    from django.conf.urls import include
+    if settings.DEBUG:
+        import debug_toolbar
+
+        urlpatterns += patterns(
+            '',
+            url(r'^__debug__/', include(debug_toolbar.urls)),
+        )

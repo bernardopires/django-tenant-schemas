@@ -30,12 +30,13 @@ Add `tenant_schemas.routers.TenantSyncRouter` to your `DATABASE_ROUTERS` setting
         'tenant_schemas.routers.TenantSyncRouter',
     )
     
-Add the middleware ``tenant_schemas.middleware.TenantMiddleware`` to the top of ``MIDDLEWARE_CLASSES``, so that each request can be set to use the correct schema.
+Add the middleware ``tenant_schemas.middleware.TenantMiddleware`` or ``tenant_schemas.middleware.SuspiciousTenantMiddleware`` to the top of ``MIDDLEWARE_CLASSES``, so that each request can be set to use the correct schema.
 
 .. code-block:: python
     
     MIDDLEWARE_CLASSES = (
         'tenant_schemas.middleware.TenantMiddleware',
+        # 'tenant_schemas.middleware.SuspiciousTenantMiddleware',
         #...
     )
     

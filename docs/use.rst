@@ -142,7 +142,7 @@ Prints to standard output a tab separated list of schema:domain_url values for e
 
     for t in $(./manage.py list_tenants | cut -f1);
     do
-        ./manage.py dumpdata --schema=$t --indent=2 auth.user > ${t}_users.json;
+        ./manage.py tenant_command dumpdata --schema=$t --indent=2 auth.user > ${t}_users.json;
     done
 
 

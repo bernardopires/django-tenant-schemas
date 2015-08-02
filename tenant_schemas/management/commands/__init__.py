@@ -1,3 +1,4 @@
+import django
 from optparse import make_option
 from django.conf import settings
 from django.core.management import call_command, get_commands, load_command_class
@@ -138,10 +139,18 @@ class SyncCommon(BaseCommand):
         make_option('--migration_name', action='store', dest='migration_name', nargs='?',
                     help=('Database state will be brought to the state after that '
                           'migration. Use the name "zero" to unapply all migrations.')),
-        make_option('--database', action='store', dest='database', default=DEFAULT_DB_ALIAS,
-                    help='Nominates a database to synchronize. Defaults to the "default" database.'),
         make_option("-s", "--schema", dest="schema_name"),
     )
+
+    def __init__(self, stdout=None, stderr=None, no_color=False):
+        if django.VERSION >= (1, 8, 0):
+            self.option_list += (
+                make_option('--database', action='store', dest='database', default=DEFAULT_DB_ALIAS,
+                            help='Nominates a database to synchronize. Defaults to the "default" database.'),
+                    )
+            super(SyncCommon, self).__init__(stdout, stderr, no_color)
+        else:
+            super(SyncCommon, self).__init__()
 
     def handle(self, *args, **options):
         self.sync_tenant = options.get('tenant')

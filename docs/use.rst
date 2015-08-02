@@ -133,6 +133,19 @@ The command ``createsuperuser`` is already automatically wrapped to have a ``sch
     ./manage.py createsuperuser --username='admin' --schema=customer1
 
 
+list_tenants
+~~~~~~~~~~~~
+
+Prints to standard output a tab separated list of schema:domain_url values for each tenant.
+
+.. code-block:: bash
+
+    for t in $(./manage.py list_tenants | cut -f1);
+    do
+        ./manage.py tenant_command dumpdata --schema=$t --indent=2 auth.user > ${t}_users.json;
+    done
+
+
 Performance Considerations
 --------------------------
 

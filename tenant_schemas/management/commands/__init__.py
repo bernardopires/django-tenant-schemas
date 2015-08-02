@@ -147,7 +147,7 @@ class SyncCommon(BaseCommand):
             self.option_list += (
                 make_option('--database', action='store', dest='database', default=DEFAULT_DB_ALIAS,
                             help='Nominates a database to synchronize. Defaults to the "default" database.'),
-                    )
+            )
             super(SyncCommon, self).__init__(stdout, stderr, no_color)
         else:
             super(SyncCommon, self).__init__()

@@ -14,14 +14,15 @@ from tenant_schemas.management.commands import SyncCommon
 class MigrateSchemasCommand(SyncCommon):
     help = "Updates database schema. Manages both apps with migrations and those without."
 
-    def run_from_argv(self, argv):
+    def __init__(self, stdout=None, stderr=None, no_color=False):
         """
-        Changes the option_list to use the options from the wrapped command.
-        Adds schema parameter to specify which schema will be used when
-        executing the wrapped command.
+        Changes the option_list to use the options from the wrapped migrate command.
         """
         self.option_list += MigrateCommand.option_list
-        super(MigrateSchemasCommand, self).run_from_argv(argv)
+        if django.VERSION >= (1, 8, 0):
+            super(MigrateSchemasCommand, self).__init__(stdout, stderr, no_color)
+        else:
+            super(MigrateSchemasCommand, self).__init__()
 
     def handle(self, *args, **options):
         super(MigrateSchemasCommand, self).handle(*args, **options)

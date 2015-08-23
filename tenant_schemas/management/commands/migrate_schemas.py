@@ -24,6 +24,11 @@ class MigrateSchemasCommand(SyncCommon):
         else:
             super(MigrateSchemasCommand, self).__init__()
 
+    def add_arguments(self, parser):
+        super(MigrateSchemasCommand, self).add_arguments(parser)
+        command = MigrateCommand()
+        command.add_arguments(parser)
+
     def handle(self, *args, **options):
         super(MigrateSchemasCommand, self).handle(*args, **options)
         self.PUBLIC_SCHEMA_NAME = get_public_schema_name()

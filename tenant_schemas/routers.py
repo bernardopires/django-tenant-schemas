@@ -7,17 +7,21 @@ class TenantSyncRouter(object):
     depending if we are syncing the shared apps or the tenant apps.
     """
 
-    def allow_migrate(self, db, model):
+    def allow_migrate(self, db, app_label, model_name=None, **hints):
         # the imports below need to be done here else django <1.5 goes crazy
         # https://code.djangoproject.com/ticket/20704
         from django.db import connection
         from tenant_schemas.utils import get_public_schema_name, app_labels
 
+        if not isinstance(app_label, str):
+            # In django 1.7 the `app_label` parameter is actually `model`
+            app_label = app_label._meta.app_label
+
         if connection.schema_name == get_public_schema_name():
-            if model._meta.app_label not in app_labels(settings.SHARED_APPS):
+            if app_label not in app_labels(settings.SHARED_APPS):
                 return False
         else:
-            if model._meta.app_label not in app_labels(settings.TENANT_APPS):
+            if app_label not in app_labels(settings.TENANT_APPS):
                 return False
 
         return None

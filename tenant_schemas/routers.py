@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db.models.base import ModelBase
 
+
 class TenantSyncRouter(object):
     """
     A router to control which applications will be synced,

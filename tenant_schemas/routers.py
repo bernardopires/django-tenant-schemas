@@ -1,5 +1,5 @@
 from django.conf import settings
-
+from django.db.models.base import ModelBase
 
 class TenantSyncRouter(object):
     """
@@ -13,8 +13,8 @@ class TenantSyncRouter(object):
         from django.db import connection
         from tenant_schemas.utils import get_public_schema_name, app_labels
 
-        if not isinstance(app_label, str):
-            # In django 1.7 the `app_label` parameter is actually `model`
+        if isinstance(app_label, ModelBase):
+            # In django <1.7 the `app_label` parameter is actually `model`
             app_label = app_label._meta.app_label
 
         if connection.schema_name == get_public_schema_name():

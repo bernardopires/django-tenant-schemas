@@ -74,7 +74,8 @@ Configure Tenant and Shared Applications
 To make use of shared and tenant-specific applications, there are two settings called ``SHARED_APPS`` and ``TENANT_APPS``. ``SHARED_APPS`` is a tuple of strings just like ``INSTALLED_APPS`` and should contain all apps that you want to be synced to ``public``. If ``SHARED_APPS`` is set, then these are the only apps that will be synced to your ``public`` schema! The same applies for ``TENANT_APPS``, it expects a tuple of strings where each string is an app. If set, only those applications will be synced to all your tenants. Here's a sample setting
 
 .. code-block:: python
-
+    
+    from collections import OrderedDict
     SHARED_APPS = (
         'tenant_schemas',  # mandatory
         'customers', # you must list the app where your tenant model resides in
@@ -98,7 +99,7 @@ To make use of shared and tenant-specific applications, there are two settings c
         'myapp.houses', 
     )
 
-    INSTALLED_APPS = list(set(SHARED_APPS + TENANT_APPS))
+    INSTALLED_APPS = list(OrderedDict.fromkeys(SHARED_APPS + TENANT_APPS))
 
 You also have to set where your tenant model is.
 

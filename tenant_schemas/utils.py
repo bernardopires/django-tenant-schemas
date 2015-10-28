@@ -36,8 +36,6 @@ def tenant_context(tenant):
 
 
 def get_tenant_model():
-    print "GET TENANT MODEL"
-    print get_model
     return get_model(*settings.TENANT_MODEL.split("."))
 
 

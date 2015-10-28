@@ -8,4 +8,3 @@ dist/
 django_tenant_schemas.egg-info
 .idea/
 build/
-build/*

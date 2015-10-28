@@ -1,11 +1,12 @@
 from contextlib import contextmanager
 from django.conf import settings
 from django.db import connection
-try:
-    from django.apps import apps
-    get_model = apps.get_model
-except ImportError:
-    from django.db.models.loading import get_model
+# try:
+#     from django.apps import apps
+#     get_model = apps.get_model
+# except ImportError:
+#     from django.db.models.loading import get_model
+from django.db.models.loading import get_model
 from django.core import mail
 
 
@@ -36,6 +37,8 @@ def tenant_context(tenant):
 
 
 def get_tenant_model():
+    print "GET TENANT MODEL"
+    print get_model
     return get_model(*settings.TENANT_MODEL.split("."))
 
 

@@ -29,10 +29,24 @@ def _is_valid_identifier(identifier):
 def _check_identifier(identifier):
     if not _is_valid_identifier(identifier):
         raise ValidationError("Invalid string used for the identifier.")
-
-
+  
+        
+def _is_allowed_tenant_name(name):
+    if hasattr(settings, 'NOT_ALLOWED_TENANT_NAMES'):
+        if not isinstance(settings.NOT_ALLOWED_TENANT_NAMES, list):
+            raise ValidationError("NOT_ALLOWED_TENANT_NAMES must be a list.")
+        elif name not in settings.NOT_ALLOWED_TENANT_NAMES:
+            return True
+        else:
+            return False
+    
+    return True
+  
+          
 def _is_valid_schema_name(name):
-    return _is_valid_identifier(name) and not SQL_SCHEMA_NAME_RESERVED_RE.match(name)
+    return _is_valid_identifier(name) \
+            and not SQL_SCHEMA_NAME_RESERVED_RE.match(name) \
+            and _is_allowed_tenant_name(name)
 
 
 def _check_schema_name(name):

@@ -116,12 +116,9 @@ def unique_public_schema():
     """
     if hasattr(settings, 'UNIQUE_PUBLIC_SCHEMA'):
         if not isinstance(settings.UNIQUE_PUBLIC_SCHEMA, bool):
-            print "TRUE"
             return True
         else:
-            print settings.UNIQUE_PUBLIC_SCHEMA
             return settings.UNIQUE_PUBLIC_SCHEMA
     
-    print "TRUE"
     return True
     

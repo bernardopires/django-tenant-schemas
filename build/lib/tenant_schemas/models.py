@@ -29,7 +29,7 @@ class TenantMixin(models.Model):
     """
 
     domain_url = models.CharField(max_length=128, unique=True)
-    schema_name = models.CharField(max_length=63, unique=True,
+    schema_name = models.CharField(max_length=63, unique=unique_public_schema(),
                                    validators=[_check_schema_name])
 
     class Meta:

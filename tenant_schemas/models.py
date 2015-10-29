@@ -2,6 +2,7 @@ import django
 from django.conf import settings
 from django.db import models, connection
 from django.core.management import call_command
+from django.core.exceptions import ValidationError
 
 from tenant_schemas.postgresql_backend.base import _check_schema_name
 from tenant_schemas.signals import post_schema_sync
@@ -50,19 +51,38 @@ class TenantMixin(models.Model):
 
         if is_new and self.auto_create_schema:
             try:
-                self.create_schema(check_if_exists=True, verbosity=verbosity)
+                created = self.create_schema(check_if_exists=True, verbosity=verbosity)
+                if created is False:
+                    # Schema name already exists!
+                    # Check the following conditions:
+                    # - UNIQUE_PUBLIC_SCHEMA is True: dont raise exception
+                    # - UNIQUE_PUBLIC_SCHEMA is False:
+                    #   - schema_name is public: pass
+                    #   - schema_name not public: raise exception
+                    if hasattr(settings, 'UNIQUE_PUBLIC_SCHEMA') and \
+                            settings.UNIQUE_PUBLIC_SCHEMA is False and \
+                            self.schema_name != 'public':
+                        ex = ValidationError("Cannot create tenant, because the name "
+                                                "%s already exists or is reserved." %
+                                                self.schema_name)
+                        #ex.delete_schema = False
+                        raise ex
                 post_schema_sync.send(sender=TenantMixin, tenant=self)
-            except:
-                # We failed creating the tenant, delete what we created and
-                # re-raise the exception
-                self.delete(force_drop=True)
-                raise
+            except Exception as e:
+                if (hasattr(e, 'delete_schema') and e.delete_schema is True) or \
+                        not hasattr(e, 'delete_schema'):
+                    print "TO DELETE"
+                    # We failed creating the tenant, delete what we created and
+                    # re-raise the exception
+                    self.delete(force_drop=True)
+                #raise
 
     def delete(self, force_drop=False, *args, **kwargs):
         """
         Deletes this row. Drops the tenant's schema if the attribute
         auto_drop_schema set to True.
         """
+        print "DELETE"
         if connection.schema_name not in (self.schema_name, get_public_schema_name()):
             raise Exception("Can't delete tenant outside it's own schema or "
                             "the public schema. Current schema is %s."

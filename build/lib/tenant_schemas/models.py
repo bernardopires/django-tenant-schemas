@@ -1,8 +1,8 @@
 import django
 from django.conf import settings
 from django.db import models, connection
-from django.core.exceptions import ValidationError
 from django.core.management import call_command
+from django.core.exceptions import ValidationError
 
 from tenant_schemas.postgresql_backend.base import _check_schema_name
 from tenant_schemas.signals import post_schema_sync
@@ -51,7 +51,21 @@ class TenantMixin(models.Model):
 
         if is_new and self.auto_create_schema:
             try:
-                self.create_schema(check_if_exists=True, verbosity=verbosity)
+                created = self.create_schema(check_if_exists=True, verbosity=verbosity)
+                if created is False:
+                    # Schema name already exists!
+                    # Check the following conditions:
+                    # - UNIQUE_PUBLIC_SCHEMA is True: dont raise exception
+                    # - UNIQUE_PUBLIC_SCHEMA is False:
+                    #   - schema_name is public: pass
+                    #   - schema_name not public: raise exception
+                    if hasattr(settings, 'UNIQUE_PUBLIC_SCHEMA') and \
+                            settings.UNIQUE_PUBLIC_SCHEMA is False and \
+                            self.schema_name != 'public':
+                        raise ValidationError("Cannot create tenant, because the name "
+                                                "%s already exists or is reserved." %
+                                                self.schema_name)
+                                                
                 post_schema_sync.send(sender=TenantMixin, tenant=self)
             except:
                 # We failed creating the tenant, delete what we created and

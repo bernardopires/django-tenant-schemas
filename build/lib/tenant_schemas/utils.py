@@ -94,7 +94,7 @@ def schema_exists(schema_name):
 
     row = cursor.fetchone()
     if row:
-        exists = row[0]  
+        exists = row[0]
     else:
         exists = False
 

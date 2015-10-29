@@ -7,6 +7,7 @@ from tenant_schemas.postgresql_backend.base import _check_schema_name
 from tenant_schemas.signals import post_schema_sync
 from tenant_schemas.utils import django_is_in_test_mode, schema_exists
 from tenant_schemas.utils import get_public_schema_name
+from tenant_schemas.utils import unique_public_schema
 
 
 class TenantMixin(models.Model):
@@ -28,7 +29,7 @@ class TenantMixin(models.Model):
     """
 
     domain_url = models.CharField(max_length=128, unique=True)
-    schema_name = models.CharField(max_length=63, unique=True,
+    schema_name = models.CharField(max_length=63, unique=unique_public_schema(),
                                    validators=[_check_schema_name])
 
     class Meta:

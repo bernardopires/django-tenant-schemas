@@ -31,8 +31,21 @@ def _check_identifier(identifier):
         raise ValidationError("Invalid string used for the identifier.")
 
 
+def _allowed_schema_name(name):
+    if hasattr(settings, 'NOT_ALLOWED_TENANT_NAMES'):
+        # Invalid schema name
+        if isinstance(settings.NOT_ALLOWED_TENANT_NAMES, list) and 
+                name in settings.NOT_ALLOWED_TENANT_NAMES:
+            return False
+    
+    # Valid schema name
+    return True
+    
+
 def _is_valid_schema_name(name):
-    return _is_valid_identifier(name) and not SQL_SCHEMA_NAME_RESERVED_RE.match(name)
+    return _is_valid_identifier(name) and not 
+            SQL_SCHEMA_NAME_RESERVED_RE.match(name) and
+            _allowed_schema_name(name)
 
 
 def _check_schema_name(name):

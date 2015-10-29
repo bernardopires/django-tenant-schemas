@@ -32,6 +32,9 @@ def _check_identifier(identifier):
 
 
 def _allowed_schema_name(name):
+    """
+    Check if the name is not in the NOT_ALLOWED_TENANT_NAMES 
+    """
     if hasattr(settings, 'NOT_ALLOWED_TENANT_NAMES'):
         # Reserved schema name
         if isinstance(settings.NOT_ALLOWED_TENANT_NAMES, list) and \
@@ -51,7 +54,7 @@ def _is_valid_schema_name(name):
 def _check_schema_name(name):
     if not _is_valid_schema_name(name):
         raise ValidationError("Invalid string used for the schema name.")
-
+                    
 
 class DatabaseWrapper(original_backend.DatabaseWrapper):
     """

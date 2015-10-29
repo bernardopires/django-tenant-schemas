@@ -54,18 +54,13 @@ class TenantMixin(models.Model):
                 created = self.create_schema(check_if_exists=True, verbosity=verbosity)
                 if created is False:
                     # Schema name already exists!
-                    # Check the following conditions:
-                    # - UNIQUE_PUBLIC_SCHEMA is True: dont raise exception
-                    # - UNIQUE_PUBLIC_SCHEMA is False:
-                    #   - schema_name is public: pass
-                    #   - schema_name not public: raise exception
                     if hasattr(settings, 'UNIQUE_PUBLIC_SCHEMA') and \
                             settings.UNIQUE_PUBLIC_SCHEMA is False and \
                             self.schema_name != 'public':
                         raise ValidationError("Cannot create tenant, because the name "
                                                 "%s already exists or is reserved." %
                                                 self.schema_name)
-                                                
+        
                 post_schema_sync.send(sender=TenantMixin, tenant=self)
             except:
                 # We failed creating the tenant, delete what we created and
@@ -78,6 +73,7 @@ class TenantMixin(models.Model):
         Deletes this row. Drops the tenant's schema if the attribute
         auto_drop_schema set to True.
         """
+        print "DELETE"
         if connection.schema_name not in (self.schema_name, get_public_schema_name()):
             raise Exception("Can't delete tenant outside it's own schema or "
                             "the public schema. Current schema is %s."

@@ -37,9 +37,9 @@ if hasattr(settings, 'PG_EXTRA_SEARCH_PATHS'):
             % get_public_schema_name())
 
     # make sure no tenant schema is in settings.PG_EXTRA_SEARCH_PATHS
-    # invalid_schemas = set(settings.PG_EXTRA_SEARCH_PATHS).intersection(
-#         get_tenant_model().objects.all().values_list('schema_name', flat=True))
-#     if invalid_schemas:
-#         raise ImproperlyConfigured(
-#             "Do not include tenant schemas (%s) on PG_EXTRA_SEARCH_PATHS."
-#             % list(invalid_schemas))
+    invalid_schemas = set(settings.PG_EXTRA_SEARCH_PATHS).intersection(
+        get_tenant_model().objects.all().values_list('schema_name', flat=True))
+    if invalid_schemas:
+        raise ImproperlyConfigured(
+            "Do not include tenant schemas (%s) on PG_EXTRA_SEARCH_PATHS."
+            % list(invalid_schemas))

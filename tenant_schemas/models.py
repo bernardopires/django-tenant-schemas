@@ -73,7 +73,6 @@ class TenantMixin(models.Model):
         Deletes this row. Drops the tenant's schema if the attribute
         auto_drop_schema set to True.
         """
-        print "DELETE"
         if connection.schema_name not in (self.schema_name, get_public_schema_name()):
             raise Exception("Can't delete tenant outside it's own schema or "
                             "the public schema. Current schema is %s."

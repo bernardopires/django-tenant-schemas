@@ -2,10 +2,11 @@ from contextlib import contextmanager
 from django.conf import settings
 from django.db import connection
 try:
-    from django.apps import apps
+    from django.apps import apps, AppConfig
     get_model = apps.get_model
 except ImportError:
     from django.db.models.loading import get_model
+    AppConfig = None
 from django.core import mail
 
 
@@ -102,9 +103,39 @@ def schema_exists(schema_name):
 
     return exists
 
-
 def app_labels(apps_list):
     """
     Returns a list of app labels of the given apps_list
+
+
+    AppConfig handling test:
+    >>> import sys
+    >>> import types
+
+    Wrapping test in a function so we can return from it on Django <1.7
+    >>> def run_test():
+    ...     label = 'test_app1'
+    ...
+    ...     if AppConfig is None:
+    ...         assert app_labels(['test_apps.' + label]) == [label]
+    ...         return
+    ...
+    ...     name = 'test_app'
+    ...     sys.modules[name] = types.ModuleType(name)
+    ...
+    ...     name = 'test_app.apps'
+    ...     sys.modules[name] = types.ModuleType(name)
+    ...     # noinspection PyPep8Naming
+    ...     sys.modules[name].TestAppConfig = type(
+    ...         'TestAppConfig',
+    ...         (AppConfig,),
+    ...         dict(name='test_app', label=label, path='/tmp')
+    ...     )
+    ...     assert app_labels(['test_app.apps.TestAppConfig']) == [label]
+
+    >>> run_test()
     """
-    return [app.split('.')[-1] for app in apps_list]
+    if AppConfig is None:
+        return [app.split('.')[-1] for app in apps_list]
+    return [AppConfig.create(app).label for app in apps_list]
+

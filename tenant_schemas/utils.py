@@ -103,37 +103,13 @@ def schema_exists(schema_name):
 
     return exists
 
+
 def app_labels(apps_list):
     """
-    Returns a list of app labels of the given apps_list
+    Returns a list of app labels of the given apps_list, now properly handles
+     new Django 1.7+ application registry.
 
-
-    AppConfig handling test:
-    >>> import sys
-    >>> import types
-
-    Wrapping test in a function so we can return from it on Django <1.7
-    >>> def run_test():
-    ...     label = 'test_app1'
-    ...
-    ...     if AppConfig is None:
-    ...         assert app_labels(['test_apps.' + label]) == [label]
-    ...         return
-    ...
-    ...     name = 'test_app'
-    ...     sys.modules[name] = types.ModuleType(name)
-    ...
-    ...     name = 'test_app.apps'
-    ...     sys.modules[name] = types.ModuleType(name)
-    ...     # noinspection PyPep8Naming
-    ...     sys.modules[name].TestAppConfig = type(
-    ...         'TestAppConfig',
-    ...         (AppConfig,),
-    ...         dict(name='test_app', label=label, path='/tmp')
-    ...     )
-    ...     assert app_labels(['test_app.apps.TestAppConfig']) == [label]
-
-    >>> run_test()
+    https://docs.djangoproject.com/en/1.8/ref/applications/#django.apps.AppConfig.label
     """
     if AppConfig is None:
         return [app.split('.')[-1] for app in apps_list]

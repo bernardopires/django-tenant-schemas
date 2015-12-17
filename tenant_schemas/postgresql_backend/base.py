@@ -58,6 +58,11 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         self.search_path_set = False
         super(DatabaseWrapper, self).close()
 
+    def rollback(self):
+        super(DatabaseWrapper, self).rollback()
+        # Django's rollback clears the search path so we have to set it again the next time.
+        self.search_path_set = False
+
     def set_tenant(self, tenant, include_public=True):
         """
         Main API method to current database schema,

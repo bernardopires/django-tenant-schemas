@@ -56,7 +56,8 @@ class BaseTestCase(TestCase):
             call_command('migrate_schemas',
                          schema_name=get_public_schema_name(),
                          interactive=False,
-                         verbosity=cls.get_verbosity())
+                         verbosity=cls.get_verbosity(),
+                         run_syncdb=True)
         else:
             call_command('sync_schemas',
                          schema_name=get_public_schema_name(),

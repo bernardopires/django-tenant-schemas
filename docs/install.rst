@@ -69,6 +69,13 @@ Now we have to create your tenant model. Your tenant model can contain whichever
         # default true, schema will be automatically created and synced when it is saved
         auto_create_schema = True 
 
+Once you have defined your model, don't forget to create the migrations for it or otherwise Django >= 1.9 will not create its table. Replace ``customers`` with your app name.
+
+.. code-block:: bash
+
+    # Django >= 1.7
+    python manage.py makemigrations customers
+
 Configure Tenant and Shared Applications
 ========================================
 To make use of shared and tenant-specific applications, there are two settings called ``SHARED_APPS`` and ``TENANT_APPS``. ``SHARED_APPS`` is a tuple of strings just like ``INSTALLED_APPS`` and should contain all apps that you want to be synced to ``public``. If ``SHARED_APPS`` is set, then these are the only apps that will be synced to your ``public`` schema! The same applies for ``TENANT_APPS``, it expects a tuple of strings where each string is an app. If set, only those applications will be synced to all your tenants. Here's a sample setting

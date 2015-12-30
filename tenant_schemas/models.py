@@ -2,11 +2,13 @@ import django
 from django.conf import settings
 from django.db import models, connection
 from django.core.management import call_command
+from django.core.exceptions import ValidationError
 
 from tenant_schemas.postgresql_backend.base import _check_schema_name
 from tenant_schemas.signals import post_schema_sync
 from tenant_schemas.utils import django_is_in_test_mode, schema_exists
 from tenant_schemas.utils import get_public_schema_name
+from tenant_schemas.utils import unique_public_schema
 
 
 class TenantMixin(models.Model):
@@ -28,7 +30,7 @@ class TenantMixin(models.Model):
     """
 
     domain_url = models.CharField(max_length=128, unique=True)
-    schema_name = models.CharField(max_length=63, unique=True,
+    schema_name = models.CharField(max_length=63, unique=unique_public_schema(),
                                    validators=[_check_schema_name])
 
     class Meta:
@@ -49,7 +51,16 @@ class TenantMixin(models.Model):
 
         if is_new and self.auto_create_schema:
             try:
-                self.create_schema(check_if_exists=True, verbosity=verbosity)
+                created = self.create_schema(check_if_exists=True, verbosity=verbosity)
+                if created is False:
+                    # Schema name already exists!
+                    if hasattr(settings, 'UNIQUE_PUBLIC_SCHEMA') and \
+                            settings.UNIQUE_PUBLIC_SCHEMA is False and \
+                            self.schema_name != 'public':
+                        raise ValidationError("Cannot create tenant, because the name "
+                                                "%s already exists or is reserved." %
+                                                self.schema_name)
+        
                 post_schema_sync.send(sender=TenantMixin, tenant=self)
             except:
                 # We failed creating the tenant, delete what we created and

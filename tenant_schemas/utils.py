@@ -108,3 +108,16 @@ def app_labels(apps_list):
     Returns a list of app labels of the given apps_list
     """
     return [app.split('.')[-1] for app in apps_list]
+
+
+def unique_public_schema():
+    """
+    Allow multiple domains (e.g. *.domain1.com, *.domain2.com)
+    """
+    if hasattr(settings, 'UNIQUE_PUBLIC_SCHEMA'):
+        if not isinstance(settings.UNIQUE_PUBLIC_SCHEMA, bool):
+            return True
+        else:
+            return settings.UNIQUE_PUBLIC_SCHEMA
+    
+    return True

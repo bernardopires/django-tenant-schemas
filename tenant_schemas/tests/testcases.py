@@ -39,7 +39,7 @@ class BaseTestCase(TestCase):
         for s in reversed(inspect.stack()):
             options = s[0].f_locals.get('options')
             if isinstance(options, dict):
-                return int(options['verbosity'])
+                return int(options['verbosity']) - 2
         return 1
 
     @classmethod

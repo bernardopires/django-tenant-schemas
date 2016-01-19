@@ -217,8 +217,12 @@ class TenantCommandTest(BaseTestCase):
         Tenant(domain_url='localhost', schema_name='public').save(verbosity=BaseTestCase.get_verbosity())
 
         out = StringIO()
-        call_command('tenant_command', 'dumpdata', 'tenant_schemas', natural_foreign=True,
-                     schema_name=get_public_schema_name(), stdout=out)
+        if django.VERSION >= (1, 8, 0):
+            call_command('tenant_command', args=('dumpdata', 'tenant_schemas'), natural_foreign=True,
+                         schema_name=get_public_schema_name(), stdout=out)
+        else:
+            call_command('tenant_command', 'dumpdata', 'tenant_schemas', natural_foreign=True,
+                         schema_name=get_public_schema_name(), stdout=out)
         self.assertItemsEqual(
             json.loads('[{"fields": {"domain_url": "localhost", "schema_name": "public"}, '
                        '"model": "tenant_schemas.tenant", "pk": 1}]'),

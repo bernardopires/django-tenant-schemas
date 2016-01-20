@@ -1,7 +1,8 @@
 from django.apps import AppConfig, apps
 from django.conf import settings
 from django.core.checks import Critical, Error, Warning, register
-
+from django.core.files.storage import default_storage
+from tenant_schemas.storage import TenantStorageMixin
 from tenant_schemas.utils import get_public_schema_name, get_tenant_model
 
 
@@ -86,5 +87,12 @@ def best_practice(app_configs, **kwargs):
         errors.append(
             Error("You have SHARED_APPS that are not in INSTALLED_APPS",
                   hint=[a for a in settings.SHARED_APPS if a in delta]))
+
+    if not isinstance(default_storage, TenantStorageMixin):
+        errors.append(Warning(
+            "Your default storage engine is not tenant aware.",
+            hint="Set settings.DEFAULT_FILE_STORAGE to "
+                 "'tenant_schemas.storage.TenantFileSystemStorage'",
+        ))
 
     return errors

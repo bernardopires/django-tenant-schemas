@@ -9,6 +9,12 @@ If you're using South, don't forget to set ``SOUTH_TESTS_MIGRATE = False``. Run 
 
     ./manage.py test tenant_schemas.tests
 
+To run the test suite outsite of your application you can use tox_ to test all supported Django versions.
+
+.. code-block:: bash
+
+    tox
+
 Updating your app's tests to work with tenant-schemas
 -----------------------------------------------------
 Because django will not create tenants for you during your tests, we have packed some custom test cases and other utilities. If you want a test to happen at any of the tenant's domain, you can use the test case ``TenantTestCase``. It will automatically create a tenant for you, set the connection's schema to tenant's schema and make it available at ``self.tenant``. We have also included a ``TenantRequestFactory`` and a ``TenantClient`` so that your requests will all take place at the tenant's domain automatically. Here's an example
@@ -25,3 +31,5 @@ Because django will not create tenants for you during your tests, we have packed
         def test_user_profile_view(self):
             response = self.c.get(reverse('user_profile'))
             self.assertEqual(response.status_code, 200)
+
+.. _tox: https://tox.readthedocs.org/

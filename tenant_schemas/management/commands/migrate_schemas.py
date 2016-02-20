@@ -46,13 +46,23 @@ class MigrateSchemasCommand(SyncCommon):
                 else:
                     self.run_migrations(self.schema_name, settings.TENANT_APPS)
             else:
-                all_tenants = get_tenant_model().objects.exclude(schema_name=get_public_schema_name())
+                all_tenants = get_tenant_model().objects.exclude(schema_name=self.PUBLIC_SCHEMA_NAME)
                 for tenant in all_tenants:
                     self.run_migrations(tenant.schema_name, settings.TENANT_APPS)
 
     def run_migrations(self, schema_name, included_apps):
         if int(self.options.get('verbosity', 1)) >= 1:
             self._notice("=== Running migrate for schema %s" % schema_name)
+
+        if not schema_exists(schema_name):
+            if not self.ignore_missing_schemas:
+                raise RuntimeError('Schema "{}" does not exist'.format(
+                    schema_name))
+            else:
+                if int(self.options.get('verbosity', 1)) >= 1:
+                    self._notice("=== Schema %s doesn't exist, ignoring" % schema_name)
+                return
+
         connection.set_schema(schema_name)
         command = MigrateCommand()
         command.execute(*self.args, **self.options)

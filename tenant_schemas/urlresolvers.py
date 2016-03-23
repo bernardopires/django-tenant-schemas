@@ -1,5 +1,3 @@
-import warnings
-from django.conf import settings
 from django.core.urlresolvers import reverse as reverse_default
 from django.utils.functional import lazy
 from tenant_schemas.utils import clean_tenant_url

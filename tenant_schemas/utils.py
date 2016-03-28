@@ -1,4 +1,3 @@
-import logging
 from contextlib import contextmanager
 
 from django.conf import settings
@@ -11,7 +10,6 @@ except ImportError:
     from django.db.models.loading import get_model
 from django.core import mail
 
-logger = logging.getLogger(__name__)
 
 
 @contextmanager
@@ -87,9 +85,7 @@ def django_is_in_test_mode():
     I know this is very ugly! I'm looking for more elegant solutions.
     See: http://stackoverflow.com/questions/6957016/detect-django-testing-mode
     """
-    in_test_mode = hasattr(mail, 'outbox')
-    logger.debug('TEST_MODE=%s', in_test_mode)
-    return in_test_mode
+    return hasattr(mail, 'outbox')
 
 
 def schema_exists(schema_name):

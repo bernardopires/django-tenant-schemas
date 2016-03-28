@@ -1,6 +1,11 @@
-from django.conf.urls import patterns, url
+import django
+from django.conf.urls import url
 from tenant_tutorial.views import HomeView
 
-urlpatterns = patterns('',
-                       url(r'^$', HomeView.as_view()),
-                       )
+
+urlpatterns = [
+    url(r'^$', HomeView.as_view()),
+]
+
+if django.VERSION < (1, 9, 0):
+    urlpatterns = django.conf.urls.patterns('', *urlpatterns)

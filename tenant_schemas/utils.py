@@ -111,3 +111,16 @@ def app_labels(apps_list):
     Returns a list of app labels of the given apps_list
     """
     return [app.split('.')[-1] for app in apps_list]
+    
+
+def schema_name_must_be_unique():
+    """
+    Allow multiple domains (e.g. *.domain1.com, *.domain2.com)
+    """
+    if hasattr(settings, 'SCHEMA_NAME_MUST_BE_UNIQUE'):
+        if not isinstance(settings.SCHEMA_NAME_MUST_BE_UNIQUE, bool):
+            return True
+        else:
+            return settings.SCHEMA_NAME_MUST_BE_UNIQUE
+    
+    return True        

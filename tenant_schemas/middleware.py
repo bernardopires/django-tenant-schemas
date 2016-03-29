@@ -10,7 +10,7 @@ from tenant_schemas.utils import (get_tenant_model, remove_www,
 class SchemaNameTenantMiddleware(object):
     """
     This middleware should be placed at the very top of the middleware stack.
-    Selects the proper database schema using the request host. Can fail in
+    Selects the proper database schema using the request header schemaname. Can fail in
     various ways which is better than corrupting or revealing data.
     """
     TENANT_NOT_FOUND_EXCEPTION = Http404

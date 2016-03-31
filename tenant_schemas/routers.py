@@ -14,6 +14,9 @@ class TenantSyncRouter(object):
         from django.db import connection
         from tenant_schemas.utils import get_public_schema_name, app_labels
 
+        if settings.DATABASES[db]['ENGINE'] != 'tenant_schemas.postgresql_backend':
+            return None
+
         if isinstance(app_label, ModelBase):
             # In django <1.7 the `app_label` parameter is actually `model`
             app_label = app_label._meta.app_label

@@ -6,6 +6,7 @@ if django.VERSION >= (1, 7, 0):
     from django.db.migrations.recorder import MigrationRecorder
 from django.db import connection
 from django.conf import settings
+from django.db.migrations.exceptions import MigrationSchemaMissing
 
 from tenant_schemas.utils import get_tenant_model, get_public_schema_name, schema_exists
 from tenant_schemas.management.commands import SyncCommon
@@ -41,7 +42,7 @@ class MigrateSchemasCommand(SyncCommon):
         if self.sync_tenant:
             if self.schema_name and self.schema_name != self.PUBLIC_SCHEMA_NAME:
                 if not schema_exists(self.schema_name):
-                    raise RuntimeError('Schema "{}" does not exist'.format(
+                    raise MigrationSchemaMissing('Schema "{}" does not exist'.format(
                         self.schema_name))
                 else:
                     self.run_migrations(self.schema_name, settings.TENANT_APPS)
@@ -55,13 +56,8 @@ class MigrateSchemasCommand(SyncCommon):
             self._notice("=== Running migrate for schema %s" % schema_name)
 
         if not schema_exists(schema_name):
-            if not self.ignore_missing_schemas:
-                raise RuntimeError('Schema "{}" does not exist'.format(
-                    schema_name))
-            else:
-                if int(self.options.get('verbosity', 1)) >= 1:
-                    self._notice("=== Schema %s doesn't exist, ignoring" % schema_name)
-                return
+            raise MigrationSchemaMissing('Schema "{}" does not exist'.format(
+                schema_name))
 
         connection.set_schema(schema_name)
         command = MigrateCommand()

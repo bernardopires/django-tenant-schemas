@@ -175,16 +175,11 @@ class SyncCommon(BaseCommand):
                     help=('Database state will be brought to the state after that '
                           'migration. Use the name "zero" to unapply all migrations.'))
         parser.add_argument("-s", "--schema", dest="schema_name")
-        parser.add_argument("--ignore-missing-schemas", dest="ignore_missing_schemas",
-                            action="store_true", default=False,
-                    help=('Doesn\'t raise an exception when a schema is '
-                          'missing in the database.'))
 
     def handle(self, *args, **options):
         self.sync_tenant = options.get('tenant')
         self.sync_public = options.get('shared')
         self.schema_name = options.get('schema_name')
-        self.ignore_missing_schemas = options.get("ignore_missing_schemas")
         self.installed_apps = settings.INSTALLED_APPS
         self.args = args
         self.options = options

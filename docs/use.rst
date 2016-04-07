@@ -87,11 +87,7 @@ The options given to ``migrate_schemas`` are also passed to every ``migrate``. H
 
     ./manage.py migrate_schemas --list
 
-``migrate_schemas`` raises an exception when an tenant schema is missing. You can ignore these exceptions with the ``--ignore-missing-schemas`` option.
-
-.. code-block:: bash
-
-    ./manage.py migrate_schemas --ignore-missing-schemas
+``migrate_schemas`` raises an exception when an tenant schema is missing.
 
 sync_schemas
 ~~~~~~~~~~~~

@@ -47,7 +47,7 @@ class MigrateSchemasCommand(SyncCommon):
                 else:
                     self.run_migrations(self.schema_name, settings.TENANT_APPS)
             else:
-                all_tenants = get_tenant_model().objects.exclude(schema_name=self.PUBLIC_SCHEMA_NAME)
+                all_tenants = get_tenant_model().objects.exclude(schema_name=get_public_schema_name())
                 for tenant in all_tenants:
                     self.run_migrations(tenant.schema_name, settings.TENANT_APPS)
 

@@ -69,7 +69,7 @@ Now we have to create your tenant model. Your tenant model can contain whichever
         # default true, schema will be automatically created and synced when it is saved
         auto_create_schema = True 
 
-Once you have defined your model, don't forget to create the migrations for it or otherwise Django >= 1.9 will not create its table. Replace ``customers`` with your app name.
+Once you have defined your model, don't forget to create the migrations for it or otherwise Django >= 1.7 will not create its table. Replace ``customers`` with your app name.
 
 .. code-block:: bash
 

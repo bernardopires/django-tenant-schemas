@@ -8,8 +8,6 @@ try:
 except ImportError:
     from distutils.core import setup
 
-__version__ = "1.4.0"
-
 setup(
     name='django-tenant-schemas',
     version=get_git_version(),
@@ -20,7 +18,6 @@ setup(
         'tenant_schemas.postgresql_backend',
         'tenant_schemas.management',
         'tenant_schemas.management.commands',
-        'tenant_schemas.management.commands.legacy',
         'tenant_schemas.templatetags',
         'tenant_schemas.test',
         'tenant_schemas.tests',
@@ -36,7 +33,7 @@ setup(
         'Programming Language :: Python',
     ],
     install_requires=[
-        'Django >= 1.6.0',
+        'Django >= 1.8.0',
         'psycopg2',
     ],
     zip_safe=False,

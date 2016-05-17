@@ -1,9 +1,7 @@
-import django
-from optparse import make_option
 from django.conf import settings
 from django.core.management import call_command, get_commands, load_command_class
-from django.core.management.base import BaseCommand, NoArgsCommand, CommandError
-from django.db import connection, DEFAULT_DB_ALIAS
+from django.core.management.base import BaseCommand, CommandError
+from django.db import connection
 
 try:
     from django.utils.six.moves import input
@@ -31,16 +29,6 @@ class BaseTenantCommand(BaseCommand):
             cmdclass = app_name
         else:
             cmdclass = load_command_class(app_name, obj.COMMAND_NAME)
-
-        if django.VERSION < (1, 8, 0):
-            # inherit the options from the original command
-            obj.option_list = cmdclass.option_list
-            obj.option_list += (
-                make_option("-s", "--schema", dest="schema_name"),
-            )
-            obj.option_list += (
-                make_option("-p", "--skip-public", dest="skip_public", action="store_true", default=False),
-            )
 
         # prepend the command's original help with the info about schemata iteration
         obj.help = "Calls %s for all registered schemata. You can use regular %s options. " \
@@ -83,12 +71,6 @@ class BaseTenantCommand(BaseCommand):
 
 
 class InteractiveTenantOption(object):
-    def __init__(self, *args, **kwargs):
-        super(InteractiveTenantOption, self).__init__(*args, **kwargs)
-        if django.VERSION < (1, 8, 0):
-            self.option_list += (
-                make_option("-s", "--schema", dest="schema_name", help="specify tenant schema"),
-            )
 
     def add_arguments(self, parser):
         parser.add_argument("-s", "--schema", dest="schema_name", help="specify tenant schema")
@@ -143,28 +125,8 @@ class TenantWrappedCommand(InteractiveTenantOption, BaseCommand):
 
 
 class SyncCommon(BaseCommand):
-    if django.VERSION < (1, 8, 0):
-        option_list = (
-            make_option('--tenant', action='store_true', dest='tenant', default=False,
-                        help='Tells Django to populate only tenant applications.'),
-            make_option('--shared', action='store_true', dest='shared', default=False,
-                        help='Tells Django to populate only shared applications.'),
-            make_option('--app_label', action='store', dest='app_label', nargs='?',
-                        help='App label of an application to synchronize the state.'),
-            make_option('--migration_name', action='store', dest='migration_name', nargs='?',
-                        help=('Database state will be brought to the state after that '
-                              'migration. Use the name "zero" to unapply all migrations.')),
-            make_option("-s", "--schema", dest="schema_name"),
-        )
-
-    def __init__(self, stdout=None, stderr=None, no_color=False):
-        if django.VERSION >= (1, 8, 0):
-            super(SyncCommon, self).__init__(stdout, stderr, no_color)
-        else:
-            super(SyncCommon, self).__init__()
 
     def add_arguments(self, parser):
-        # for django 1.8 and above
         parser.add_argument('--tenant', action='store_true', dest='tenant', default=False,
                     help='Tells Django to populate only tenant applications.')
         parser.add_argument('--shared', action='store_true', dest='shared', default=False,

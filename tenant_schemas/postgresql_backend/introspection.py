@@ -1,4 +1,4 @@
-import django
+from django.db.backends.base.introspection import TableInfo
 from django.db.backends.postgresql_psycopg2.introspection import (
     DatabaseIntrospection,
     FieldInfo,
@@ -7,11 +7,7 @@ from django.utils.encoding import force_text
 
 
 def _build_table_info(row):
-    if django.VERSION < (1, 8, 0):
-        return row[0]
-    else:
-        from django.db.backends.base.introspection import TableInfo
-        return TableInfo(row[0], {'r': 't', 'v': 'v'}.get(row[1]))
+    return TableInfo(row[0], {'r': 't', 'v': 'v'}.get(row[1]))
 
 
 def _build_field_info(col, field_map):
@@ -23,10 +19,8 @@ def _build_field_info(col, field_map):
     # is nullable
     info_args.append(field_map[col_name][0] == 'YES')
 
-    # django 1.8 added default value to FieldInfo
-    if django.VERSION >= (1, 8, 0):
-        # default value
-        info_args.append(field_map[col_name][1])
+    # default value
+    info_args.append(field_map[col_name][1])
 
     return FieldInfo(*info_args)
 
@@ -193,11 +187,6 @@ class DatabaseSchemaIntrospection(DatabaseIntrospection):
         Returns a dictionary of
         {field_name: (field_name_other_table, other_table)}
         representing all relationships to the given table.
-
-        Django 1.7:
-        Returns a dictionary of
-        {field_index: (field_index_other_table, other_table)}
-        representing all relationships to the given table. Indexes are 0-based.
         """
         cursor.execute(self._get_relations_query, {
             'schema': self.connection.schema_name,
@@ -205,12 +194,7 @@ class DatabaseSchemaIntrospection(DatabaseIntrospection):
         })
         relations = {}
         for row in cursor.fetchall():
-            if django.VERSION < (1, 8, 0):
-                # row[3] and row[4] are single-item lists,
-                # so grab the single item.
-                relations[row[3][0] - 1] = (row[4][0] - 1, row[0])
-            else:
-                relations[row[1]] = (row[2], row[0])
+            relations[row[1]] = (row[2], row[0])
         return relations
 
     def get_key_columns(self, cursor, table_name):

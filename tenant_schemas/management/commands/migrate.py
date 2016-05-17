@@ -1,6 +1,7 @@
-import django
 from django.conf import settings
 from django.core.management.base import CommandError, BaseCommand
+
+from tenant_schemas.management.commands.migrate_schemas import Command as MigrateSchemasCommand
 from tenant_schemas.utils import django_is_in_test_mode
 
 try:
@@ -21,6 +22,5 @@ class Command(MigrateCommand):
         super(Command, self).handle(*args, **options)
 
 
-if django.VERSION >= (1, 7, 0) and django_is_in_test_mode():
-    from .migrate_schemas import MigrateSchemasCommand
+if django_is_in_test_mode():
     Command = MigrateSchemasCommand

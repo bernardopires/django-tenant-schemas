@@ -19,6 +19,7 @@ setup(
         'tenant_schemas',
         'tenant_schemas.postgresql_backend',
         'tenant_schemas.management',
+        'tenant_schemas.legacy',
         'tenant_schemas.management.commands',
         'tenant_schemas.management.commands.legacy',
         'tenant_schemas.templatetags',

@@ -73,7 +73,6 @@ Once you have defined your model, don't forget to create the migrations for it o
 
 .. code-block:: bash
 
-    # Django >= 1.7
     python manage.py makemigrations customers
 
 Configure Tenant and Shared Applications
@@ -113,20 +112,16 @@ You also have to set where your tenant model is.
 
     TENANT_MODEL = "customers.Client" # app.Model
     
-Now run ``migrate_schemas --shared`` (``sync_schemas --shared`` if you're on Django 1.6 or older), this will create the shared apps on the ``public`` schema. Note: your database should be empty if this is the first time you're running this command.
+Now run ``migrate_schemas --shared`` to create the shared apps on the ``public`` schema. Note: your database should be empty if this is the first time you're running this command.
 
 .. code-block:: bash
 
-    # Django >= 1.7
     python manage.py migrate_schemas --shared
 
-    # Django < 1.7
-    python manage.py sync_schemas --shared
-    
 .. warning::
 
-   Never use ``migrate`` or ``syncdb`` as it would sync *all* your apps to ``public``!
-    
+   Never use ``migrate`` as it would sync *all* your apps to ``public``!
+
 Lastly, you need to create a tenant whose schema is ``public`` and it's address is your domain URL. Please see the section on :doc:`use <use>`.
 
 You can also specify extra schemas that should be visible to all queries using
@@ -144,34 +139,6 @@ globally.
    You can create a dedicated schema to hold postgresql extensions and make it
    available globally. This helps avoid issues caused by hiding the public
    schema from queries.
-
-South Migrations
-================
-If you're on Django 1.6 or older, this app supports `South <http://south.aeracode.org/>`_  so if you haven't configured it yet and would like to:
-
-For Django 1.1 or below
-
-.. code-block:: python
-
-    SOUTH_DATABASE_ADAPTER = 'south.db.postgresql_psycopg2'
-
-For Django 1.2 or above
-
-.. code-block:: python
-
-    SOUTH_DATABASE_ADAPTERS = {
-        'default': 'south.db.postgresql_psycopg2',
-    }
-    
-You can list ``south`` under ``TENANT_APPS`` and ``SHARED_APPS`` if you want.
-
-We override ``south``'s ``syncdb`` and ``migrate`` command, so you'll need to change your ``INSTALLED_APPS`` to
-
-.. code-block:: python
-
-    INSTALLED_APPS = SHARED_APPS + TENANT_APPS + ('tenant_schemas',)
-    
-This makes sure ``tenant_schemas`` is the last on the list and therefore always has precedence when running an overridden command.
 
 Optional Settings
 =================

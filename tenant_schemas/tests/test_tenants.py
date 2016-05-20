@@ -1,12 +1,12 @@
-import django
 import json
+from StringIO import StringIO
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.db import connection
-from StringIO import StringIO
-
 from dts_test_app.models import DummyModel, ModelWithFkToPublicUser
+
 from tenant_schemas.test.cases import TenantTestCase
 from tenant_schemas.tests.models import Tenant, NonAutoSyncTenant
 from tenant_schemas.tests.testcases import BaseTestCase
@@ -124,7 +124,7 @@ class TenantSyncTest(BaseTestCase):
     Tests if the shared apps and the tenant apps get synced correctly
     depending on if the public schema or a tenant is being synced.
     """
-    MIGRATION_TABLE_SIZE = 1 if django.VERSION >= (1, 7, 0) else 0
+    MIGRATION_TABLE_SIZE = 1
 
     def test_shared_apps_does_not_sync_tenant_apps(self):
         """
@@ -217,12 +217,11 @@ class TenantCommandTest(BaseTestCase):
         Tenant(domain_url='localhost', schema_name='public').save(verbosity=BaseTestCase.get_verbosity())
 
         out = StringIO()
-        if django.VERSION >= (1, 8, 0):
-            call_command('tenant_command', args=('dumpdata', 'tenant_schemas'), natural_foreign=True,
-                         schema_name=get_public_schema_name(), stdout=out)
-        else:
-            call_command('tenant_command', 'dumpdata', 'tenant_schemas', natural_foreign=True,
-                         schema_name=get_public_schema_name(), stdout=out)
+        call_command('tenant_command',
+                     args=('dumpdata', 'tenant_schemas'),
+                     natural_foreign=True,
+                     schema_name=get_public_schema_name(),
+                     stdout=out)
         self.assertItemsEqual(
             json.loads('[{"fields": {"domain_url": "localhost", "schema_name": "public"}, '
                        '"model": "tenant_schemas.tenant", "pk": 1}]'),

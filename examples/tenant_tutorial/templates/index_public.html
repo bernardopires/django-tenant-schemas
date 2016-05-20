@@ -18,11 +18,7 @@
     </ul><br>
     <p>Just run the command below on your shell to sync <code>SHARED_APPS</code>. Make sure your environment
     has <code>Django</code> and <code>django-tenant-schemas</code> available.</p>
-{% if DJANGO17 %}
     <pre>$ python manage.py migrate_schemas --shared</pre>
-{% else %}
-    <pre>$ python manage.py sync_schemas --shared</pre>
-{% endif %}
     <p>When you're done refresh this page.</p>
 {% elif no_public_tenant %}
     <h2>Second Step: Create a public tenant</h2>

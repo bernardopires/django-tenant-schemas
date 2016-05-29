@@ -66,12 +66,12 @@ To run only a particular schema, there is an optional argument called ``--schema
 
 .. code-block:: bash
 
-    ./manage.py sync_schemas --schema=customer1
+    ./manage.py migrate_schemas --schema=customer1
 
 migrate_schemas    
 ~~~~~~~~~~~~~~~
 
-If you're on Django 1.7 or newer, ``migrate_schemas`` is the most important command on this app. The way it works is that it calls Django's ``migrate`` in two different ways. First, it calls ``migrate`` for the ``public`` schema, only syncing the shared apps. Then it runs ``migrate`` for every tenant in the database, this time only syncing the tenant apps.
+``migrate_schemas`` is the most important command on this app. The way it works is that it calls Django's ``migrate`` in two different ways. First, it calls ``migrate`` for the ``public`` schema, only syncing the shared apps. Then it runs ``migrate`` for every tenant in the database, this time only syncing the tenant apps.
 
 .. warning::
 
@@ -86,27 +86,6 @@ The options given to ``migrate_schemas`` are also passed to every ``migrate``. H
 .. code-block:: bash
 
     ./manage.py migrate_schemas --list
-
-sync_schemas
-~~~~~~~~~~~~
-
-If you're on Django 1.6 or older, we also packed ``sync_schemas``. It will also respect the ``SHARED_APPS`` and ``TENANT_APPS`` settings, so if you're syncing the ``public`` schema it will only sync ``SHARED_APPS``. If you're syncing tenants, it will only migrate ``TENANT_APPS``.
-
-.. warning::
-
-   You should never directly call ``syncdb``. We perform some magic in order to make ``syncdb`` only sync the appropriate apps.
-
-The options given to ``sync_schemas`` are passed to every ``syncdb``. So if you use South, you may find this handy
-
-.. code-block:: bash
-
-    ./manage.py sync_schemas --migrate
-
-You can also use the option ``--tenant`` to only sync tenant apps or ``--shared`` to only sync shared apps.
-
-.. code-block:: bash
-
-    ./manage.py sync_schemas --shared # will only sync the public schema
 
 tenant_command
 ~~~~~~~~~~~~~~

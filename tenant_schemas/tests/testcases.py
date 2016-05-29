@@ -52,17 +52,8 @@ class BaseTestCase(TestCase):
 
     @classmethod
     def sync_shared(cls):
-        if django.VERSION >= (1, 7, 0):
-            call_command('migrate_schemas',
-                         schema_name=get_public_schema_name(),
-                         interactive=False,
-                         verbosity=cls.get_verbosity(),
-                         run_syncdb=True)
-        else:
-            call_command('sync_schemas',
-                         schema_name=get_public_schema_name(),
-                         tenant=False,
-                         public=True,
-                         interactive=False,
-                         migrate_all=True,
-                         verbosity=cls.get_verbosity())
+        call_command('migrate_schemas',
+                     schema_name=get_public_schema_name(),
+                     interactive=False,
+                     verbosity=cls.get_verbosity(),
+                     run_syncdb=True)

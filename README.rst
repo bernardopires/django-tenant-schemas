@@ -160,8 +160,7 @@ created ``Client`` inside an app named ``customers``, your
 
     TENANT_MODEL = "customers.Client" # app.Model
 
-Now run ``migrate_schemas`` (``sync_schemas`` if you're on Django 1.6 and older), 
-this will sync your apps to the ``public`` schema.
+Now run ``migrate_schemas`` to sync your apps to the ``public`` schema.
 
 ::
 

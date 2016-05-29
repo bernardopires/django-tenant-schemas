@@ -4,13 +4,8 @@ from django.core.management.base import CommandError, BaseCommand
 from tenant_schemas.management.commands.migrate_schemas import Command as MigrateSchemasCommand
 from tenant_schemas.utils import django_is_in_test_mode
 
-try:
-    from south.management.commands.migrate import Command as MigrateCommand
-except ImportError:
-    MigrateCommand = BaseCommand
 
-
-class Command(MigrateCommand):
+class Command(BaseCommand):
 
     def handle(self, *args, **options):
         database = options.get('database', 'default')

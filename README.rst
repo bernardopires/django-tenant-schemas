@@ -102,7 +102,7 @@ Setup & Documentation
 
 **This is just a short setup guide**, it is **strongly** recommended
 that you read the complete version at
-`django-tenant-schemas.readthedocs.org`_.
+`django-tenant-schemas.readthedocs.io`_.
 
 Your ``DATABASE_ENGINE`` setting needs to be changed to
 
@@ -192,7 +192,7 @@ so you shouldn’t need to change anything at your views.
 You’re all set, but we have left key details outside of this short
 tutorial, such as creating the public tenant and configuring shared and
 tenant specific apps. Complete instructions can be found at
-`django-tenant-schemas.readthedocs.org`_.
+`django-tenant-schemas.readthedocs.io`_.
 
 
 
@@ -205,5 +205,5 @@ tenant specific apps. Complete instructions can be found at
    :target: https://pypi.python.org/pypi/django-tenant-schemas
 .. |PyPi downloads| image:: https://img.shields.io/pypi/dm/django-tenant-schemas.svg
    :target: https://pypi.python.org/pypi/django-tenant-schemas
-.. _setup: https://django-tenant-schemas.readthedocs.org/en/latest/install.html
-.. _django-tenant-schemas.readthedocs.org: https://django-tenant-schemas.readthedocs.org/en/latest/
+.. _setup: https://django-tenant-schemas.readthedocs.io/en/latest/install.html
+.. _django-tenant-schemas.readthedocs.io: https://django-tenant-schemas.readthedocs.io/en/latest/

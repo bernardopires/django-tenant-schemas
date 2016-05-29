@@ -32,4 +32,4 @@ Because django will not create tenants for you during your tests, we have packed
             response = self.c.get(reverse('user_profile'))
             self.assertEqual(response.status_code, 200)
 
-.. _tox: https://tox.readthedocs.org/
+.. _tox: https://tox.readthedocs.io/

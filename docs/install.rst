@@ -153,7 +153,7 @@ Optional Settings
 
     :Default: ``'True'``
     
-    Sets if the models will be synced directly to the last version and all migration subsequently faked. Useful in the cases where migrations can not be faked and need to be ran individually. Be aware that setting this to `False` may significantly slow down the process of creating tenants. Only relevant if `South <http://south.aeracode.org/>`_ is used.
+    Sets if the models will be synced directly to the last version and all migration subsequently faked. Useful in the cases where migrations can not be faked and need to be ran individually. Be aware that setting this to `False` may significantly slow down the process of creating tenants.
 
 Tenant View-Routing
 -------------------

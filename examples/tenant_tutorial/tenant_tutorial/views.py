@@ -1,9 +1,9 @@
-import django
+from customers.models import Client
 from django.conf import settings
 from django.db import utils
 from django.views.generic import TemplateView
+
 from tenant_schemas.utils import remove_www
-from customers.models import Client
 
 
 class HomeView(TemplateView):
@@ -13,9 +13,6 @@ class HomeView(TemplateView):
         context = super(HomeView, self).get_context_data(**kwargs)
 
         hostname_without_port = remove_www(self.request.get_host().split(':')[0])
-
-        if django.VERSION >= (1, 7, 0):
-            context['DJANGO17'] = True
 
         try:
             Client.objects.get(schema_name='public')

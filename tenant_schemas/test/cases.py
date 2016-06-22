@@ -1,10 +1,9 @@
-import django
 from django.core.management import call_command
 from django.db import connection
 from django.test import TestCase
 
-from tenant_schemas.utils import get_tenant_model
 from tenant_schemas.utils import get_public_schema_name
+from tenant_schemas.utils import get_tenant_model
 
 
 class TenantTestCase(TestCase):
@@ -27,17 +26,7 @@ class TenantTestCase(TestCase):
 
     @classmethod
     def sync_shared(cls):
-        if django.VERSION >= (1, 7, 0):
-            call_command('migrate_schemas',
-                         schema_name=get_public_schema_name(),
-                         interactive=False,
-                         verbosity=0)
-        else:
-            call_command('sync_schemas',
-                         schema_name=get_public_schema_name(),
-                         tenant=False,
-                         public=True,
-                         interactive=False,
-                         migrate_all=True,
-                         verbosity=0,
-                         )
+        call_command('migrate_schemas',
+                     schema_name=get_public_schema_name(),
+                     interactive=False,
+                     verbosity=0)

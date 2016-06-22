@@ -18,11 +18,7 @@
     </ul><br>
     <p>Just run the command below on your shell to sync <code>SHARED_APPS</code>. Make sure your environment
     has <code>Django</code> and <code>django-tenant-schemas</code> available.</p>
-{% if DJANGO17 %}
     <pre>$ python manage.py migrate_schemas --shared</pre>
-{% else %}
-    <pre>$ python manage.py sync_schemas --shared</pre>
-{% endif %}
     <p>When you're done refresh this page.</p>
 {% elif no_public_tenant %}
     <h2>Second Step: Create a public tenant</h2>
@@ -124,9 +120,8 @@ Client(domain_url='tenant2.trendy-sass.com',
     <h3>Where to go from here</h3>
     <p>There are some interesting features that we did not cover.</p>
     <ul>
-        <li><a href="https://django-tenant-schemas.readthedocs.org/en/latest/install.html#south-migrations">South Migrations</a>. This app supports <code>South</code> migrations.</li>
-        <li><a href="https://django-tenant-schemas.readthedocs.org/en/latest/install.html#tenant-view-routing">Tenant View-Routing</a>. Serve different views for the same path. (this tutorial makes use of this feature)</li>
-        <li><a href="https://django-tenant-schemas.readthedocs.org/en/latest/use.html#management-commands">Management Commands</a>. Run a command for a particular tenant.</li>
+        <li><a href="https://django-tenant-schemas.readthedocs.io/en/latest/install.html#tenant-view-routing">Tenant View-Routing</a>. Serve different views for the same path. (this tutorial makes use of this feature)</li>
+        <li><a href="https://django-tenant-schemas.readthedocs.io/en/latest/use.html#management-commands">Management Commands</a>. Run a command for a particular tenant.</li>
     </ul>
 {% endif %}
 {% endblock %}

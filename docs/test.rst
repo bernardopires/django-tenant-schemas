@@ -3,11 +3,17 @@ Tests
 ==================
 Running the tests
 -----------------
-If you're using South, don't forget to set ``SOUTH_TESTS_MIGRATE = False``. Run these tests from the project ``dts_test_project``, it comes prepacked with the correct settings file and extra apps to enable tests to ensure different apps can exist in ``SHARED_APPS`` and ``TENANT_APPS``.
+Run these tests from the project ``dts_test_project``, it comes prepacked with the correct settings file and extra apps to enable tests to ensure different apps can exist in ``SHARED_APPS`` and ``TENANT_APPS``.
 
 .. code-block:: bash
 
     ./manage.py test tenant_schemas.tests
+
+To run the test suite outsite of your application you can use tox_ to test all supported Django versions.
+
+.. code-block:: bash
+
+    tox
 
 Updating your app's tests to work with tenant-schemas
 -----------------------------------------------------
@@ -25,3 +31,5 @@ Because django will not create tenants for you during your tests, we have packed
         def test_user_profile_view(self):
             response = self.c.get(reverse('user_profile'))
             self.assertEqual(response.status_code, 200)
+
+.. _tox: https://tox.readthedocs.io/

@@ -12,8 +12,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'tenant_schemas.postgresql_backend',  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
         'NAME': 'tenant_tutorial',                      # Or path to database file if using sqlite3.
-        'USER': 'dbuser',
-        'PASSWORD': 'password',
+        'USER': 'postgres',
+        'PASSWORD': 'root',
         'HOST': 'localhost',   # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
         'PORT': '',            # Set to empty string for default.
     }

@@ -26,20 +26,30 @@ class BaseTenantCommand(BaseCommand):
         app_name = get_commands()[obj.COMMAND_NAME]
         if isinstance(app_name, BaseCommand):
             # If the command is already loaded, use it directly.
-            cmdclass = app_name
+            obj._original_command = app_name
         else:
-            cmdclass = load_command_class(app_name, obj.COMMAND_NAME)
+            obj._original_command = load_command_class(app_name, obj.COMMAND_NAME)
 
-        # prepend the command's original help with the info about schemata iteration
-        obj.help = "Calls %s for all registered schemata. You can use regular %s options. " \
-                   "Original help for %s: %s" % (obj.COMMAND_NAME, obj.COMMAND_NAME, obj.COMMAND_NAME,
-                                                 getattr(cmdclass, 'help', 'none'))
+        # prepend the command's original help with the info about schemata
+        # iteration
+        obj.help = (
+            "Calls {cmd} for all registered schemata. You can use regular "
+            "{cmd} options.\n\nOriginal help for {cmd}:\n\n{help}".format(
+                cmd=obj.COMMAND_NAME,
+                help=getattr(obj._original_command, 'help', 'none'),
+            )
+        )
+
         return obj
 
     def add_arguments(self, parser):
         super(BaseTenantCommand, self).add_arguments(parser)
         parser.add_argument("-s", "--schema", dest="schema_name")
-        parser.add_argument("-p", "--skip-public", dest="skip_public", action="store_true", default=False)
+        parser.add_argument("-p", "--skip-public", dest="skip_public",
+                            action="store_true", default=False)
+        # use the privately held reference to the underlying command to invoke
+        # the add_arguments path on this parser instance
+        self._original_command.add_arguments(parser)
 
     def execute_command(self, tenant, command_name, *args, **options):
         verbosity = int(options.get('verbosity'))

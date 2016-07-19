@@ -8,7 +8,11 @@ from django.db import connection
 from django.core.files.storage import FileSystemStorage
 from django.contrib.staticfiles.storage import StaticFilesStorage
 
-__all__ = ('TenantStorageMixin', 'TenantFileSystemStorage')
+__all__ = (
+    'TenantStorageMixin',
+    'TenantFileSystemStorage',
+    'TenantStaticFilesStorage',
+)
 
 
 class TenantStorageMixin(object):

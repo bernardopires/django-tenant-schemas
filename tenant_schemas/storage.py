@@ -8,7 +8,11 @@ from django.db import connection
 from django.core.files.storage import FileSystemStorage
 from django.contrib.staticfiles.storage import StaticFilesStorage
 
-__all__ = ('TenantStorageMixin', 'TenantFileSystemStorage')
+__all__ = (
+    'TenantStorageMixin',
+    'TenantFileSystemStorage',
+    'TenantStaticFilesStorage',
+)
 
 
 class TenantStorageMixin(object):
@@ -20,7 +24,6 @@ class TenantStorageMixin(object):
     gets served up, while any code interactions will account for the multiple
     tenancy of the project.
     """
-
     def path(self, name):
         """
         Look for files in subdirectory of MEDIA_ROOT using the tenant's

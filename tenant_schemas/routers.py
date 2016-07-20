@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db.models.base import ModelBase
+from django.db.utils import load_backend
 
 
 class TenantSyncRouter(object):
@@ -13,8 +14,11 @@ class TenantSyncRouter(object):
         # https://code.djangoproject.com/ticket/20704
         from django.db import connection
         from tenant_schemas.utils import get_public_schema_name, app_labels
+        from tenant_schemas.postgresql_backend.base import DatabaseWrapper as TenantDbWrapper
 
-        if settings.DATABASES[db]['ENGINE'] != 'tenant_schemas.postgresql_backend':
+        db_engine = settings.DATABASES[db]['ENGINE']
+        if not (db_engine == 'tenant_schemas.postgresql_backend' or
+                issubclass(getattr(load_backend(db_engine), 'DatabaseWrapper'), TenantDbWrapper)):
             return None
 
         if isinstance(app_label, ModelBase):

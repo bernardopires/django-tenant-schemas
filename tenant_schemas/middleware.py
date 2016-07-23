@@ -19,7 +19,7 @@ class TenantMiddleware(object):
         """ Extracts hostname from request. Used for custom requests filtering.
             By default removes the request's port and common prefixes.
         """
-        return remove_www(request.get_host().split(':')[0])
+        return remove_www(request.get_host().split(':')[0]).lower()
 
     def process_request(self, request):
         # Connection needs first to be at the public schema, as this is where

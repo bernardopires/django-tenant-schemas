@@ -13,7 +13,7 @@ class Command(SyncCommon):
         """
         Changes the option_list to use the options from the wrapped migrate command.
         """
-        self.option_list += MigrateCommand.option_list
+        # self.option_list += MigrateCommand.option_list
         super(Command, self).__init__(stdout, stderr, no_color)
 
     def add_arguments(self, parser):

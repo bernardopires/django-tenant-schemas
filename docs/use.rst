@@ -125,6 +125,89 @@ Prints to standard output a tab separated list of schema:domain_url values for e
     done
 
 
+Utils
+-----
+
+There are several utils available in `tenant_schemas.utils` that can help you in writing more complicated applications.
+
+
+schema_context
+~~~~~~~~~~~~~~
+
+This context manager activates a specific schema name.
+
+.. code-block:: python
+
+    from tenant_schemas.utils import schema_context
+
+    # runs in a schema
+
+    with schema_context(schema_name):
+        # this will run in schema `schema_name`
+
+    # runs back in the original schema
+
+
+tenant_context
+~~~~~~~~~~~~~~
+
+This context manager is very similiar to the ``schema_context`` manager,
+but it takes a whole tenant model object as the argument.
+
+.. code-block:: python
+
+    from tenant_schemas.utils import tenant_context
+
+    # runs in a schema
+
+    with tenant_context(tenant):
+        # this will run in schema of the tenant `tenant`
+
+    # runs back in the original schema
+
+
+
+schema_exists
+~~~~~~~~~~~~~
+
+Returns True if a schema exists in the current database.
+
+.. code-block:: python
+
+    from django.core.exceptions import ValidationError
+    from django.utils.text import slugify
+
+    from tenant_schemas.utils import schema_exists
+
+    class TenantModelForm:
+        # ...
+
+        def clean_schema_name(self)
+            schema_name = self.cleaned_data["schema_name"]
+            schema_name = slugify(schema_name).replace("-", "")
+            if schema_exists(schema_name):
+                raise ValidationError("A schema with this name already exists in the database")
+            else:
+                return schema_name
+
+
+get_tenant_model
+~~~~~~~~~~~~~~~~
+
+Returns the class of the tenant model.
+
+get_public_schema_name
+~~~~~~~~~~~~~~~~~~~~~~
+
+Returns the name of the public schema (from settings or the default).
+
+
+get_limit_set_calls
+~~~~~~~~~~~~~~~~~~~
+
+Returns the TENANT_LIMIT_SET_CALLS setting or the default (False). See bellow.
+
+
 Performance Considerations
 --------------------------
 

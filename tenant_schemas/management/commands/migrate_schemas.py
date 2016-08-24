@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.core.management.commands.migrate import Command as MigrateCommand
 from django.db import connection
+import django
+
 
 from tenant_schemas.management.commands import SyncCommon
 from tenant_schemas.utils import get_tenant_model, get_public_schema_name, schema_exists
@@ -13,7 +15,8 @@ class Command(SyncCommon):
         """
         Changes the option_list to use the options from the wrapped migrate command.
         """
-        self.option_list += MigrateCommand.option_list
+        if django.VERSION <= (1,10,0):
+            self.option_list += MigrateCommand.option_list
         super(Command, self).__init__(stdout, stderr, no_color)
 
     def add_arguments(self, parser):

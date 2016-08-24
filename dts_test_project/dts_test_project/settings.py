@@ -125,10 +125,17 @@ LOGGING = {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
         },
+        'tenant_context': {
+            '()': 'tenant_schemas.log.TenantContextFilter'
+        },
     },
     'formatters': {
         'simple': {
             'format': '%(levelname)-7s %(asctime)s %(message)s',
+        },
+        'tenant_context': {
+            'format': '[%(schema_name)s:%(domain_url)s] '
+                      '%(levelname)-7s %(asctime)s %(message)s',
         },
     },
     'handlers': {
@@ -137,6 +144,7 @@ LOGGING = {
         },
         'console': {
             'class': 'logging.StreamHandler',
+            'filters': ['tenant_context'],
             'formatter': 'simple',
         },
     },

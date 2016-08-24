@@ -70,10 +70,10 @@ WSGI_APPLICATION = 'dts_test_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'tenant_schemas.postgresql_backend',
-        'NAME': 'dts_test_project',
+        'NAME': os.environ.get('PG_NAME', 'dts_test_project'),
         'USER': os.environ.get('PG_USER', 'postgres'),
         'PASSWORD': os.environ.get('PG_PASSWORD', 'root'),
-        'HOST': '127.0.0.1',
+        'HOST': os.environ.get('PG_HOST', 'localhost'),
     }
 }
 

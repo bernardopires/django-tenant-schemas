@@ -5,9 +5,10 @@ from django.db import connection
 from django.http import Http404
 from tenant_schemas.utils import (get_tenant_model, remove_www,
                                   get_public_schema_name)
+from django.utils.deprecation import MiddlewareMixin
 
 
-class TenantMiddleware(object):
+class TenantMiddleware(MiddlewareMixin):
     """
     This middleware should be placed at the very top of the middleware stack.
     Selects the proper database schema using the request host. Can fail in

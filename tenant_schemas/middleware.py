@@ -1,3 +1,5 @@
+import django
+
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import DisallowedHost
@@ -5,10 +7,13 @@ from django.db import connection
 from django.http import Http404
 from tenant_schemas.utils import (get_tenant_model, remove_www,
                                   get_public_schema_name)
-from django.utils.deprecation import MiddlewareMixin
+if django.VERSION >= (1, 10, 0):
+    MIDDLEWARE_MIXIN = django.utils.deprecation.MiddlewareMixin
+else:
+    MIDDLEWARE_MIXIN = object
 
 
-class TenantMiddleware(MiddlewareMixin):
+class TenantMiddleware(MIDDLEWARE_MIXIN):
     """
     This middleware should be placed at the very top of the middleware stack.
     Selects the proper database schema using the request host. Can fail in

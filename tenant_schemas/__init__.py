@@ -3,6 +3,8 @@ from django.core.exceptions import ImproperlyConfigured
 
 from tenant_schemas.utils import get_public_schema_name, get_tenant_model
 
+default_app_config = 'tenant_schemas.apps.TenantSchemasConfig'
+
 recommended_config = """
 Warning: You should put 'tenant_schemas' at the end of INSTALLED_APPS:
 INSTALLED_APPS = TENANT_APPS + SHARED_APPS + ('tenant_schemas',)

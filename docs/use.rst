@@ -87,6 +87,8 @@ The options given to ``migrate_schemas`` are also passed to every ``migrate``. H
 
     ./manage.py migrate_schemas --list
 
+``migrate_schemas`` raises an exception when an tenant schema is missing.
+
 tenant_command
 ~~~~~~~~~~~~~~
 

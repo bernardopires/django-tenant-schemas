@@ -3,7 +3,12 @@ import django
 from django.conf import settings
 from django.core.management.commands.migrate import Command as MigrateCommand
 from django.db import connection
-from django.db.migrations.exceptions import MigrationSchemaMissing
+
+if django.VERSION >= (1, 9, 0):
+    from django.db.migrations.exceptions import MigrationSchemaMissing
+else:
+    class MigrationSchemaMissing(django.db.utils.DatabaseError):
+        pass
 
 
 from tenant_schemas.management.commands import SyncCommon

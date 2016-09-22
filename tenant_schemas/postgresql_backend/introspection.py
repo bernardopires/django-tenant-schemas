@@ -88,7 +88,7 @@ class DatabaseSchemaIntrospection(DatabaseIntrospection):
             AND n.nspname = %(schema)s
     """
 
-    _get_constaints_query = """
+    _get_constraints_query = """
         SELECT
             kc.constraint_name,
             kc.column_name,
@@ -240,7 +240,7 @@ class DatabaseSchemaIntrospection(DatabaseIntrospection):
 
         # Loop over the key table, collecting things as constraints
         # This will get PKs, FKs, and uniques, but not CHECK
-        cursor.execute(self._get_constaints_query, {
+        cursor.execute(self._get_constraints_query, {
             'schema': self.connection.schema_name,
             'table': table_name,
         })

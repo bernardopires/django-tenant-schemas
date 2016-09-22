@@ -12,7 +12,6 @@ except ImportError:
 from django.core import mail
 
 
-
 @contextmanager
 def schema_context(schema_name):
     previous_tenant = connection.tenant

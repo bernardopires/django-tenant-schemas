@@ -88,14 +88,15 @@ class DatabaseSchemaIntrospection(DatabaseIntrospection):
             AND n.nspname = %(schema)s
     """
 
-    _get_constaints_query = """
+    _get_constraints_query = """
         SELECT
             kc.constraint_name,
             kc.column_name,
             c.constraint_type,
             array(SELECT table_name::text || '.' || column_name::text
                   FROM information_schema.constraint_column_usage
-                  WHERE constraint_name = kc.constraint_name)
+                  WHERE constraint_name = kc.constraint_name
+                  AND table_schema = kc.table_schema)
         FROM information_schema.key_column_usage AS kc
         JOIN information_schema.table_constraints AS c ON
             kc.table_schema = c.table_schema AND
@@ -240,7 +241,7 @@ class DatabaseSchemaIntrospection(DatabaseIntrospection):
 
         # Loop over the key table, collecting things as constraints
         # This will get PKs, FKs, and uniques, but not CHECK
-        cursor.execute(self._get_constaints_query, {
+        cursor.execute(self._get_constraints_query, {
             'schema': self.connection.schema_name,
             'table': table_name,
         })

@@ -145,7 +145,7 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
             'filters': ['tenant_context'],
-            'formatter': 'simple',
+            'formatter': 'tenant_context',
         },
     },
     'loggers': {

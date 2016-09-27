@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from os.path import exists
+
 from version import get_git_version
 
 try:
@@ -15,6 +16,7 @@ setup(
     author_email='carneiro.be@gmail.com',
     packages=[
         'tenant_schemas',
+        'tenant_schemas.migration_executors',
         'tenant_schemas.postgresql_backend',
         'tenant_schemas.management',
         'tenant_schemas.management.commands',

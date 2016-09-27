@@ -4,16 +4,17 @@ multi-tenant setting
 """
 
 import hashlib
+
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.template.base import TemplateDoesNotExist, Template
-from django.utils.encoding import force_bytes
-from django.utils._os import safe_join
 from django.db import connection
+from django.template.base import Template, TemplateDoesNotExist
 from django.template.loaders.base import Loader as BaseLoader
+from django.utils._os import safe_join
+from django.utils.encoding import force_bytes
 
 from tenant_schemas.postgresql_backend.base import FakeTenant
-import django
+
 
 class CachedLoader(BaseLoader):
     is_usable = True

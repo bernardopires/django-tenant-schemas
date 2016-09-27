@@ -1,6 +1,8 @@
 import re
 import warnings
+
 from django.conf import settings
+
 try:
     # Django versions >= 1.9
     from django.utils.module_loading import import_module
@@ -127,7 +129,6 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
                                            "to call set_schema() or set_tenant()?")
             _check_schema_name(self.schema_name)
             public_schema_name = get_public_schema_name()
-            search_paths = []
 
             if self.schema_name == public_schema_name:
                 search_paths = [public_schema_name]

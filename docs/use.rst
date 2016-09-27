@@ -68,7 +68,7 @@ To run only a particular schema, there is an optional argument called ``--schema
 
     ./manage.py migrate_schemas --schema=customer1
 
-migrate_schemas    
+migrate_schemas
 ~~~~~~~~~~~~~~~
 
 ``migrate_schemas`` is the most important command on this app. The way it works is that it calls Django's ``migrate`` in two different ways. First, it calls ``migrate`` for the ``public`` schema, only syncing the shared apps. Then it runs ``migrate`` for every tenant in the database, this time only syncing the tenant apps.
@@ -103,8 +103,8 @@ If you don't specify a schema, you will be prompted to enter one. Otherwise, you
 .. code-block:: bash
 
     ./manage.py tenant_command loaddata --schema=customer1
-    
-createsuperuser   
+
+createsuperuser
 ~~~~~~~~~~~~~~~
 
 The command ``createsuperuser`` is already automatically wrapped to have a ``schema`` flag. Create a new super user with
@@ -208,6 +208,40 @@ get_limit_set_calls
 ~~~~~~~~~~~~~~~~~~~
 
 Returns the TENANT_LIMIT_SET_CALLS setting or the default (False). See bellow.
+
+
+Logging
+-------
+
+The optional ``TenantContextFilter`` can be included in ``settings.LOGGING`` to add the current ``schema_name`` and ``domain_url`` to the logging context.
+
+.. code-block:: python
+
+    # settings.py
+    LOGGING = {
+        'filters': {
+            'tenant_context': {
+                '()': 'tenant_schemas.log.TenantContextFilter'
+            },
+        },
+        'formatters': {
+            'tenant_context': {
+                'format': '[%(schema_name)s:%(domain_url)s] '
+                '%(levelname)-7s %(asctime)s %(message)s',
+            },
+        },
+        'handlers': {
+            'console': {
+                'filters': ['tenant_context'],
+            },
+        },
+    }
+
+This will result in logging output that looks similar to:
+
+.. code-block:: text
+
+    [example:example.com] DEBUG 13:29 django.db.backends: (0.001) SELECT ...
 
 
 Performance Considerations

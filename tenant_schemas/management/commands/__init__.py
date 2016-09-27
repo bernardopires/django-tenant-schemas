@@ -147,11 +147,14 @@ class SyncCommon(BaseCommand):
                     help=('Database state will be brought to the state after that '
                           'migration. Use the name "zero" to unapply all migrations.'))
         parser.add_argument("-s", "--schema", dest="schema_name")
+        parser.add_argument('--executor', action='store', dest='executor', default=None,
+                            help='Executor to be used for running migrations [standard|multiprocessing]')
 
     def handle(self, *args, **options):
         self.sync_tenant = options.get('tenant')
         self.sync_public = options.get('shared')
         self.schema_name = options.get('schema_name')
+        self.executor = options.get('executor')
         self.installed_apps = settings.INSTALLED_APPS
         self.args = args
         self.options = options

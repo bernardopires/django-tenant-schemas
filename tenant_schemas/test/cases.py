@@ -1,28 +1,31 @@
 from django.core.management import call_command
 from django.db import connection
-from django.test import TestCase
+from django.test import TransactionTestCase
 
-from tenant_schemas.utils import get_public_schema_name
-from tenant_schemas.utils import get_tenant_model
+from tenant_schemas.utils import get_public_schema_name, get_tenant_model
 
 
-class TenantTestCase(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.sync_shared()
-        tenant_domain = 'tenant.test.com'
-        cls.tenant = get_tenant_model()(domain_url=tenant_domain, schema_name='test')
-        cls.tenant.save(verbosity=0)  # todo: is there any way to get the verbosity from the test command here?
+class TenantTestCase(TransactionTestCase):
+    def setup_tenant(self, tenant):
+        """
+        Add any additional setting to the tenant before it get saved. This is required if you have
+        required fields.
+        :param tenant:
+        :return:
+        """
+        pass
 
-        connection.set_tenant(cls.tenant)
+    def setUp(self):
+        self.sync_shared()
+        self.tenant = get_tenant_model()(schema_name='test', domain_url='tenant.test.com')
+        self.setup_tenant(self.tenant)
+        self.tenant.save(verbosity=0)  # todo: is there any way to get the verbosity from the test command here?
 
-    @classmethod
-    def tearDownClass(cls):
+        connection.set_tenant(self.tenant)
+
+    def tearDown(self):
         connection.set_schema_to_public()
-        cls.tenant.delete()
-
-        cursor = connection.cursor()
-        cursor.execute('DROP SCHEMA test CASCADE')
+        self.tenant.delete(force_drop=True)
 
     @classmethod
     def sync_shared(cls):

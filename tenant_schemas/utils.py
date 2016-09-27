@@ -4,11 +4,11 @@ from django.conf import settings
 from django.db import connection
 
 try:
-    from django.apps import apps, AppConfig
+    from django.apps import apps
     get_model = apps.get_model
 except ImportError:
     from django.db.models.loading import get_model
-    AppConfig = None
+
 from django.core import mail
 
 
@@ -39,7 +39,7 @@ def tenant_context(tenant):
 
 
 def get_tenant_model():
-    return get_model(*settings.TENANT_MODEL.split("."))
+    return get_model(settings.TENANT_MODEL)
 
 
 def get_public_schema_name():
@@ -108,12 +108,7 @@ def schema_exists(schema_name):
 
 def app_labels(apps_list):
     """
-    Returns a list of app labels of the given apps_list, now properly handles
-     new Django 1.7+ application registry.
-
-    https://docs.djangoproject.com/en/1.8/ref/applications/#django.apps.AppConfig.label
+    Returns a list of app labels of the given apps_list
     """
-    if AppConfig is None:
-        return [app.split('.')[-1] for app in apps_list]
-    return [AppConfig.create(app).label for app in apps_list]
+    return [app.split('.')[-1] for app in apps_list]
 

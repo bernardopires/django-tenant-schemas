@@ -24,6 +24,7 @@ class Command(SyncCommon):
         """
         if django.VERSION <= (1, 10, 0):
             self.option_list += MigrateCommand.option_list
+
         super(Command, self).__init__(stdout, stderr, no_color)
 
     def add_arguments(self, parser):
@@ -35,10 +36,10 @@ class Command(SyncCommon):
         super(Command, self).handle(*args, **options)
         self.PUBLIC_SCHEMA_NAME = get_public_schema_name()
 
-        executor = get_executor(codename=self.executor)(self.args, self.options)
-
         if self.sync_public and not self.schema_name:
             self.schema_name = self.PUBLIC_SCHEMA_NAME
+
+        executor = get_executor(codename=self.executor)(self.args, self.options)
 
         if self.sync_public:
             executor.run_migrations(tenants=[self.schema_name])

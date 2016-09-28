@@ -1,3 +1,6 @@
+import logging
+from time import time
+
 import django
 from django.core.management.commands.migrate import Command as MigrateCommand
 from django.db import connection
@@ -11,6 +14,8 @@ if django.VERSION >= (1, 9, 0):
 else:
     class MigrationSchemaMissing(django.db.utils.DatabaseError):
         pass
+
+logger = logging.getLogger(__name__)
 
 
 class Command(SyncCommon):
@@ -39,13 +44,17 @@ class Command(SyncCommon):
 
         executor = get_executor(codename=self.executor)(self.args, self.options)
 
+        logger.info('Starting migration (Executor: %s)' % executor.codename)
+        if int(options.get('verbosity', 1)) >= 1:
+            self.stdout.write(self.style.NOTICE('=== Starting migration (Executor: %s)' % executor.codename))
+
+        ts = time()
         if self.sync_public:
             executor.run_migrations(tenants=[self.schema_name])
         if self.sync_tenant:
             if self.schema_name and self.schema_name != self.PUBLIC_SCHEMA_NAME:
                 if not schema_exists(self.schema_name):
-                    raise MigrationSchemaMissing('Schema "{}" does not exist'.format(
-                        self.schema_name))
+                    raise MigrationSchemaMissing('Schema "{}" does not exist'.format(self.schema_name))
                 else:
                     tenants = [self.schema_name]
             else:
@@ -54,3 +63,8 @@ class Command(SyncCommon):
                 ).values_list('schema_name', flat=True)
 
             executor.run_migrations(tenants=tenants)
+        te = time() - ts
+
+        logger.info('End migration (Elapsed time: %s seconds)' % te)
+        if int(options.get('verbosity', 1)) >= 1:
+            self.stdout.write(self.style.NOTICE('=== End migration (Elapsed time: %s seconds)' % te))

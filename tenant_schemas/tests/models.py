@@ -15,3 +15,10 @@ class NonAutoSyncTenant(TenantMixin):
 
     class Meta:
         app_label = 'tenant_schemas'
+        
+        
+class AutoDropTenant(TenantMixin):
+    auto_drop_schema = True
+
+    class Meta:
+        app_label = 'tenant_schemas'

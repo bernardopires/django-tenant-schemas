@@ -8,7 +8,7 @@ from django.db import connection
 from dts_test_app.models import DummyModel, ModelWithFkToPublicUser
 
 from tenant_schemas.test.cases import TenantTestCase
-from tenant_schemas.tests.models import Tenant, NonAutoSyncTenant
+from tenant_schemas.tests.models import Tenant, NonAutoSyncTenant, AutoDropTenant
 from tenant_schemas.tests.testcases import BaseTestCase
 from tenant_schemas.utils import tenant_context, schema_context, schema_exists, get_tenant_model, get_public_schema_name
 
@@ -47,7 +47,7 @@ class TenantDataAndSettingsTest(BaseTestCase):
         self.assertFalse(schema_exists('non_auto_sync_tenant'))
 
         tenant = NonAutoSyncTenant(domain_url='something.test.com',
-                                   schema_name='test')
+                                   schema_name='non_auto_sync_tenant')
         tenant.save(verbosity=BaseTestCase.get_verbosity())
 
         self.assertFalse(schema_exists(tenant.schema_name))
@@ -75,6 +75,24 @@ class TenantDataAndSettingsTest(BaseTestCase):
 
         # test if data is still there
         self.assertEquals(DummyModel.objects.count(), 2)
+
+    def test_auto_drop_schema(self):
+        """
+        When deleting a tenant with auto_drop_schema=True, it should delete
+        the schema associated with the tenant.
+        """
+        self.assertFalse(schema_exists('auto_drop_tenant'))
+        tenant = AutoDropTenant(domain_url='something.test.com',
+                                schema_name='auto_drop_tenant')
+        tenant.save(verbosity=BaseTestCase.get_verbosity())
+        self.assertTrue(schema_exists(tenant.schema_name))
+        cursor = connection.cursor()
+
+        # Force pending trigger events to be executed
+        cursor.execute('SET CONSTRAINTS ALL IMMEDIATE')
+
+        tenant.delete()
+        self.assertFalse(schema_exists(tenant.schema_name))
 
     def test_switching_search_path(self):
         tenant1 = Tenant(domain_url='something.test.com',

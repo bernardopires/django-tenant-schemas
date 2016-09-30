@@ -1,5 +1,5 @@
-import functools
-import multiprocessing
+from functools import partial
+from multiprocessing import Pool
 
 from django.conf import settings
 
@@ -18,13 +18,13 @@ class MultiprocessingExecutor(MigrationExecutor):
 
         if tenants:
             processes = getattr(settings, 'TENANT_MULTIPROCESSING_MAX_PROCESSES', 2)
-            chunks = getattr(settings, 'TENANT_MULTIPROCESSING_CHUNKS', 1)
+            chunks = getattr(settings, 'TENANT_MULTIPROCESSING_CHUNKS', 2)
 
             from django.db import connection
 
             connection.close()
             connection.connection = None
 
-            migrate = functools.partial(run_migrations, self.args, self.options, allow_atomic=False)
-            p = multiprocessing.Pool(processes=processes)
-            p.map(migrate, tenants, chunks)
+            migrate = partial(run_migrations, self.args, self.options, allow_atomic=False)
+            with Pool(processes) as p:
+                p.map(migrate, tenants, chunks)

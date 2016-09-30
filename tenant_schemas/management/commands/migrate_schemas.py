@@ -44,7 +44,6 @@ class Command(SyncCommon):
 
         executor = get_executor(codename=self.executor)(self.args, self.options)
 
-        logger.info('Starting migration (Executor: %s)' % executor.codename)
         if int(options.get('verbosity', 1)) >= 1:
             self.stdout.write(self.style.NOTICE('=== Starting migration (Executor: %s)' % executor.codename))
 
@@ -63,8 +62,6 @@ class Command(SyncCommon):
                 ).values_list('schema_name', flat=True)
 
             executor.run_migrations(tenants=tenants)
-        te = time() - ts
 
-        logger.info('End migration (Elapsed time: %s seconds)' % te)
         if int(options.get('verbosity', 1)) >= 1:
-            self.stdout.write(self.style.NOTICE('=== End migration (Elapsed time: %s seconds)' % te))
+            self.stdout.write(self.style.NOTICE('=== End migration (Elapsed time: %s seconds)' % (time() - ts)))

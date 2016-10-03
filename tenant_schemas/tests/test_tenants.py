@@ -95,7 +95,6 @@ class TenantDataAndSettingsTest(BaseTestCase):
         tenant = get_tenant_model()(domain_url='something.test.com', schema_name='test')
         tenant.auto_create_schema = False
         tenant.save(verbosity=BaseTestCase.get_verbosity())
-
         self.assertFalse(schema_exists(tenant.schema_name))
 
         self.created = [tenant]
@@ -125,6 +124,26 @@ class TenantDataAndSettingsTest(BaseTestCase):
         self.assertEquals(DummyModel.objects.count(), 2)
 
         self.created = [tenant]
+
+    def test_auto_drop_schema(self):
+        """
+        When deleting a tenant with auto_drop_schema=True, it should delete
+        the schema associated with the tenant.
+        """
+        self.assertFalse(schema_exists('auto_drop_tenant'))
+        get_tenant_model().auto_drop_schema = True
+        tenant = get_tenant_model()(domain_url='something.test.com', schema_name='auto_drop_tenant')
+        tenant.save(verbosity=BaseTestCase.get_verbosity())
+        self.assertTrue(schema_exists(tenant.schema_name))
+        cursor = connection.cursor()
+
+        # Force pending trigger events to be executed
+        cursor.execute('SET CONSTRAINTS ALL IMMEDIATE')
+
+        tenant.delete()
+        self.assertFalse(schema_exists(tenant.schema_name))
+
+        get_tenant_model().auto_drop_schema = False
 
     def test_switching_search_path(self):
         tenant1 = get_tenant_model()(domain_url='something.test.com', schema_name='tenant1')

@@ -42,7 +42,7 @@ If the hostname in the request does not match a valid tenant ``domain_url``, a H
         #...
     )
     
-Make sure you have ``django.core.context_processors.request`` listed under ``TEMPLATE_CONTEXT_PROCESSORS`` else the tenant will not be available on ``request``.
+Make sure you have ``django.template.context_processors.request`` (``django.core.context_processors.request`` if you're on Django 1.8) listed under ``TEMPLATE_CONTEXT_PROCESSORS`` else the tenant will not be available on ``request``.
 
 .. code-block:: python
 
@@ -96,7 +96,6 @@ To make use of shared and tenant-specific applications, there are two settings c
     )
     
     TENANT_APPS = (
-        # The following Django contrib apps must be in TENANT_APPS
         'django.contrib.contenttypes',
 
         # your tenant-specific apps

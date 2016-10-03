@@ -196,7 +196,6 @@ Returns the name of the public schema (from settings or the default ``public``).
 
 
 .. function:: get_limit_set_calls()
-~~~~~~~~~~~~~~~~~~~
 
 Returns the ``TENANT_LIMIT_SET_CALLS`` setting or the default (``False``). See below.
 

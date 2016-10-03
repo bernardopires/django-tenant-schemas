@@ -25,6 +25,6 @@ class MultiprocessingExecutor(MigrationExecutor):
             connection.close()
             connection.connection = None
 
-            migrate = partial(run_migrations, self.args, self.options, allow_atomic=False)
-            with Pool(processes) as p:
-                p.map(migrate, tenants, chunks)
+            migrations = partial(run_migrations, self.args, self.options, allow_atomic=False)
+            p = Pool(processes=processes)
+            p.map(migrations, tenants, chunks)

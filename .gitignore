@@ -8,3 +8,4 @@ dist/
 django_tenant_schemas.egg-info
 .idea/
 .tox/
+dts_test_project/.coverage

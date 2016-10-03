@@ -37,4 +37,9 @@ Running tests faster
 --------------------
 Using the ``TenantTestCase`` can make running your tests really slow quite early in your project. This is due to the fact that it drops, recreates the test schema and runs migrations for every ``TenantTestCase`` you have. If you want to gain speed, there's a ``FastTenantTestCase`` where the test schema will be created and migrations ran only one time. The gain in speed is noticiable but be aware that by using this you will be perpertraiting state between your test cases, please make sure your they wont be affected by this.
 
+.. code-block:: python
+
+    from tenant_schemas.test.cases import FastTenantTestCase
+
+
 .. _tox: https://tox.readthedocs.io/

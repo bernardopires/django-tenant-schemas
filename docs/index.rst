@@ -53,7 +53,6 @@ Contents
    use
    examples
    templates
-   utils
    test
    involved
 

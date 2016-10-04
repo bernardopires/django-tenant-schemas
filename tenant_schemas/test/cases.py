@@ -40,7 +40,6 @@ class FastTenantTestCase(TenantTestCase):
         tenant_domain = 'tenant.test.com'
 
         TenantModel = get_tenant_model()
-
         try:
             cls.tenant = TenantModel.objects.get(domain_url=tenant_domain, schema_name='test')
         except:

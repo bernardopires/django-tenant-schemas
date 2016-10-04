@@ -154,46 +154,39 @@ Utils
 There are several utils available in `tenant_schemas.utils` that can help you in writing more complicated applications.
 
 
-schema_context
-~~~~~~~~~~~~~~
+.. function:: schema_context(schema_name)
 
-This context manager activates a specific schema name.
+This is a context manager. Database queries performed inside it will be executed in against the passed ``schema_name``.
 
 .. code-block:: python
 
     from tenant_schemas.utils import schema_context
 
-    # runs in a schema
-
     with schema_context(schema_name):
-        # this will run in schema `schema_name`
+        # All comands here are ran under the schema `schema_name`
 
-    # runs back in the original schema
+    # Restores the `SEARCH_PATH` to its original value
 
 
-tenant_context
-~~~~~~~~~~~~~~
+.. function:: tenant_context(tenant_object)
 
-This context manager is very similiar to the ``schema_context`` manager,
-but it takes a whole tenant model object as the argument.
+This context manager is very similiar to the ``schema_context`` function,
+but it takes a tenant model object as the argument instead.
 
 .. code-block:: python
 
     from tenant_schemas.utils import tenant_context
 
-    # runs in a schema
-
     with tenant_context(tenant):
-        # this will run in schema of the tenant `tenant`
+        # All commands here are ran under the schema from the `tenant` object
 
-    # runs back in the original schema
+    # Restores the `SEARCH_PATH` to its original value
 
 
 
-schema_exists
-~~~~~~~~~~~~~
+.. function:: schema_exists(schema_name)
 
-Returns True if a schema exists in the current database.
+Returns ``True`` if a schema exists in the current database.
 
 .. code-block:: python
 
@@ -214,21 +207,18 @@ Returns True if a schema exists in the current database.
                 return schema_name
 
 
-get_tenant_model
-~~~~~~~~~~~~~~~~
+.. function:: get_tenant_model()
 
 Returns the class of the tenant model.
 
-get_public_schema_name
-~~~~~~~~~~~~~~~~~~~~~~
+.. function:: get_public_schema_name()
 
-Returns the name of the public schema (from settings or the default).
+Returns the name of the public schema (from settings or the default ``public``).
 
 
-get_limit_set_calls
-~~~~~~~~~~~~~~~~~~~
+.. function:: get_limit_set_calls()
 
-Returns the TENANT_LIMIT_SET_CALLS setting or the default (False). See bellow.
+Returns the ``TENANT_LIMIT_SET_CALLS`` setting or the default (``False``). See below.
 
 
 Logging

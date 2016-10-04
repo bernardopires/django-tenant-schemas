@@ -93,7 +93,7 @@ The options given to ``migrate_schemas`` are also passed to every ``migrate``. H
 migrate_schemas in parallel
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can run tenant migrations in parallel like this:
+Once the number of tenants grow, migrating all the tenants can become a bottleneck. To speed up this process, you can run tenant migrations in parallel like this:
 
 .. code-block:: bash
 

@@ -30,3 +30,24 @@ class TenantTestCase(TestCase):
                      schema_name=get_public_schema_name(),
                      interactive=False,
                      verbosity=0)
+
+
+class FastTenantTestCase(TenantTestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.sync_shared()
+        tenant_domain = 'tenant.test.com'
+
+        TenantModel = get_tenant_model()
+        try:
+            cls.tenant = TenantModel.objects.get(domain_url=tenant_domain, schema_name='test')
+        except:
+            cls.tenant = TenantModel(domain_url=tenant_domain, schema_name='test')
+            cls.tenant.save(verbosity=0)
+
+        connection.set_tenant(cls.tenant)
+
+    @classmethod
+    def tearDownClass(cls):
+        connection.set_schema_to_public()

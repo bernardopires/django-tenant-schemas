@@ -103,7 +103,18 @@ To make use of shared and tenant-specific applications, there are two settings c
         'myapp.houses', 
     )
 
-    INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
+    INSTALLED_APPS = (
+        'customers',
+        'django.contrib.contenttypes',
+        'django.contrib.auth',
+        'django.contrib.sessions',
+        'django.contrib.sites',
+        'django.contrib.messages',
+        'django.contrib.admin',
+        'myapp.hotels',
+        'myapp.houses',
+        'tenant_schemas',
+    )
 
 You also have to set where your tenant model is.
 

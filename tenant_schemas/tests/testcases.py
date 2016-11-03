@@ -1,4 +1,3 @@
-import django
 import inspect
 from django.conf import settings
 from django.core.management import call_command
@@ -27,7 +26,7 @@ class BaseTestCase(TestCase):
         connection.set_schema_to_public()
         cursor = connection.cursor()
         cursor.execute('DROP SCHEMA %s CASCADE; CREATE SCHEMA %s;'
-                       % (get_public_schema_name(), get_public_schema_name(), ))
+                       % (get_public_schema_name(), get_public_schema_name()))
         super(BaseTestCase, cls).setUpClass()
 
     def setUp(self):

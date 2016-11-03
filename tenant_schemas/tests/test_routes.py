@@ -1,10 +1,10 @@
 from django.conf import settings
 from django.test.client import RequestFactory
-from tenant_schemas import get_public_schema_name
 
 from tenant_schemas.middleware import TenantMiddleware
 from tenant_schemas.tests.models import Tenant
 from tenant_schemas.tests.testcases import BaseTestCase
+from tenant_schemas.utils import get_public_schema_name
 
 
 class RoutesTestCase(BaseTestCase):

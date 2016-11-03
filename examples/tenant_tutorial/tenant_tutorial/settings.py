@@ -1,3 +1,5 @@
+import os
+
 # Django settings for tenant_tutorial project.
 
 DEBUG = True
@@ -121,7 +123,6 @@ PUBLIC_SCHEMA_URLCONF = 'tenant_tutorial.urls_public'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'tenant_tutorial.wsgi.application'
 
-import os
 TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), '..', 'templates').replace('\\', '/'),)
 
 SHARED_APPS = (

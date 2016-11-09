@@ -1,5 +1,10 @@
 import json
-from StringIO import StringIO
+try:
+    # python 2
+    from StringIO import StringIO
+except ImportError:
+    # python 3
+    from io import StringIO
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -44,7 +49,7 @@ class TenantDataAndSettingsTest(BaseTestCase):
         When saving a tenant that has the flag auto_create_schema as
         False, the schema should not be created when saving the tenant.
         """
-        self.assertFalse(schema_exists('non_auto_sync_tenant'))        
+        self.assertFalse(schema_exists('non_auto_sync_tenant'))
         tenant = NonAutoSyncTenant(domain_url='something.test.com',
                                    schema_name='non_auto_sync_tenant')
         tenant.save(verbosity=BaseTestCase.get_verbosity())
@@ -72,7 +77,7 @@ class TenantDataAndSettingsTest(BaseTestCase):
         connection.set_tenant(tenant)
 
         # test if data is still there
-        self.assertEquals(DummyModel.objects.count(), 2)
+        self.assertEqual(DummyModel.objects.count(), 2)
 
     def test_auto_drop_schema(self):
         """
@@ -240,7 +245,7 @@ class TenantCommandTest(BaseTestCase):
                      natural_foreign=True,
                      schema_name=get_public_schema_name(),
                      stdout=out)
-        self.assertItemsEqual(
+        self.assertEqual(
             json.loads('[{"fields": {"domain_url": "localhost", "schema_name": "public"}, '
                        '"model": "tenant_schemas.tenant", "pk": 1}]'),
             json.loads(out.getvalue()))

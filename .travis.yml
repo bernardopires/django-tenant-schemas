@@ -1,0 +1,25 @@
+language: python
+
+python:
+  - 2.7
+  - 3.5
+
+services:
+  - postgresql
+
+addons:
+  postgresql: "9.4"
+
+install:
+  - pip install tox
+
+before_script:
+  - psql -c "CREATE DATABASE dts_test_project;" -U postgres
+
+script:
+  - tox -e py${TRAVIS_PYTHON_VERSION/./}-dj${DJANGO/./}
+
+env:
+  - DJANGO=1.8
+  - DJANGO=1.9
+  - DJANGO=1.10

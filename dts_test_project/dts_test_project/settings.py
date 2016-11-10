@@ -49,6 +49,7 @@ TENANT_MODEL = "customers.Client"  # app.Model
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 INSTALLED_APPS = (
+    'tenant_schemas',
     'dts_test_app',
     'customers',
     'django.contrib.auth',
@@ -56,7 +57,6 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'tenant_schemas',
 )
 
 MIDDLEWARE_CLASSES = (

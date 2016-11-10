@@ -49,18 +49,18 @@ class AppConfigTests(TestCase):
         ])
 
     @override_settings(INSTALLED_APPS=[
-        'tenant_schemas',
         'dts_test_app',
         'customers',
         'django.contrib.auth',
         'django.contrib.contenttypes',
+        'tenant_schemas',
         'django.contrib.sessions',
         'django.contrib.messages',
         'django.contrib.staticfiles',
     ])
     def test_tenant_schemas_last_installed_apps(self):
         self.assertBestPractice([
-            Warning("You should put 'tenant_schemas' at the end of INSTALLED_APPS.",
+            Warning("You should put 'tenant_schemas' first in INSTALLED_APPS.",
                     obj="django.conf.settings",
                     hint="This is necessary to overwrite built-in django "
                          "management commands with their schema-aware "

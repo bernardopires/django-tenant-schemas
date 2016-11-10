@@ -32,9 +32,9 @@ def best_practice(app_configs, **kwargs):
 
     errors = []
 
-    if settings.INSTALLED_APPS[-1] != 'tenant_schemas':
+    if settings.INSTALLED_APPS[0] != 'tenant_schemas':
         errors.append(
-            Warning("You should put 'tenant_schemas' at the end of INSTALLED_APPS.",
+            Warning("You should put 'tenant_schemas' first in INSTALLED_APPS.",
                     obj="django.conf.settings",
                     hint="This is necessary to overwrite built-in django "
                          "management commands with their schema-aware "

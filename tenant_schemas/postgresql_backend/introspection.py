@@ -140,8 +140,8 @@ class DatabaseSchemaIntrospection(BaseDatabaseIntrospection):
                         WHEN idx.indexprs IS NOT NULL THEN
                             pg_get_indexdef(idx.indexrelid)
                     END AS exprdef,
-                    CASE
-                        WHEN am.amcanorder THEN
+                    CASE am.amname
+                        WHEN 'btree' THEN
                             CASE (option & 1)
                                 WHEN 1 THEN 'DESC' ELSE 'ASC'
                             END

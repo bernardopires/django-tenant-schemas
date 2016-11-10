@@ -1,7 +1,7 @@
 django-tenant-schemas
 =====================
 
-|PyPi version| |PyPi downloads|
+|PyPi version| |PyPi downloads| |Travis CI|
 
 This application enables `django`_ powered websites to have multiple
 tenants via `PostgreSQL schemas`_. A vital feature for every
@@ -204,5 +204,7 @@ tenant specific apps. Complete instructions can be found at
    :target: https://pypi.python.org/pypi/django-tenant-schemas
 .. |PyPi downloads| image:: https://img.shields.io/pypi/dm/django-tenant-schemas.svg
    :target: https://pypi.python.org/pypi/django-tenant-schemas
+.. |Travis CI| image:: https://travis-ci.org/bernardopires/django-tenant-schemas.svg?branch=master
+   :target: https://travis-ci.org/bernardopires/django-tenant-schemas
 .. _setup: https://django-tenant-schemas.readthedocs.io/en/latest/install.html
 .. _django-tenant-schemas.readthedocs.io: https://django-tenant-schemas.readthedocs.io/en/latest/

@@ -30,7 +30,14 @@ setup(
     classifiers=[
         'License :: OSI Approved :: MIT License',
         'Framework :: Django',
+        'Framework :: Django :: 1.8',
+        'Framework :: Django :: 1.9',
+        'Framework :: Django :: 1.10',
         'Programming Language :: Python',
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.5",
+        "Topic :: Database",
+        "Topic :: Software Development :: Libraries",
     ],
     install_requires=[
         'Django >= 1.8.0',

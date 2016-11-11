@@ -1,4 +1,4 @@
-from django.apps.registry import Apps
+from django.apps import apps
 from django.core.checks import Critical, Error, Warning
 from django.test import TestCase
 from django.test.utils import override_settings
@@ -12,9 +12,7 @@ class AppConfigTests(TestCase):
     maxDiff = None
 
     def assertBestPractice(self, expected):
-        from django.conf import settings
-        registry = Apps(settings.INSTALLED_APPS)
-        actual = best_practice(registry.get_app_configs())
+        actual = best_practice(apps.get_app_configs())
         self.assertEqual(expected, actual)
 
     @override_settings()

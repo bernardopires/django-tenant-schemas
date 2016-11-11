@@ -15,6 +15,13 @@ def best_practice(app_configs, **kwargs):
     Test for configuration recommendations. These are best practices, they
     avoid hard to find bugs and unexpected behaviour.
     """
+    # Take the app_configs and turn them into *old style* application names.
+    # This is what we expect in the SHARED_APPS and TENANT_APPS settings.
+    INSTALLED_APPS = [
+        config.name
+        for config in app_configs
+    ]
+
     if not hasattr(settings, 'TENANT_APPS'):
         return [Critical('TENANT_APPS setting not set')]
 
@@ -32,7 +39,7 @@ def best_practice(app_configs, **kwargs):
 
     errors = []
 
-    if settings.INSTALLED_APPS[0] != 'tenant_schemas':
+    if INSTALLED_APPS[0] != 'tenant_schemas':
         errors.append(
             Warning("You should put 'tenant_schemas' first in INSTALLED_APPS.",
                     obj="django.conf.settings",
@@ -63,14 +70,14 @@ def best_practice(app_configs, **kwargs):
         errors.append(
             Warning("SHARED_APPS is empty."))
 
-    if not set(settings.TENANT_APPS).issubset(settings.INSTALLED_APPS):
-        delta = set(settings.TENANT_APPS).difference(settings.INSTALLED_APPS)
+    if not set(settings.TENANT_APPS).issubset(INSTALLED_APPS):
+        delta = set(settings.TENANT_APPS).difference(INSTALLED_APPS)
         errors.append(
             Error("You have TENANT_APPS that are not in INSTALLED_APPS",
                   hint=[a for a in settings.TENANT_APPS if a in delta]))
 
-    if not set(settings.SHARED_APPS).issubset(settings.INSTALLED_APPS):
-        delta = set(settings.SHARED_APPS).difference(settings.INSTALLED_APPS)
+    if not set(settings.SHARED_APPS).issubset(INSTALLED_APPS):
+        delta = set(settings.SHARED_APPS).difference(INSTALLED_APPS)
         errors.append(
             Error("You have SHARED_APPS that are not in INSTALLED_APPS",
                   hint=[a for a in settings.SHARED_APPS if a in delta]))

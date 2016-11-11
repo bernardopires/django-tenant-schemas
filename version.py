@@ -30,10 +30,9 @@
 # contains the following line:
 #
 #   include VERSION
+from subprocess import Popen, PIPE
 
 __all__ = ("get_git_version")
-
-from subprocess import Popen, PIPE
 
 
 def call_git_describe():

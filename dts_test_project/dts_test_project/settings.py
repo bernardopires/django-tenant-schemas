@@ -48,7 +48,16 @@ TENANT_MODEL = "customers.Client"  # app.Model
 
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
-INSTALLED_APPS = list(set(TENANT_APPS + SHARED_APPS))
+INSTALLED_APPS = (
+    'tenant_schemas',
+    'dts_test_app',
+    'customers',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+)
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',

@@ -4,15 +4,14 @@ from django.conf import settings
 from django.core.management.commands.migrate import Command as MigrateCommand
 from django.db import connection
 
+from tenant_schemas.management.commands import SyncCommon
+from tenant_schemas.utils import get_tenant_model, get_public_schema_name, schema_exists
+
 if django.VERSION >= (1, 9, 0):
     from django.db.migrations.exceptions import MigrationSchemaMissing
 else:
     class MigrationSchemaMissing(django.db.utils.DatabaseError):
         pass
-
-
-from tenant_schemas.management.commands import SyncCommon
-from tenant_schemas.utils import get_tenant_model, get_public_schema_name, schema_exists
 
 
 class Command(SyncCommon):

@@ -87,7 +87,7 @@ class TenantDataAndSettingsTest(BaseTestCase):
         self.assertFalse(schema_exists('auto_drop_tenant'))
         Tenant.auto_drop_schema = True
         tenant = Tenant(domain_url='something.test.com',
-                                schema_name='auto_drop_tenant')
+                        schema_name='auto_drop_tenant')
         tenant.save(verbosity=BaseTestCase.get_verbosity())
         self.assertTrue(schema_exists(tenant.schema_name))
         cursor = connection.cursor()

@@ -13,7 +13,7 @@ from django.db import connection
 from django.template.loaders.base import Loader as BaseLoader
 
 from tenant_schemas.postgresql_backend.base import FakeTenant
-import django
+
 
 class CachedLoader(BaseLoader):
     is_usable = True

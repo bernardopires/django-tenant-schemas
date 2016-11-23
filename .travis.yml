@@ -23,3 +23,12 @@ env:
   - DJANGO=1.8
   - DJANGO=1.9
   - DJANGO=1.10
+
+deploy:
+  provider: pypi
+  user: bcarneiro
+  password: fixme
+  on:
+    tags: true
+    distributions: sdist
+    repo: bernardopires/django-tenant-schemas

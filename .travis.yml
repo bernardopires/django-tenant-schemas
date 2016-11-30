@@ -20,7 +20,18 @@ deploy:
   provider: pypi
   user: bcarneiro
   password:
-    secure: h4cyG6Fyz9TakmaY4SkjDBcfEqBqGfqCDsnCO9YRsKbKu8ShheKNAtPFazARHxF0YRzj8Jy9+fr47yj3TO5MYfJI6WQnQt+01KWX0Wip6eBkThyVbsRCZTPqr2iNgHjTCdsJKgUYS9tUFc0u3ItykbG9QaMDXMmKgZWNWuEWDb32rc7X2GSHO/EwIIRWqZNYjb2JI7eRI6XS/0hssmOk/z4WLAfVHHHTA7GiFENfEcvPU4r9mKmr7CVpTSxK/LbqNGYyQqNfuZIV96Sh2ZECMObYbV2O3JezTUgIUrsh0Wk5EK3TG5+ynvwk4k7gPICwYmWCQ0zVbHuMdG8s0LtCKyy0UerBZkf/Y0y/TZN7aAZkC9FBok+6R4IcDKnoJ6yCl7Rwjx/hOjMGJH32xC3EKitlaaBN/LXYeGRrJ5FybsFp7yn0kR0OlvhqlAsjYsbxgYM05qYsn4E6XB5lHqDtu1/pJj6eT1RAWe8aYseGlL56ia6mWUsCMmZxwXtYHVZMV/GGuUZrlOjn5wZXUqAy4W7A5MZreEFooVERDmxJrULoekdAfiHzEWsPiSP5faP0t29YhQoiqvzRLZduLerNmWIa/dd9syvHvldn/ZrJqE/hbghpGpjAtlEzwtIMqU0xIX+zL3xuPKW0IaYI7slbO9CBaWA33xMLzn79kUnm04Q=
+    secure: |
+      h4cyG6Fyz9TakmaY4SkjDBcfEqBqGfqCDsnCO9YRsKbKu8ShheKNAtPFazARHxF0YRzj8Jy9
+      +fr47yj3TO5MYfJI6WQnQt+01KWX0Wip6eBkThyVbsRCZTPqr2iNgHjTCdsJKgUYS9tUFc0u
+      3ItykbG9QaMDXMmKgZWNWuEWDb32rc7X2GSHO/EwIIRWqZNYjb2JI7eRI6XS/0hssmOk/z4W
+      LAfVHHHTA7GiFENfEcvPU4r9mKmr7CVpTSxK/LbqNGYyQqNfuZIV96Sh2ZECMObYbV2O3Jez
+      TUgIUrsh0Wk5EK3TG5+ynvwk4k7gPICwYmWCQ0zVbHuMdG8s0LtCKyy0UerBZkf/Y0y/TZN7
+      aAZkC9FBok+6R4IcDKnoJ6yCl7Rwjx/hOjMGJH32xC3EKitlaaBN/LXYeGRrJ5FybsFp7yn0
+      kR0OlvhqlAsjYsbxgYM05qYsn4E6XB5lHqDtu1/pJj6eT1RAWe8aYseGlL56ia6mWUsCMmZx
+      wXtYHVZMV/GGuUZrlOjn5wZXUqAy4W7A5MZreEFooVERDmxJrULoekdAfiHzEWsPiSP5faP0
+      t29YhQoiqvzRLZduLerNmWIa/dd9syvHvldn/ZrJqE/hbghpGpjAtlEzwtIMqU0xIX+zL3xu
+      PKW0IaYI7slbO9CBaWA33xMLzn79kUnm04Q=
   on:
     distributions: sdist bdist_wheel
+    tags: true
     repo: bernardopires/django-tenant-schemas

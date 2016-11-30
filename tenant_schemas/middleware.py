@@ -34,12 +34,17 @@ class TenantMiddleware(MIDDLEWARE_MIXIN):
         hostname = self.hostname_from_request(request)
 
         TenantModel = get_tenant_model()
+
         try:
             request.tenant = TenantModel.objects.get(domain_url=hostname)
-            connection.set_tenant(request.tenant)
         except TenantModel.DoesNotExist:
-            raise self.TENANT_NOT_FOUND_EXCEPTION(
-                'No tenant for hostname "%s"' % hostname)
+            if hasattr(settings, 'SCHEMA_DEFAULT'):
+                request.tenant = TenantModel.objects.get(schema_name=settings.SCHEMA_DEFAULT)
+            else:
+                raise self.TENANT_NOT_FOUND_EXCEPTION(
+                    'No tenant for hostname "%s"' % hostname)
+
+        connection.set_tenant(request.tenant)
 
         # Content type can no longer be cached as public and tenant schemas
         # have different models. If someone wants to change this, the cache

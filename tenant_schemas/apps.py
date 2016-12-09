@@ -1,4 +1,4 @@
-from django.apps import AppConfig
+from django.apps import AppConfig, apps
 from django.conf import settings
 from django.core.checks import Critical, Error, Warning, register
 
@@ -15,6 +15,9 @@ def best_practice(app_configs, **kwargs):
     Test for configuration recommendations. These are best practices, they
     avoid hard to find bugs and unexpected behaviour.
     """
+    if app_configs is None:
+        app_configs = apps.get_app_configs()
+
     # Take the app_configs and turn them into *old style* application names.
     # This is what we expect in the SHARED_APPS and TENANT_APPS settings.
     INSTALLED_APPS = [

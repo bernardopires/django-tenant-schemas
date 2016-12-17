@@ -32,6 +32,6 @@ deploy:
       t29YhQoiqvzRLZduLerNmWIa/dd9syvHvldn/ZrJqE/hbghpGpjAtlEzwtIMqU0xIX+zL3xu
       PKW0IaYI7slbO9CBaWA33xMLzn79kUnm04Q=
   on:
-    distributions: sdist bdist_wheel
-    tags: true
+    distributions: sdist
+    branch: master
     repo: bernardopires/django-tenant-schemas

@@ -159,6 +159,16 @@ Optional Settings
     
     The schema name that will be treated as ``public``, that is, where the ``SHARED_APPS`` will be created.
     
+.. attribute:: DEFAULT_SCHEMA
+
+    :Default: ``None``
+
+    The schema which will be selected when a non existent domain name/tenant is used. Instead of raising a 404 you could redirect traffic to your public schema.
+
+    .. code-block:: python
+
+        DEFAULT_SCHEMA = 'public'
+
 .. attribute:: TENANT_CREATION_FAKES_MIGRATIONS
 
     :Default: ``'True'``

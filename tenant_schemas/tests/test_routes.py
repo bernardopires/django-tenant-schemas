@@ -70,11 +70,11 @@ class RoutesTestCase(BaseTestCase):
 
         self.assertRaises(self.tm.TENANT_NOT_FOUND_EXCEPTION, self.tm.process_request, request)
 
-    def test_non_existant_tenant_to_default_schema_routing(self):
+    def test_non_existent_tenant_to_default_schema_routing(self):
         """
         Request path should not be altered.
         """
-        settings.SCHEMA_DEFAULT = self.tenant.schema_name
+        settings.DEFAULT_SCHEMA = self.tenant.schema_name
         request_url = '/any/request/'
         request = self.factory.get('/any/request/',
                                    HTTP_HOST=self.tenant_domain)

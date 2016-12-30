@@ -38,8 +38,8 @@ class TenantMiddleware(MIDDLEWARE_MIXIN):
         try:
             request.tenant = TenantModel.objects.get(domain_url=hostname)
         except TenantModel.DoesNotExist:
-            if hasattr(settings, 'SCHEMA_DEFAULT'):
-                request.tenant = TenantModel.objects.get(schema_name=settings.SCHEMA_DEFAULT)
+            if hasattr(settings, 'DEFAULT_SCHEMA'):
+                request.tenant = TenantModel.objects.get(schema_name=settings.DEFAULT_SCHEMA)
             else:
                 raise self.TENANT_NOT_FOUND_EXCEPTION(
                     'No tenant for hostname "%s"' % hostname)

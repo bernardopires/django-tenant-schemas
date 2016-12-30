@@ -1,3 +1,5 @@
+import os
+
 import django
 from django.conf import settings
 from django.core.management import call_command, get_commands, load_command_class
@@ -149,14 +151,18 @@ class SyncCommon(BaseCommand):
                     help=('Database state will be brought to the state after that '
                           'migration. Use the name "zero" to unapply all migrations.'))
         parser.add_argument("-s", "--schema", dest="schema_name")
-        parser.add_argument('--executor', action='store', dest='executor', default='standard',
+        parser.add_argument('--executor', action='store', dest='executor', default=None,
                             help='Executor for running migrations [standard (default)|parallel]')
 
     def handle(self, *args, **options):
         self.sync_tenant = options.get('tenant')
         self.sync_public = options.get('shared')
         self.schema_name = options.get('schema_name')
+
         self.executor = options.get('executor')
+        if not self.executor:
+            self.executor = os.environ.get('MIGRATION_EXECUTOR', 'standard')
+
         self.installed_apps = settings.INSTALLED_APPS
         self.args = args
         self.options = options

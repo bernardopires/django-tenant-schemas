@@ -2,6 +2,7 @@ import functools
 import multiprocessing
 
 from django.conf import settings
+from django.db import connection
 
 from tenant_schemas.migration_executors.base import (
     BaseMigrationExecutor, run_migrations)
@@ -14,6 +15,8 @@ class ParallelExecutor(BaseMigrationExecutor):
         if tenants:
             processes = getattr(settings, 'MIGRATION_PARALLEL_MAX_PROCESSES', 2)
             chunks = getattr(settings, 'MIGRATION_PARALLEL_CHUNKS', 2)
+
+            connection.close()
 
             run_migrations_p = functools.partial(
                 run_migrations,

@@ -22,7 +22,7 @@ class TenantTestCase(TestCase):
         cls.tenant.delete()
 
         cursor = connection.cursor()
-        cursor.execute('DROP SCHEMA test CASCADE')
+        cursor.execute('DROP SCHEMA IF EXISTS test CASCADE')
 
     @classmethod
     def sync_shared(cls):

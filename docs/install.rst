@@ -32,13 +32,15 @@ Add `tenant_schemas.routers.TenantSyncRouter` to your `DATABASE_ROUTERS` setting
 
 Add the middleware ``tenant_schemas.middleware.TenantMiddleware`` to the top of ``MIDDLEWARE_CLASSES``, so that each request can be set to use the correct schema.
 
-If the hostname in the request does not match a valid tenant ``domain_url``, a HTTP 404 Not Found will be returned. If you'd like to raise ``DisallowedHost`` and a HTTP 400 response instead, use the ``tenant_schemas.middleware.SuspiciousTenantMiddleware``.
+If the hostname in the request does not match a valid tenant ``domain_url``, a HTTP 404 Not Found will be returned. If you'd like to raise ``DisallowedHost`` and a HTTP 400 response instead, use the ``tenant_schemas.middleware.SuspiciousTenantMiddleware`` middleware.
+If instead of a HTTP 404 or HTTP 400 response you wish to use the DEFAULT_SCHEMA_NAME tenant you can use the ``tenant_schemas.middleware.DefaultSchemaTenantMiddleware`` middleware. The DEFAULT_SCHEMA_NAME attribute is required for this middleware.
 
 .. code-block:: python
     
     MIDDLEWARE_CLASSES = (
         'tenant_schemas.middleware.TenantMiddleware',
         # 'tenant_schemas.middleware.SuspiciousTenantMiddleware',
+        # 'tenant_schemas.middleware.DefaultSchemaTenantMiddleware',
         #...
     )
     
@@ -163,8 +165,8 @@ Optional Settings
 
     :Default: ``None``
 
-    The schema which will be selected when a non existent domain name/tenant is used. Instead of raising a 404 you could redirect traffic to your public schema.
-
+    The schema which will be selected when a non existent domain name/tenant is queried. Instead of raising a 404 you can redirect traffic to your public schema or any other schema.
+    **Note that this attribute is required and is only used by the `DefaultSchemaTenantMiddleware`**.
     .. code-block:: python
 
         DEFAULT_SCHEMA_NAME = 'public'

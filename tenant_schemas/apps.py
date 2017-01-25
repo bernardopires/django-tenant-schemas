@@ -42,7 +42,8 @@ def best_practice(app_configs, **kwargs):
 
     errors = []
 
-    if INSTALLED_APPS[0] != 'tenant_schemas':
+    django_index = next(i for i, s in enumerate(INSTALLED_APPS) if 'django.' in s)
+    if INSTALLED_APPS.index('tenant_schemas') > django_index:
         errors.append(
             Warning("You should put 'tenant_schemas' first in INSTALLED_APPS.",
                     obj="django.conf.settings",

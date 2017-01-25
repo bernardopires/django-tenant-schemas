@@ -34,8 +34,8 @@ class RoutesTestCase(BaseTestCase):
         self.tenant = Tenant(domain_url=self.tenant_domain, schema_name='test')
         self.tenant.save(verbosity=BaseTestCase.get_verbosity())
 
-        self.non_exisitant_domain = 'no-tenant.test.com'
-        self.non_exisitant_tenant = Tenant(domain_url=self.non_exisitant_domain, schema_name='no-tenant')
+        self.non_existent_domain = 'no-tenant.test.com'
+        self.non_existent_tenant = Tenant(domain_url=self.non_existent_domain, schema_name='no-tenant')
 
         self.url = '/any/path/'
 
@@ -53,16 +53,16 @@ class RoutesTestCase(BaseTestCase):
         self.assertEquals(request.path_info, self.url)
         self.assertEquals(request.tenant, self.public_tenant)
 
-    def test_non_exisitant_tenant_routing(self):
+    def test_non_existent_tenant_routing(self):
         """Raise 404 for unrecognised hostnames."""
         request = self.factory.get(
-            self.url, HTTP_HOST=self.non_exisitant_tenant.domain_url)
+            self.url, HTTP_HOST=self.non_existent_tenant.domain_url)
         self.assertRaises(Http404, self.tm.process_request, request)
 
     def test_non_existent_tenant_to_default_schema_routing(self):
         """Route unrecognised hostnames to the 'public' tenant."""
         request = self.factory.get(
-            self.url, HTTP_HOST=self.non_exisitant_tenant.domain_url)
+            self.url, HTTP_HOST=self.non_existent_tenant.domain_url)
         self.dtm.process_request(request)
         self.assertEquals(request.path_info, self.url)
         self.assertEquals(request.tenant, self.public_tenant)
@@ -71,7 +71,7 @@ class RoutesTestCase(BaseTestCase):
         """Route unrecognised hostnames to the 'test' tenant."""
         dtm = TestDefaultTenantMiddleware()
         request = self.factory.get(
-            self.url, HTTP_HOST=self.non_exisitant_tenant.domain_url)
+            self.url, HTTP_HOST=self.non_existent_tenant.domain_url)
         dtm.process_request(request)
         self.assertEquals(request.path_info, self.url)
         self.assertEquals(request.tenant, self.tenant)

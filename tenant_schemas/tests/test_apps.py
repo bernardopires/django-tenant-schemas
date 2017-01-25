@@ -58,7 +58,8 @@ class AppConfigTests(TestCase):
     ])
     def test_tenant_schemas_before_django_installed_apps(self):
         self.assertBestPractice([
-            Warning("You should put 'tenant_schemas' first in INSTALLED_APPS.",
+            Warning("You should put 'tenant_schemas' before any django "
+                    "core applications in INSTALLED_APPS.",
                     obj="django.conf.settings",
                     hint="This is necessary to overwrite built-in django "
                          "management commands with their schema-aware "

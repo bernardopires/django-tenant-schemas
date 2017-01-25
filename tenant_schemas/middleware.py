@@ -27,6 +27,9 @@ class TenantMiddleware(MIDDLEWARE_MIXIN):
         """
         return remove_www(request.get_host().split(':')[0]).lower()
 
+    def get_tenant(self, model, hostname, request):
+        return model.objects.get(domain_url=hostname)
+
     def process_request(self, request):
         # Connection needs first to be at the public schema, as this is where
         # the tenant metadata is stored.
@@ -36,17 +39,11 @@ class TenantMiddleware(MIDDLEWARE_MIXIN):
         TenantModel = get_tenant_model()
 
         try:
-            request.tenant = TenantModel.objects.get(domain_url=hostname)
+            request.tenant = self.get_tenant(TenantModel, hostname, request)
+            connection.set_tenant(request.tenant)
         except TenantModel.DoesNotExist:
-            if hasattr(settings, 'DEFAULT_SCHEMA_NAME'):
-                request.tenant = TenantModel.objects.get(
-                    schema_name=settings.DEFAULT_SCHEMA_NAME
-                )
-            else:
-                raise self.TENANT_NOT_FOUND_EXCEPTION(
-                    'No tenant for hostname "%s"' % hostname)
-
-        connection.set_tenant(request.tenant)
+            raise self.TENANT_NOT_FOUND_EXCEPTION(
+                'No tenant for hostname "%s"' % hostname)
 
         # Content type can no longer be cached as public and tenant schemas
         # have different models. If someone wants to change this, the cache
@@ -73,3 +70,30 @@ class SuspiciousTenantMiddleware(TenantMiddleware):
     discussion on this middleware.
     """
     TENANT_NOT_FOUND_EXCEPTION = DisallowedHost
+
+
+class DefaultTenantMiddleware(SuspiciousTenantMiddleware):
+    """
+    Extend the SuspiciousTenantMiddleware in scenario where you want to
+    configure a tenant to be served if the hostname does not match any of the
+    existing tenants.
+
+    Subclass and override DEFAULT_SCHEMA_NAME to use a schema other than the
+    public schema.
+
+        class MyTenantMiddleware(DefaultTenantMiddleware):
+            DEFAULT_SCHEMA_NAME = 'default'
+    """
+    DEFAULT_SCHEMA_NAME = None
+
+    def get_tenant(self, model, hostname, request):
+        if self.DEFAULT_SCHEMA_NAME is None:
+            schema_name = get_public_schema_name()
+        else:
+            schema_name = self.DEFAULT_SCHEMA_NAME
+
+        try:
+            super(DefaultTenantMiddleware, self).get_tenant(
+                model, hostname, request)
+        except model.DoesNotExist:
+            return model.objects.get(schema_name=schema_name)

@@ -36,7 +36,7 @@ If the hostname in the request does not match a valid tenant ``domain_url``, a H
 
 If you'd like to raise ``DisallowedHost`` and a HTTP 400 response instead, use the ``tenant_schemas.middleware.SuspiciousTenantMiddleware``.
 
-If you'd like to serve the public tenant for unrecognised hostnames instead, use ``tenant_schemas.middleware.DefaultTenantMiddleware``. To use an tenant other than the public tenant, create a subclass and register it instead.
+If you'd like to serve the public tenant for unrecognised hostnames instead, use ``tenant_schemas.middleware.DefaultTenantMiddleware``. To use a tenant other than the public tenant, create a subclass and register it instead.
 
 .. code-block:: python
 

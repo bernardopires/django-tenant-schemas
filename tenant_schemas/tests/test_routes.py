@@ -1,11 +1,14 @@
 from django.conf import settings
 from django.http import Http404
 from django.test.client import RequestFactory
-
-from tenant_schemas.middleware import TenantMiddleware
+from tenant_schemas.middleware import DefaultTenantMiddleware, TenantMiddleware
 from tenant_schemas.tests.models import Tenant
 from tenant_schemas.tests.testcases import BaseTestCase
 from tenant_schemas.utils import get_public_schema_name
+
+
+class TestDefaultTenantMiddleware(DefaultTenantMiddleware):
+    DEFAULT_SCHEMA_NAME = 'test'
 
 
 class RoutesTestCase(BaseTestCase):
@@ -25,6 +28,7 @@ class RoutesTestCase(BaseTestCase):
         super(RoutesTestCase, self).setUp()
         self.factory = RequestFactory()
         self.tm = TenantMiddleware()
+        self.dtm = DefaultTenantMiddleware()
 
         self.tenant_domain = 'tenant.test.com'
         self.tenant = Tenant(domain_url=self.tenant_domain, schema_name='test')
@@ -33,54 +37,41 @@ class RoutesTestCase(BaseTestCase):
         self.non_exisitant_domain = 'no-tenant.test.com'
         self.non_exisitant_tenant = Tenant(domain_url=self.non_exisitant_domain, schema_name='no-tenant')
 
+        self.url = '/any/path/'
+
     def test_tenant_routing(self):
-        """
-        Request path should not be altered.
-        """
-        request_url = '/any/request/'
-        request = self.factory.get('/any/request/',
-                                   HTTP_HOST=self.tenant_domain)
+        request = self.factory.get(
+            self.url, HTTP_HOST=self.tenant_domain)
         self.tm.process_request(request)
-
-        self.assertEquals(request.path_info, request_url)
-
-        # request.tenant should also have been set
+        self.assertEquals(request.path_info, self.url)
         self.assertEquals(request.tenant, self.tenant)
 
     def test_public_schema_routing(self):
-        """
-        Request path should not be altered.
-        """
-        request_url = '/any/request/'
-        request = self.factory.get('/any/request/',
-                                   HTTP_HOST=self.public_tenant.domain_url)
+        request = self.factory.get(
+            self.url, HTTP_HOST=self.public_tenant.domain_url)
         self.tm.process_request(request)
-
-        self.assertEquals(request.path_info, request_url)
-
-        # request.tenant should also have been set
+        self.assertEquals(request.path_info, self.url)
         self.assertEquals(request.tenant, self.public_tenant)
 
     def test_non_exisitant_tenant_routing(self):
-        """
-        Request path should not be altered.
-        """
-        request = self.factory.get('/any/request/',
-                                   HTTP_HOST=self.non_exisitant_tenant.domain_url)
-
-        self.assertRaises(self.tm.TENANT_NOT_FOUND_EXCEPTION, self.tm.process_request, request)
+        """Raise 404 for unrecognised hostnames."""
+        request = self.factory.get(
+            self.url, HTTP_HOST=self.non_exisitant_tenant.domain_url)
+        self.assertRaises(Http404, self.tm.process_request, request)
 
     def test_non_existent_tenant_to_default_schema_routing(self):
-        """
-        Request path should not be altered.
-        """
-        with self.settings(DEFAULT_SCHEMA_NAME='test'):
-            request_url = '/any/request/'
-            request = self.factory.get('/any/request/',
-                                       HTTP_HOST=self.tenant_domain)
-            self.tm.process_request(request)
+        """Route unrecognised hostnames to the 'public' tenant."""
+        request = self.factory.get(
+            self.url, HTTP_HOST=self.non_exisitant_tenant.domain_url)
+        self.dtm.process_request(request)
+        self.assertEquals(request.path_info, self.url)
+        self.assertEquals(request.tenant, self.public_tenant)
 
-            self.assertEquals(request.path_info, request_url)
-
-            # request.tenant should also have been set
-            self.assertEquals(request.tenant, self.tenant)
+    def test_non_existent_tenant_custom_middleware(self):
+        """Route unrecognised hostnames to the 'test' tenant."""
+        dtm = TestDefaultTenantMiddleware()
+        request = self.factory.get(
+            self.url, HTTP_HOST=self.non_exisitant_tenant.domain_url)
+        dtm.process_request(request)
+        self.assertEquals(request.path_info, self.url)
+        self.assertEquals(request.tenant, self.tenant)

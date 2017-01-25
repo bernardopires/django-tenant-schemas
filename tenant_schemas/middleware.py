@@ -93,7 +93,7 @@ class DefaultTenantMiddleware(SuspiciousTenantMiddleware):
             schema_name = self.DEFAULT_SCHEMA_NAME
 
         try:
-            super(DefaultTenantMiddleware, self).get_tenant(
+            return super(DefaultTenantMiddleware, self).get_tenant(
                 model, hostname, request)
         except model.DoesNotExist:
             return model.objects.get(schema_name=schema_name)

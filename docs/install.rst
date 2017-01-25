@@ -50,6 +50,8 @@ If you'd like to serve the public tenant for unrecognised hostnames instead, use
     MIDDLEWARE_CLASSES = (
         'tenant_schemas.middleware.TenantMiddleware',
         # 'tenant_schemas.middleware.SuspiciousTenantMiddleware',
+        # 'tenant_schemas.middleware.DefaultTenantMiddleware',
+        # 'myproject.middleware.MyDefaultTenantMiddleware',
         #...
     )
     

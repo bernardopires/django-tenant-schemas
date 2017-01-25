@@ -88,10 +88,9 @@ class DefaultTenantMiddleware(SuspiciousTenantMiddleware):
     DEFAULT_SCHEMA_NAME = None
 
     def get_tenant(self, model, hostname, request):
-        if self.DEFAULT_SCHEMA_NAME is None:
+        schema_name = self.DEFAULT_SCHEMA_NAME
+        if not schema_name:
             schema_name = get_public_schema_name()
-        else:
-            schema_name = self.DEFAULT_SCHEMA_NAME
 
         try:
             return super(DefaultTenantMiddleware, self).get_tenant(

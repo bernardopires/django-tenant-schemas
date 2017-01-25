@@ -1,6 +1,6 @@
 from django.conf import settings
-from django.http import Http404
 from django.test.client import RequestFactory
+
 from tenant_schemas.middleware import DefaultTenantMiddleware, TenantMiddleware
 from tenant_schemas.tests.models import Tenant
 from tenant_schemas.tests.testcases import BaseTestCase

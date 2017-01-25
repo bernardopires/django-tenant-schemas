@@ -7,6 +7,7 @@ from django.db import connection
 from django.http import Http404
 from tenant_schemas.utils import (get_tenant_model, remove_www,
                                   get_public_schema_name)
+
 if django.VERSION >= (1, 10, 0):
     MIDDLEWARE_MIXIN = django.utils.deprecation.MiddlewareMixin
 else:

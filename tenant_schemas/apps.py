@@ -42,9 +42,11 @@ def best_practice(app_configs, **kwargs):
 
     errors = []
 
-    if INSTALLED_APPS[0] != 'tenant_schemas':
+    django_index = next(i for i, s in enumerate(INSTALLED_APPS) if s.startswith('django.'))
+    if INSTALLED_APPS.index('tenant_schemas') > django_index:
         errors.append(
-            Warning("You should put 'tenant_schemas' first in INSTALLED_APPS.",
+            Warning("You should put 'tenant_schemas' before any django "
+                    "core applications in INSTALLED_APPS.",
                     obj="django.conf.settings",
                     hint="This is necessary to overwrite built-in django "
                          "management commands with their schema-aware "

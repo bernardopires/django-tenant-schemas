@@ -82,7 +82,7 @@ To make use of shared and tenant-specific applications, there are two settings c
 .. code-block:: python
     
     SHARED_APPS = (
-        'tenant_schemas',  # mandatory
+        'tenant_schemas',  # mandatory, should always be before any django app
         'customers', # you must list the app where your tenant model resides in
         
         'django.contrib.contenttypes',

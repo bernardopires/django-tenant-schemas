@@ -159,7 +159,7 @@ Optional Settings
     
     The schema name that will be treated as ``public``, that is, where the ``SHARED_APPS`` will be created.
     
-.. attribute:: DEFAULT_SCHEMA
+.. attribute:: DEFAULT_SCHEMA_NAME
 
     :Default: ``None``
 
@@ -167,7 +167,7 @@ Optional Settings
 
     .. code-block:: python
 
-        DEFAULT_SCHEMA = 'public'
+        DEFAULT_SCHEMA_NAME = 'public'
 
 .. attribute:: TENANT_CREATION_FAKES_MIGRATIONS
 

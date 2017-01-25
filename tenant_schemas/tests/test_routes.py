@@ -74,13 +74,13 @@ class RoutesTestCase(BaseTestCase):
         """
         Request path should not be altered.
         """
-        settings.DEFAULT_SCHEMA = self.tenant.schema_name
-        request_url = '/any/request/'
-        request = self.factory.get('/any/request/',
-                                   HTTP_HOST=self.tenant_domain)
-        self.tm.process_request(request)
+        with self.settings(DEFAULT_SCHEMA_NAME='test'):
+            request_url = '/any/request/'
+            request = self.factory.get('/any/request/',
+                                       HTTP_HOST=self.tenant_domain)
+            self.tm.process_request(request)
 
-        self.assertEquals(request.path_info, request_url)
+            self.assertEquals(request.path_info, request_url)
 
-        # request.tenant should also have been set
-        self.assertEquals(request.tenant, self.tenant)
+            # request.tenant should also have been set
+            self.assertEquals(request.tenant, self.tenant)

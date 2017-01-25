@@ -7,6 +7,7 @@ from django.db import connection
 from django.http import Http404
 from tenant_schemas.utils import (get_tenant_model, remove_www,
                                   get_public_schema_name)
+
 if django.VERSION >= (1, 10, 0):
     MIDDLEWARE_MIXIN = django.utils.deprecation.MiddlewareMixin
 else:
@@ -27,6 +28,9 @@ class TenantMiddleware(MIDDLEWARE_MIXIN):
         """
         return remove_www(request.get_host().split(':')[0]).lower()
 
+    def get_tenant(self, tenant_model, hostname, request):
+        return tenant_model.objects.get(domain_url=hostname)
+
     def process_request(self, request):
         # Connection needs first to be at the public schema, as this is where
         # the tenant metadata is stored.
@@ -36,15 +40,11 @@ class TenantMiddleware(MIDDLEWARE_MIXIN):
         TenantModel = get_tenant_model()
 
         try:
-            request.tenant = TenantModel.objects.get(domain_url=hostname)
+            request.tenant = self.get_tenant(TenantModel, hostname, request)
         except TenantModel.DoesNotExist:
-            if hasattr(settings, 'DEFAULT_SCHEMA_NAME'):
-                request.tenant = TenantModel.objects.get(
-                    schema_name=settings.DEFAULT_SCHEMA_NAME
-                )
-            else:
-                raise self.TENANT_NOT_FOUND_EXCEPTION(
-                    'No tenant for hostname "%s"' % hostname)
+            raise self.TENANT_NOT_FOUND_EXCEPTION(
+                'No tenant for hostname "%s"' % hostname
+            )
 
         connection.set_tenant(request.tenant)
 
@@ -73,3 +73,24 @@ class SuspiciousTenantMiddleware(TenantMiddleware):
     discussion on this middleware.
     """
     TENANT_NOT_FOUND_EXCEPTION = DisallowedHost
+
+
+class DefaultSchemaTenantMiddleware(TenantMiddleware):
+    """
+    This middleware makes it possible for you to set a default schema to be
+    selected when no schema could be determined from the hostname.
+    """
+
+    def get_tenant(self, TenantModel, hostname, request):
+        try:
+            return super(DefaultSchemaTenantMiddleware, self).get_tenant(TenantModel, hostname, request)
+        except TenantModel.DoesNotExist:
+            if hasattr(settings, 'DEFAULT_SCHEMA_NAME'):
+                return TenantModel.objects.get(
+                    schema_name=settings.DEFAULT_SCHEMA_NAME
+                )
+            else:
+                raise self.TENANT_NOT_FOUND_EXCEPTION(
+                    'DEFAULT_SCHEMA_NAME was not set but '
+                    'DefaultSchemaTenantMiddleware is being used.'
+                )

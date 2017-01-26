@@ -1,6 +1,7 @@
 from django.conf import settings
+from django.core.exceptions import DisallowedHost
+from django.http import Http404
 from django.test.client import RequestFactory
-
 from tenant_schemas.middleware import DefaultTenantMiddleware, TenantMiddleware
 from tenant_schemas.tests.models import Tenant
 from tenant_schemas.tests.testcases import BaseTestCase
@@ -9,6 +10,10 @@ from tenant_schemas.utils import get_public_schema_name
 
 class TestDefaultTenantMiddleware(DefaultTenantMiddleware):
     DEFAULT_SCHEMA_NAME = 'test'
+
+
+class MissingDefaultTenantMiddleware(DefaultTenantMiddleware):
+    DEFAULT_SCHEMA_NAME = 'missing'
 
 
 class RoutesTestCase(BaseTestCase):
@@ -75,3 +80,10 @@ class RoutesTestCase(BaseTestCase):
         dtm.process_request(request)
         self.assertEquals(request.path_info, self.url)
         self.assertEquals(request.tenant, self.tenant)
+
+    def test_non_existent_tenant_and_default_custom_middleware(self):
+        """Route unrecognised hostnames to the 'missing' tenant."""
+        dtm = MissingDefaultTenantMiddleware()
+        request = self.factory.get(
+            self.url, HTTP_HOST=self.non_existent_tenant.domain_url)
+        self.assertRaises(DisallowedHost, dtm.process_request, request)

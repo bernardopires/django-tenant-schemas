@@ -7,6 +7,7 @@ from django.db import connection
 from django.http import Http404
 from tenant_schemas.utils import (get_tenant_model, remove_www,
                                   get_public_schema_name)
+
 if django.VERSION >= (1, 10, 0):
     MIDDLEWARE_MIXIN = django.utils.deprecation.MiddlewareMixin
 else:
@@ -27,6 +28,9 @@ class TenantMiddleware(MIDDLEWARE_MIXIN):
         """
         return remove_www(request.get_host().split(':')[0]).lower()
 
+    def get_tenant(self, model, hostname, request):
+        return model.objects.get(domain_url=hostname)
+
     def process_request(self, request):
         # Connection needs first to be at the public schema, as this is where
         # the tenant metadata is stored.
@@ -34,8 +38,9 @@ class TenantMiddleware(MIDDLEWARE_MIXIN):
         hostname = self.hostname_from_request(request)
 
         TenantModel = get_tenant_model()
+
         try:
-            request.tenant = TenantModel.objects.get(domain_url=hostname)
+            request.tenant = self.get_tenant(TenantModel, hostname, request)
             connection.set_tenant(request.tenant)
         except TenantModel.DoesNotExist:
             raise self.TENANT_NOT_FOUND_EXCEPTION(
@@ -66,3 +71,29 @@ class SuspiciousTenantMiddleware(TenantMiddleware):
     discussion on this middleware.
     """
     TENANT_NOT_FOUND_EXCEPTION = DisallowedHost
+
+
+class DefaultTenantMiddleware(SuspiciousTenantMiddleware):
+    """
+    Extend the SuspiciousTenantMiddleware in scenario where you want to
+    configure a tenant to be served if the hostname does not match any of the
+    existing tenants.
+
+    Subclass and override DEFAULT_SCHEMA_NAME to use a schema other than the
+    public schema.
+
+        class MyTenantMiddleware(DefaultTenantMiddleware):
+            DEFAULT_SCHEMA_NAME = 'default'
+    """
+    DEFAULT_SCHEMA_NAME = None
+
+    def get_tenant(self, model, hostname, request):
+        try:
+            return super(DefaultTenantMiddleware, self).get_tenant(
+                model, hostname, request)
+        except model.DoesNotExist:
+            schema_name = self.DEFAULT_SCHEMA_NAME
+            if not schema_name:
+                schema_name = get_public_schema_name()
+
+            return model.objects.get(schema_name=schema_name)

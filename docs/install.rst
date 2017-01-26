@@ -32,13 +32,26 @@ Add `tenant_schemas.routers.TenantSyncRouter` to your `DATABASE_ROUTERS` setting
 
 Add the middleware ``tenant_schemas.middleware.TenantMiddleware`` to the top of ``MIDDLEWARE_CLASSES``, so that each request can be set to use the correct schema.
 
-If the hostname in the request does not match a valid tenant ``domain_url``, a HTTP 404 Not Found will be returned. If you'd like to raise ``DisallowedHost`` and a HTTP 400 response instead, use the ``tenant_schemas.middleware.SuspiciousTenantMiddleware``.
+If the hostname in the request does not match a valid tenant ``domain_url``, a HTTP 404 Not Found will be returned.
+
+If you'd like to raise ``DisallowedHost`` and a HTTP 400 response instead, use the ``tenant_schemas.middleware.SuspiciousTenantMiddleware``.
+
+If you'd like to serve the public tenant for unrecognised hostnames instead, use ``tenant_schemas.middleware.DefaultTenantMiddleware``. To use a tenant other than the public tenant, create a subclass and register it instead.
+
+.. code-block:: python
+
+    from tenant_schemas.middleware import DefaultTenantMiddleware
+
+    class MyDefaultTenantMiddleware(DefaultTenantMiddleware):
+        DEFAULT_SCHEMA_NAME = 'default'
 
 .. code-block:: python
     
     MIDDLEWARE_CLASSES = (
         'tenant_schemas.middleware.TenantMiddleware',
         # 'tenant_schemas.middleware.SuspiciousTenantMiddleware',
+        # 'tenant_schemas.middleware.DefaultTenantMiddleware',
+        # 'myproject.middleware.MyDefaultTenantMiddleware',
         #...
     )
     
@@ -156,9 +169,9 @@ Optional Settings
 .. attribute:: PUBLIC_SCHEMA_NAME
 
     :Default: ``'public'``
-    
+
     The schema name that will be treated as ``public``, that is, where the ``SHARED_APPS`` will be created.
-    
+
 .. attribute:: TENANT_CREATION_FAKES_MIGRATIONS
 
     :Default: ``'True'``

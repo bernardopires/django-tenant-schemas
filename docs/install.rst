@@ -117,6 +117,8 @@ To make use of shared and tenant-specific applications, there are two settings c
     )
 
     INSTALLED_APPS = (
+        'tenant_schemas',  # mandatory, should always be before any django app
+
         'customers',
         'django.contrib.contenttypes',
         'django.contrib.auth',
@@ -126,7 +128,6 @@ To make use of shared and tenant-specific applications, there are two settings c
         'django.contrib.admin',
         'myapp.hotels',
         'myapp.houses',
-        'tenant_schemas',
     )
 
 You also have to set where your tenant model is.

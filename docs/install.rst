@@ -46,7 +46,7 @@ If you'd like to serve the public tenant for unrecognised hostnames instead, use
         DEFAULT_SCHEMA_NAME = 'default'
 
 .. code-block:: python
-    
+
     MIDDLEWARE_CLASSES = (
         'tenant_schemas.middleware.TenantMiddleware',
         # 'tenant_schemas.middleware.SuspiciousTenantMiddleware',
@@ -54,7 +54,7 @@ If you'd like to serve the public tenant for unrecognised hostnames instead, use
         # 'myproject.middleware.MyDefaultTenantMiddleware',
         #...
     )
-    
+
 Make sure you have ``django.template.context_processors.request`` (``django.core.context_processors.request`` if you're on Django 1.8) listed under ``TEMPLATE_CONTEXT_PROCESSORS`` else the tenant will not be available on ``request``.
 
 .. code-block:: python
@@ -63,7 +63,7 @@ Make sure you have ``django.template.context_processors.request`` (``django.core
         'django.core.context_processors.request',
         #...
     )
-    
+
 The Tenant Model
 ================
 Now we have to create your tenant model. Your tenant model can contain whichever fields you want, however, you **must** inherit from ``TenantMixin``. This Mixin only has two fields (``domain_url`` and ``schema_name``) and both are required. Here's an example, suppose we have an app named ``customers`` and we want to create a model called ``Client``.
@@ -72,15 +72,15 @@ Now we have to create your tenant model. Your tenant model can contain whichever
 
     from django.db import models
     from tenant_schemas.models import TenantMixin
-    
+
     class Client(TenantMixin):
         name = models.CharField(max_length=100)
         paid_until =  models.DateField()
         on_trial = models.BooleanField()
         created_on = models.DateField(auto_now_add=True)
-        
+
         # default true, schema will be automatically created and synced when it is saved
-        auto_create_schema = True 
+        auto_create_schema = True
 
 Once you have defined your model, don't forget to create the migrations for it or otherwise Django >= 1.9 will not create its table. Replace ``customers`` with your app name.
 
@@ -93,30 +93,32 @@ Configure Tenant and Shared Applications
 To make use of shared and tenant-specific applications, there are two settings called ``SHARED_APPS`` and ``TENANT_APPS``. ``SHARED_APPS`` is a tuple of strings just like ``INSTALLED_APPS`` and should contain all apps that you want to be synced to ``public``. If ``SHARED_APPS`` is set, then these are the only apps that will be synced to your ``public`` schema! The same applies for ``TENANT_APPS``, it expects a tuple of strings where each string is an app. If set, only those applications will be synced to all your tenants. Here's a sample setting
 
 .. code-block:: python
-    
+
     SHARED_APPS = (
         'tenant_schemas',  # mandatory, should always be before any django app
         'customers', # you must list the app where your tenant model resides in
-        
+
         'django.contrib.contenttypes',
-         
+
         # everything below here is optional
-        'django.contrib.auth', 
-        'django.contrib.sessions', 
-        'django.contrib.sites', 
-        'django.contrib.messages', 
-        'django.contrib.admin', 
+        'django.contrib.auth',
+        'django.contrib.sessions',
+        'django.contrib.sites',
+        'django.contrib.messages',
+        'django.contrib.admin',
     )
-    
+
     TENANT_APPS = (
         'django.contrib.contenttypes',
 
         # your tenant-specific apps
         'myapp.hotels',
-        'myapp.houses', 
+        'myapp.houses',
     )
 
     INSTALLED_APPS = (
+        'tenant_schemas',  # mandatory, should always be before any django app
+
         'customers',
         'django.contrib.contenttypes',
         'django.contrib.auth',
@@ -126,7 +128,6 @@ To make use of shared and tenant-specific applications, there are two settings c
         'django.contrib.admin',
         'myapp.hotels',
         'myapp.houses',
-        'tenant_schemas',
     )
 
 You also have to set where your tenant model is.
@@ -134,7 +135,7 @@ You also have to set where your tenant model is.
 .. code-block:: python
 
     TENANT_MODEL = "customers.Client" # app.Model
-    
+
 Now run ``migrate_schemas --shared`` to create the shared apps on the ``public`` schema. Note: your database should be empty if this is the first time you're running this command.
 
 .. code-block:: bash
@@ -175,7 +176,7 @@ Optional Settings
 .. attribute:: TENANT_CREATION_FAKES_MIGRATIONS
 
     :Default: ``'True'``
-    
+
     Sets if the models will be synced directly to the last version and all migration subsequently faked. Useful in the cases where migrations can not be faked and need to be ran individually. Be aware that setting this to `False` may significantly slow down the process of creating tenants.
 
 Tenant View-Routing
@@ -190,12 +191,12 @@ Tenant View-Routing
     .. code-block:: python
 
         PUBLIC_SCHEMA_URLCONF = 'myproject.urls_public'
-    
-    When requesting the view ``/login/`` from the public tenant (your main website), it will search for this path on ``PUBLIC_SCHEMA_URLCONF`` instead of ``ROOT_URLCONF``. 
+
+    When requesting the view ``/login/`` from the public tenant (your main website), it will search for this path on ``PUBLIC_SCHEMA_URLCONF`` instead of ``ROOT_URLCONF``.
 
 Separate projects for the main website and tenants (optional)
 -------------------------------------------------------------
-In some cases using the ``PUBLIC_SCHEMA_URLCONF`` can be difficult. For example, `Django CMS <https://www.django-cms.org/>`_ takes some control over the default Django URL routing by using middlewares that do not play well with the tenants. Another example would be when some apps on the main website need different settings than the tenants website. In these cases it is much simpler if you just run the main website `example.com` as a separate application. 
+In some cases using the ``PUBLIC_SCHEMA_URLCONF`` can be difficult. For example, `Django CMS <https://www.django-cms.org/>`_ takes some control over the default Django URL routing by using middlewares that do not play well with the tenants. Another example would be when some apps on the main website need different settings than the tenants website. In these cases it is much simpler if you just run the main website `example.com` as a separate application.
 
 If your projects are ran using a WSGI configuration, this can be done by creating a filed called ``wsgi_main_website.py`` in the same folder as ``wsgi.py``.
 
@@ -246,7 +247,7 @@ Here's how you can configure your Apache server to route all subdomains to your 
 
 Building Documentation
 ======================
-Documentation is available in ``docs`` and can be built into a number of 
+Documentation is available in ``docs`` and can be built into a number of
 formats using `Sphinx <http://pypi.python.org/pypi/Sphinx>`_. To get started
 
 .. code-block:: bash

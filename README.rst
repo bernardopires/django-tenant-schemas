@@ -9,7 +9,7 @@ Software-as-a-Service website.
 
 Django provides currently no simple way to support multiple tenants
 using the same project instance, even when only the data is different.
-Because we don’t want you running many copies of your project, you’ll be
+Because we don't want you running many copies of your project, you'll be
 able to have:
 
 -  Multiple customers running on the same instance
@@ -20,10 +20,10 @@ What are schemas
 ----------------
 
 A schema can be seen as a directory in an operating system, each
-directory (schema) with it’s own set of files (tables and objects). This
+directory (schema) with it's own set of files (tables and objects). This
 allows the same table name and objects to be used in different schemas
 without conflict. For an accurate description on schemas, see
-`PostgreSQL’s official documentation on schemas`_.
+`PostgreSQL's official documentation on schemas`_.
 
 Why schemas
 -----------
@@ -31,7 +31,7 @@ Why schemas
 There are typically three solutions for solving the multitenancy
 problem.
 
-1. Isolated Approach: Separate Databases. Each tenant has it’s own
+1. Isolated Approach: Separate Databases. Each tenant has it's own
    database.
 
 2. Semi Isolated Approach: Shared Database, Separate Schemas. One
@@ -48,8 +48,8 @@ represents the ideal compromise between simplicity and performance.
    multitenancy. Plus, you only manage one database.
 -  Performance: make use of shared connections, buffers and memory.
 
-Each solution has it’s up and down sides, for a more in-depth
-discussion, see Microsoft’s excellent article on `Multi-Tenant Data
+Each solution has it's up and down sides, for a more in-depth
+discussion, see Microsoft's excellent article on `Multi-Tenant Data
 Architecture`_.
 
 How it works
@@ -58,11 +58,11 @@ How it works
 Tenants are identified via their host name (i.e tenant.domain.com). This
 information is stored on a table on the ``public`` schema. Whenever a
 request is made, the host name is used to match a tenant in the
-database. If there’s a match, the search path is updated to use this
-tenant’s schema. So from now on all queries will take place at the
-tenant’s schema. For example, suppose you have a tenant ``customer`` at
+database. If there's a match, the search path is updated to use this
+tenant's schema. So from now on all queries will take place at the
+tenant's schema. For example, suppose you have a tenant ``customer`` at
 http://customer.example.com. Any request incoming at
-``customer.example.com`` will automatically use ``customer``\ ’s schema
+``customer.example.com`` will automatically use ``customer``\ 's schema
 and make the tenant available at the request. If no tenant is found, a
 404 error is raised. This also means you should have a tenant for your
 main domain, typically using the ``public`` schema. For more information
@@ -94,7 +94,7 @@ the host name to identify which view to serve.
 Magic
 ~~~~~
 
-Everyone loves magic! You’ll be able to have all this barely having to
+Everyone loves magic! You'll be able to have all this barely having to
 change your code!
 
 Setup & Documentation
@@ -113,7 +113,7 @@ Your ``DATABASE_ENGINE`` setting needs to be changed to
             'ENGINE': 'tenant_schemas.postgresql_backend',
             # ..
         }
-    }    
+    }
 
 Add the middleware ``tenant_schemas.middleware.TenantMiddleware`` to the
 top of ``MIDDLEWARE_CLASSES``, so that each request can be set to use
@@ -125,9 +125,9 @@ the correct schema.
         'tenant_schemas.middleware.TenantMiddleware',
         #...
     )
-    
-Add ``tenant_schemas.routers.TenantSyncRouter`` to your `DATABASE_ROUTERS` 
-setting, so that the correct apps can be synced, depending on what's 
+
+Add ``tenant_schemas.routers.TenantSyncRouter`` to your `DATABASE_ROUTERS`
+setting, so that the correct apps can be synced, depending on what's
 being synced (shared or tenant).
 
 .. code-block:: python
@@ -182,13 +182,13 @@ will automatically create and sync/migrate the schema.
     tenant.save()
 
 Any request made to ``tenant.my-domain.com`` will now automatically set
-your PostgreSQL’s ``search_path`` to ``tenant1`` and ``public``, making
+your PostgreSQL's ``search_path`` to ``tenant1`` and ``public``, making
 shared apps available too. This means that any call to the methods
 ``filter``, ``get``, ``save``, ``delete`` or any other function
-involving a database connection will now be done at the tenant’s schema,
-so you shouldn’t need to change anything at your views.
+involving a database connection will now be done at the tenant's schema,
+so you shouldn't need to change anything at your views.
 
-You’re all set, but we have left key details outside of this short
+You're all set, but we have left key details outside of this short
 tutorial, such as creating the public tenant and configuring shared and
 tenant specific apps. Complete instructions can be found at
 `django-tenant-schemas.readthedocs.io`_.
@@ -197,7 +197,7 @@ tenant specific apps. Complete instructions can be found at
 
 .. _django: https://www.djangoproject.com/
 .. _PostgreSQL schemas: http://www.postgresql.org/docs/9.1/static/ddl-schemas.html
-.. _PostgreSQL’s official documentation on schemas: http://www.postgresql.org/docs/9.1/static/ddl-schemas.html
+.. _PostgreSQL's official documentation on schemas: http://www.postgresql.org/docs/9.1/static/ddl-schemas.html
 .. _Multi-Tenant Data Architecture: http://msdn.microsoft.com/en-us/library/aa479086.aspx
 
 .. |PyPi version| image:: https://img.shields.io/pypi/v/django-tenant-schemas.svg

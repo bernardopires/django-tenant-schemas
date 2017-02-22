@@ -26,6 +26,8 @@ TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
 
+DEFAULT_FILE_STORAGE = 'tenant_schemas.storage.TenantFileSystemStorage'
+
 
 # Application definition
 
@@ -83,6 +85,7 @@ DATABASES = {
         'USER': os.environ.get('PG_USER', 'postgres'),
         'PASSWORD': os.environ.get('PG_PASSWORD', 'root'),
         'HOST': os.environ.get('PG_HOST', 'localhost'),
+        'PORT': int(os.environ.get('PG_PORT', '5432')),
     }
 }
 
@@ -126,6 +129,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATICFILES_STORAGE = 'tenant_schemas.storage.TenantStaticFilesStorage'
 
 LOGGING = {
     'version': 1,

@@ -133,6 +133,49 @@ Prints to standard output a tab separated list of schema:domain_url values for e
     done
 
 
+Storage
+-------
+
+The :mod:`~django.core.files.storage` API will not isolate media per tenant. Your ``MEDIA_ROOT`` will be a shared space between all tenants.
+
+To avoid this you should configure a tenant aware storage backend - you will be warned if this is not the case.
+
+.. code-block:: python
+
+    # settings.py
+
+    MEDIA_ROOT = '/data/media'
+    MEDIA_URL = '/media/'
+    DEFAULT_FILE_STORAGE = 'tenant_schemas.storage.TenantFileSystemStorage'
+
+We provide :class:`tenant_schemas.storage.TenantStorageMixin` which can be added to any third-party storage backend.
+
+In your reverse proxy configuration you will need to capture use a regular expression to identify the ``domain_url`` to serve content from the appropriate directory.
+
+.. code-block:: text
+
+    # illustrative /etc/nginx/cond.d/tenant.conf
+
+    upstream web {
+        server localhost:8080 fail_timeout=5s;
+    }
+
+    server {
+        listen 80;
+        server_name ~^(www\.)?(.+)$;
+
+        location / {
+            proxy_pass http://web;
+            proxy_redirect off;
+            proxy_set_header Host $host;
+        }
+
+        location /media/ {
+            alias /data/media/$2/;
+        }
+    }
+
+
 Utils
 -----
 
@@ -214,6 +257,7 @@ The optional ``TenantContextFilter`` can be included in ``settings.LOGGING`` to 
 .. code-block:: python
 
     # settings.py
+
     LOGGING = {
         'filters': {
             'tenant_context': {
@@ -247,7 +291,8 @@ The hook for ensuring the ``search_path`` is set properly happens inside the ``D
 
 .. code-block:: python
 
-    #in settings.py:
+    # settings.py:
+
     TENANT_LIMIT_SET_CALLS = True
 
 When set, ``django-tenant-schemas`` will set the search path only once per request. The default is ``False``.

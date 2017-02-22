@@ -95,6 +95,33 @@ The options given to ``migrate_schemas`` are also passed to every ``migrate``. H
 
 ``migrate_schemas`` raises an exception when an tenant schema is missing.
 
+migrate_schemas in parallel
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Once the number of tenants grows, migrating all the tenants can become a bottleneck.
+To speed up this process, you can run tenant migrations in parallel;
+
+.. code-block:: bash
+
+    python manage.py migrate_schemas --executor=parallel
+
+You can also create your own tenant migration scripts. Examples can be found in ``tenant_schemas/migration_executors``.
+Make sure to use the BaseMigrationExecutor class as your base.
+
+The ``parallel`` executor accepts the following settings;
+
+* ``MIGRATION_PARALLEL_MAX_PROCESSES`` (default: 2) - the maximum number of
+  processes in the multiprocessing pool (this is to avoid exhausting the database
+  connection pool)
+* ``MIGRATION_PARALLEL_CHUNKS`` (default: 2) - the number of tenants to be
+  sent to each worker, by default every worker will do the migrations for 2 tenant.
+
+You can also set the default executor as an environmental variable.
+
+.. code-block:: bash
+
+    MIGRATION_EXECUTOR=parallel
+
 tenant_command
 ~~~~~~~~~~~~~~
 

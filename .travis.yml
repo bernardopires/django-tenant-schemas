@@ -11,11 +11,14 @@ install:
 before_script:
 - psql -c "CREATE DATABASE dts_test_project;" -U postgres
 script:
-- tox -e py${TRAVIS_PYTHON_VERSION/./}-dj${DJANGO/./}
+- tox -e py${TRAVIS_PYTHON_VERSION/./}-${MIGRATION_EXECUTOR/./}-dj${DJANGO/./}
 env:
-- DJANGO=1.8
-- DJANGO=1.9
-- DJANGO=1.10
+- DJANGO=1.8 MIGRATION_EXECUTOR=standard
+- DJANGO=1.9 MIGRATION_EXECUTOR=standard
+- DJANGO=1.10 MIGRATION_EXECUTOR=standard
+- DJANGO=1.8 MIGRATION_EXECUTOR=parallel
+- DJANGO=1.9 MIGRATION_EXECUTOR=parallel
+- DJANGO=1.10 MIGRATION_EXECUTOR=parallel
 deploy:
   provider: pypi
   user: bcarneiro

@@ -1,7 +1,7 @@
 from django.apps import apps
 from django.core.checks import Critical, Error, Warning
 from django.test import TestCase
-from django.test.utils import override_settings
+from django.test.utils import modify_settings, override_settings
 
 from tenant_schemas.apps import best_practice
 from tenant_schemas.utils import get_tenant_model
@@ -118,16 +118,9 @@ class AppConfigTests(TestCase):
                   id="tenant_schemas.E002"),
         ])
 
-    @override_settings(SHARED_APPS=(
-        'tenant_schemas',
-        'customers',
-        'django.contrib.auth',
-        'django.contrib.contenttypes',
-        'django.contrib.flatpages',
-        'django.contrib.messages',
-        'django.contrib.sessions',
-        'django.contrib.staticfiles',
-    ))
+    @modify_settings(SHARED_APPS={
+        'append': 'django.contrib.flatpages',
+    })
     def test_shared_app_missing_from_install_apps(self):
         self.assertBestPractice([
             Error("You have SHARED_APPS that are not in INSTALLED_APPS",
@@ -135,17 +128,9 @@ class AppConfigTests(TestCase):
                   id="tenant_schemas.E003"),
         ])
 
-    @override_settings(INSTALLED_APPS=(
-        'tenant_schemas',
-        'dts_test_app',
-        'customers',
-        'django.contrib.auth',
-        'django.contrib.contenttypes',
-        'django.contrib.humanize',
-        'django.contrib.messages',
-        'django.contrib.sessions',
-        'django.contrib.staticfiles',
-    ))
+    @modify_settings(INSTALLED_APPS={
+        'append': 'django.contrib.humanize',
+    })
     def test_installed_app_missing_from_shared_and_tenant_apps(self):
         self.assertBestPractice([
             Error("You have INSTALLED_APPS that are not in either of "

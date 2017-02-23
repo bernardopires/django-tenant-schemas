@@ -134,3 +134,21 @@ class AppConfigTests(TestCase):
                   hint=['django.contrib.flatpages'],
                   id="tenant_schemas.E003"),
         ])
+
+    @override_settings(INSTALLED_APPS=(
+        'tenant_schemas',
+        'dts_test_app',
+        'customers',
+        'django.contrib.auth',
+        'django.contrib.contenttypes',
+        'django.contrib.humanize',
+        'django.contrib.messages',
+        'django.contrib.sessions',
+        'django.contrib.staticfiles',
+    ))
+    def test_installed_app_missing_from_shared_and_tenant_apps(self):
+        self.assertBestPractice([
+            Error("You have INSTALLED_APPS that are not in either of "
+                  "TENANT_APPS or SHARED_APPS",
+                  hint=['django.contrib.humanize']),
+        ])

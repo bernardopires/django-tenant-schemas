@@ -99,6 +99,35 @@ class TenantDataAndSettingsTest(BaseTestCase):
         self.assertFalse(schema_exists(tenant.schema_name))
         Tenant.auto_drop_schema = False
 
+    def test_auto_drop_schema_bulk_delete(self):
+        """
+        When bulk deleting tenants, it should also drop the schemas of
+        tenants that have auto_drop_schema set to True.
+        """
+        Tenant.auto_drop_schema = True
+        schemas = ['auto_drop_schema1', 'auto_drop_schema2']
+        for schema in schemas:
+            self.assertFalse(schema_exists(schema))
+            tenant = Tenant(
+                domain_url='%s.test.com' % schema,
+                schema_name=schema
+            )
+            tenant.save(verbosity=BaseTestCase.get_verbosity())
+            self.assertTrue(schema_exists(tenant.schema_name))
+
+        # Force pending trigger events to be executed
+        cursor = connection.cursor()
+        cursor.execute('SET CONSTRAINTS ALL IMMEDIATE')
+
+        # get a queryset of our 2 tenants and do a bulk delete
+        Tenant.objects.filter(schema_name__in=schemas).delete()
+
+        # verify that the schemas where deleted
+        for schema in schemas:
+            self.assertFalse(schema_exists(schema))
+
+        Tenant.auto_drop_schema = False
+
     def test_switching_search_path(self):
         tenant1 = Tenant(domain_url='something.test.com',
                          schema_name='tenant1')

@@ -30,7 +30,7 @@ class BaseTenantMiddleware(MIDDLEWARE_MIXIN):
     of TENANT_MODEL.
     """
     def get_tenant(self, request):
-        raise Exception("You have not implemented get_tenant. Don't know which tenant to use!")
+        raise NotImplementedError
 
 
     def process_request(self, request):

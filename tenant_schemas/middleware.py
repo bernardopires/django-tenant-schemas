@@ -13,38 +13,39 @@ if django.VERSION >= (1, 10, 0):
 else:
     MIDDLEWARE_MIXIN = object
 
+"""
+These middlewares should be placed at the very top of the middleware stack.
+Selects the proper database schema using request information. Can fail in
+various ways which is better than corrupting or revealing data.
 
-class TenantMiddleware(MIDDLEWARE_MIXIN):
+Extend BaseTenantMiddleware for a custom tenant selection strategy,
+such as inspecting the header, or extracting it from some OAuth token.
+"""
+
+class BaseTenantMiddleware(MIDDLEWARE_MIXIN):
+
     """
-    This middleware should be placed at the very top of the middleware stack.
-    Selects the proper database schema using the request host. Can fail in
-    various ways which is better than corrupting or revealing data.
+    Subclass and override  this to achieve desired behaviour. Given a
+    request, return the tenant to use. Tenant should be an instance
+    of TENANT_MODEL.
     """
-    TENANT_NOT_FOUND_EXCEPTION = Http404
+    def get_tenant(self, request):
+        raise Exception("You have not implemented get_tenant. Don't know which tenant to use!")
 
-    def hostname_from_request(self, request):
-        """ Extracts hostname from request. Used for custom requests filtering.
-            By default removes the request's port and common prefixes.
-        """
-        return remove_www(request.get_host().split(':')[0]).lower()
-
-    def get_tenant(self, model, hostname, request):
-        return model.objects.get(domain_url=hostname)
 
     def process_request(self, request):
         # Connection needs first to be at the public schema, as this is where
         # the tenant metadata is stored.
         connection.set_schema_to_public()
-        hostname = self.hostname_from_request(request)
 
-        TenantModel = get_tenant_model()
+        # get_tenant must be implemented by extending this class.
+        tenant = self.get_tenant(request)
 
-        try:
-            request.tenant = self.get_tenant(TenantModel, hostname, request)
-            connection.set_tenant(request.tenant)
-        except TenantModel.DoesNotExist:
-            raise self.TENANT_NOT_FOUND_EXCEPTION(
-                'No tenant for hostname "%s"' % hostname)
+        if tenant is None:
+            raise Exception("Trying to set current tenant to None!")
+
+        request.tenant = tenant
+        connection.set_tenant(request.tenant)
 
         # Content type can no longer be cached as public and tenant schemas
         # have different models. If someone wants to change this, the cache
@@ -58,6 +59,28 @@ class TenantMiddleware(MIDDLEWARE_MIXIN):
         # Do we have a public-specific urlconf?
         if hasattr(settings, 'PUBLIC_SCHEMA_URLCONF') and request.tenant.schema_name == get_public_schema_name():
             request.urlconf = settings.PUBLIC_SCHEMA_URLCONF
+
+class TenantMiddleware(BaseTenantMiddleware):
+    """
+    Selects the proper database schema using the request host. E.g. <my_tenant>.<my_domain>
+    """
+    TENANT_NOT_FOUND_EXCEPTION = Http404
+
+    def hostname_from_request(self, request):
+        """ Extracts hostname from request. Used for custom requests filtering.
+            By default removes the request's port and common prefixes.
+        """
+        return remove_www(request.get_host().split(':')[0]).lower()
+
+    def get_tenant(self, request):
+        hostname = self.hostname_from_request(request)
+
+        TenantModel = get_tenant_model()
+        try:
+            return TenantModel.objects.get(domain_url=hostname)
+        except TenantModel.DoesNotExist:
+            raise self.TENANT_NOT_FOUND_EXCEPTION(
+                'No tenant for hostname "%s"' % hostname)
 
 
 class SuspiciousTenantMiddleware(TenantMiddleware):
@@ -87,13 +110,13 @@ class DefaultTenantMiddleware(SuspiciousTenantMiddleware):
     """
     DEFAULT_SCHEMA_NAME = None
 
-    def get_tenant(self, model, hostname, request):
+    def get_tenant(self, request):
         try:
-            return super(DefaultTenantMiddleware, self).get_tenant(
-                model, hostname, request)
-        except model.DoesNotExist:
+            return super(DefaultTenantMiddleware, self).get_tenant(request)
+        except self.TENANT_NOT_FOUND_EXCEPTION:
             schema_name = self.DEFAULT_SCHEMA_NAME
             if not schema_name:
                 schema_name = get_public_schema_name()
 
-            return model.objects.get(schema_name=schema_name)
+            TenantModel = get_tenant_model()
+            return TenantModel.objects.get(schema_name=schema_name)

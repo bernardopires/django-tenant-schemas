@@ -51,7 +51,7 @@ class BaseTenantMiddleware(MIDDLEWARE_MIXIN):
         try:
             # get_tenant must be implemented by extending this class.
             tenant = self.get_tenant(TenantModel, hostname, request)
-            assert isinstance(request.tenant, TenantModel)
+            assert isinstance(tenant, TenantModel)
         except TenantModel.DoesNotExist:
             raise self.TENANT_NOT_FOUND_EXCEPTION(
                 'No tenant for {!r}'.format(request.get_host()))

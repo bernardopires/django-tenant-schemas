@@ -23,26 +23,41 @@ such as inspecting the header, or extracting it from some OAuth token.
 """
 
 class BaseTenantMiddleware(MIDDLEWARE_MIXIN):
+    TENANT_NOT_FOUND_EXCEPTION = Http404
 
     """
     Subclass and override  this to achieve desired behaviour. Given a
     request, return the tenant to use. Tenant should be an instance
-    of TENANT_MODEL.
+    of TENANT_MODEL. We have three parameters for backwards compatibility
+    (the request would be enough).
     """
-    def get_tenant(self, request):
+    def get_tenant(self, model, hostname, request):
         raise NotImplementedError
 
+    def hostname_from_request(self, request):
+        """ Extracts hostname from request. Used for custom requests filtering.
+            By default removes the request's port and common prefixes.
+        """
+        return remove_www(request.get_host().split(':')[0]).lower()
 
     def process_request(self, request):
         # Connection needs first to be at the public schema, as this is where
         # the tenant metadata is stored.
         connection.set_schema_to_public()
 
-        # get_tenant must be implemented by extending this class.
-        tenant = self.get_tenant(request)
+        hostname = self.hostname_from_request(request)
+        TenantModel = get_tenant_model()
 
-        if tenant is None:
-            raise Exception("Trying to set current tenant to None!")
+        try:
+            # get_tenant must be implemented by extending this class.
+            tenant = self.get_tenant(TenantModel, hostname, request)
+            assert isinstance(request.tenant, TenantModel)
+        except TenantModel.DoesNotExist:
+            raise self.TENANT_NOT_FOUND_EXCEPTION(
+                'No tenant for {!r}'.format(request.get_host()))
+        except AssertionError:
+            raise self.TENANT_NOT_FOUND_EXCEPTION(
+                'Invalid tenant {!r}'.format(request.tenant))
 
         request.tenant = tenant
         connection.set_tenant(request.tenant)
@@ -64,23 +79,9 @@ class TenantMiddleware(BaseTenantMiddleware):
     """
     Selects the proper database schema using the request host. E.g. <my_tenant>.<my_domain>
     """
-    TENANT_NOT_FOUND_EXCEPTION = Http404
 
-    def hostname_from_request(self, request):
-        """ Extracts hostname from request. Used for custom requests filtering.
-            By default removes the request's port and common prefixes.
-        """
-        return remove_www(request.get_host().split(':')[0]).lower()
-
-    def get_tenant(self, request):
-        hostname = self.hostname_from_request(request)
-
-        TenantModel = get_tenant_model()
-        try:
-            return TenantModel.objects.get(domain_url=hostname)
-        except TenantModel.DoesNotExist:
-            raise self.TENANT_NOT_FOUND_EXCEPTION(
-                'No tenant for hostname "%s"' % hostname)
+    def get_tenant(self, model, hostname, request):
+            return model.objects.get(domain_url=hostname)
 
 
 class SuspiciousTenantMiddleware(TenantMiddleware):
@@ -110,16 +111,13 @@ class DefaultTenantMiddleware(SuspiciousTenantMiddleware):
     """
     DEFAULT_SCHEMA_NAME = None
 
-    def get_tenant(self, request):
+    def get_tenant(self, model, hostname, request):
         try:
-            return super(DefaultTenantMiddleware, self).get_tenant(request)
-        except self.TENANT_NOT_FOUND_EXCEPTION as e:
+            return super(DefaultTenantMiddleware, self).get_tenant(
+                model, hostname, request)
+        except model.DoesNotExist:
             schema_name = self.DEFAULT_SCHEMA_NAME
             if not schema_name:
                 schema_name = get_public_schema_name()
 
-            TenantModel = get_tenant_model()
-            try:
-                return TenantModel.objects.get(schema_name=schema_name)
-            except TenantModel.DoesNotExist:
-                raise e # Raise the same exception (we don't have a tenant)
+            return model.objects.get(schema_name=schema_name)

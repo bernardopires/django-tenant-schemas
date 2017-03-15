@@ -14,7 +14,7 @@ from django.utils._os import safe_join
 from django.utils.encoding import force_bytes
 from tenant_schemas.postgresql_backend.base import FakeTenant
 
-DJANGO_1_10 = DJANGO_VERSION[1] >= 10
+DJANGO_1_10 = DJANGO_VERSION[0] == 1 and DJANGO_VERSION[1] >= 10
 
 if DJANGO_1_10:
     from django.template import Origin, TemplateDoesNotExist

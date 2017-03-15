@@ -4,15 +4,30 @@ multi-tenant setting
 """
 
 import hashlib
+from django import VERSION as DJANGO_VERSION
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.template.base import TemplateDoesNotExist, Template
-from django.utils.encoding import force_bytes
-from django.utils._os import safe_join
 from django.db import connection
+from django.template.base import Template
 from django.template.loaders.base import Loader as BaseLoader
-
+from django.utils._os import safe_join
+from django.utils.encoding import force_bytes
 from tenant_schemas.postgresql_backend.base import FakeTenant
+
+DJANGO_1_10 = DJANGO_VERSION[1] >= 10
+
+if DJANGO_1_10:
+    from django.template import Origin, TemplateDoesNotExist
+
+
+    def make_origin(engine, name, loader, template_name, dirs):
+        return Origin(name=name, template_name=template_name, loader=loader)
+else:
+    from django.template.base import TemplateDoesNotExist
+
+
+    def make_origin(engine, name, loader, template_name, dirs):
+        return engine.make_origin(name, loader, template_name, dirs)
 
 
 class CachedLoader(BaseLoader):
@@ -50,7 +65,7 @@ class CachedLoader(BaseLoader):
                 except TemplateDoesNotExist:
                     pass
                 else:
-                    origin = self.engine.make_origin(display_name, loader, name, dirs)
+                    origin = make_origin(self.engine, display_name, loader, name, dirs)
                     result = template, origin
                     break
         self.find_template_cache[key] = result
@@ -133,4 +148,5 @@ class FilesystemLoader(BaseLoader):
         else:
             error_msg = "Your TEMPLATE_DIRS setting is empty. Change it to point to at least one template directory."
         raise TemplateDoesNotExist(error_msg)
+
     load_template_source.is_usable = True

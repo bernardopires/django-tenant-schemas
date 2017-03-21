@@ -1,6 +1,7 @@
-==================
+============
 Installation
-==================
+============
+
 Assuming you have django installed, the first step is to install ``django-tenant-schemas``.
 
 .. code-block:: bash
@@ -55,7 +56,26 @@ If you'd like to serve the public tenant for unrecognised hostnames instead, use
         #...
     )
 
-Make sure you have ``django.template.context_processors.request`` (``django.core.context_processors.request`` if you're on Django 1.8) listed under ``TEMPLATE_CONTEXT_PROCESSORS`` else the tenant will not be available on ``request``.
+Make sure you have ``django.template.context_processors.request`` listed under ``context_processors`` (Django 1.8+):
+
+.. code-block:: python
+
+    TEMPLATES = [
+        {
+            'BACKEND': # ...
+            'DIRS': [],
+            'APP_DIRS': True,
+            'OPTIONS': {
+                'context_processors': [
+                    # ...
+                    'django.template.context_processors.request',
+                    # ...
+                ]
+            }
+        }
+    ]
+
+If you are using an old version of Django (before v1.8), the following setting must be set in ``TEMPLATE_CONTEXT_PROCESSORS``:
 
 .. code-block:: python
 

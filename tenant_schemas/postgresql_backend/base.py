@@ -1,21 +1,17 @@
 import re
 import warnings
-from django.conf import settings
-try:
-    # Django versions >= 1.9
-    from django.utils.module_loading import import_module
-except ImportError:
-    # Django versions < 1.9
-    from django.utils.importlib import import_module
-from django.core.exceptions import ImproperlyConfigured, ValidationError
-from tenant_schemas.utils import get_public_schema_name, get_limit_set_calls
-from tenant_schemas.postgresql_backend.introspection import DatabaseSchemaIntrospection
-import django.db.utils
 import psycopg2
 
-ORIGINAL_BACKEND = getattr(settings, 'ORIGINAL_BACKEND', 'django.db.backends.postgresql_psycopg2')
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured, ValidationError
+import django.db.utils
 
-original_backend = import_module(ORIGINAL_BACKEND + '.base')
+from tenant_schemas.utils import get_public_schema_name, get_limit_set_calls
+from tenant_schemas.postgresql_backend.introspection import DatabaseSchemaIntrospection
+
+ORIGINAL_BACKEND = getattr(settings, 'ORIGINAL_BACKEND', 'django.db.backends.postgresql_psycopg2')
+# Django 1.9+ takes care to rename the default backend to 'django.db.backends.postgresql'
+original_backend = django.db.utils.load_backend(ORIGINAL_BACKEND)
 
 EXTRA_SEARCH_PATHS = getattr(settings, 'PG_EXTRA_SEARCH_PATHS', [])
 

@@ -153,10 +153,3 @@ class FakeTenant:
     """
     def __init__(self, schema_name):
         self.schema_name = schema_name
-
-if ORIGINAL_BACKEND == "django.contrib.gis.db.backends.postgis":
-    DatabaseError = django.db.utils.DatabaseError
-    IntegrityError = psycopg2.IntegrityError
-else:
-    DatabaseError = original_backend.DatabaseError
-    IntegrityError = original_backend.IntegrityError

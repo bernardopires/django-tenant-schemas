@@ -77,7 +77,7 @@ def best_practice(app_configs, **kwargs):
     if not settings.SHARED_APPS:
         errors.append(
             Warning("SHARED_APPS is empty.",
-            id="tenant_schemas.W002"))
+                    id="tenant_schemas.W002"))
 
     if not set(settings.TENANT_APPS).issubset(INSTALLED_APPS):
         delta = set(settings.TENANT_APPS).difference(INSTALLED_APPS)

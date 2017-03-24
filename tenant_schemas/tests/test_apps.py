@@ -63,7 +63,8 @@ class AppConfigTests(TestCase):
                     obj="django.conf.settings",
                     hint="This is necessary to overwrite built-in django "
                          "management commands with their schema-aware "
-                         "implementations."),
+                         "implementations.",
+                    id="tenant_schemas.W001"),
         ])
 
     @override_settings(INSTALLED_APPS=[
@@ -83,7 +84,8 @@ class AppConfigTests(TestCase):
     def test_tenant_apps_empty(self):
         self.assertBestPractice([
             Error("TENANT_APPS is empty.",
-                  hint="Maybe you don't need this app?"),
+                  hint="Maybe you don't need this app?",
+                  id="tenant_schemas.E001"),
         ])
 
     @override_settings(PG_EXTRA_SEARCH_PATHS=['public', 'demo1', 'demo2'])
@@ -101,7 +103,8 @@ class AppConfigTests(TestCase):
     @override_settings(SHARED_APPS=())
     def test_shared_apps_empty(self):
         self.assertBestPractice([
-            Warning("SHARED_APPS is empty."),
+            Warning("SHARED_APPS is empty.",
+                    id="tenant_schemas.W002"),
         ])
 
     @override_settings(TENANT_APPS=(
@@ -111,7 +114,8 @@ class AppConfigTests(TestCase):
     def test_tenant_app_missing_from_install_apps(self):
         self.assertBestPractice([
             Error("You have TENANT_APPS that are not in INSTALLED_APPS",
-                  hint=['django.contrib.flatpages']),
+                  hint=['django.contrib.flatpages'],
+                  id="tenant_schemas.E002"),
         ])
 
     @override_settings(SHARED_APPS=(
@@ -127,5 +131,6 @@ class AppConfigTests(TestCase):
     def test_shared_app_missing_from_install_apps(self):
         self.assertBestPractice([
             Error("You have SHARED_APPS that are not in INSTALLED_APPS",
-                  hint=['django.contrib.flatpages']),
+                  hint=['django.contrib.flatpages'],
+                  id="tenant_schemas.E003"),
         ])

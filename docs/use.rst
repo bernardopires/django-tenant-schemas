@@ -322,3 +322,40 @@ django-debug-toolbar
             '',
             url(r'^__debug__/', include(debug_toolbar.urls)),
         )
+
+
+django-cachalot
+~~~~~~~~~~~~~~~
+
+`django-cachalot <https://github.com/BertrandBordage/django-cachalot>`_ cache and query keys need to be overriden in order to include the schema in it. The database engine check also needs to be silenced. Here is how to do it:
+
+.. code-block:: python
+
+    # yourproject/utils.py
+    from hashlib import sha1
+    from django.db import connection
+    from cachalot.utils import check_parameter_types
+
+    def get_query_cache_key(compiler):
+        """
+        Overriden to include the schema name in the query cache key.
+        """
+        sql, params = compiler.as_sql()
+        check_parameter_types(params)
+        cache_key = '%s:%s:%s:%s' % (
+            compiler.using, connection.schema_name, sql, params
+        )
+        return sha1(cache_key.encode('utf-8')).hexdigest()
+
+
+    def get_table_cache_key(db_alias, table):
+        """
+        Overriden to include the schema name in the table cache key.
+        """
+        cache_key = '%s:%s:%s' % (db_alias, connection.schema_name, table)
+        return sha1(cache_key.encode('utf-8')).hexdigest()
+
+    # yourproject/settings.py
+    CACHALOT_QUERY_KEYGEN = 'yourproject.utils.get_query_cache_key'
+    CACHALOT_TABLE_KEYGEN = 'yourproject.utils.get_table_cache_key'
+    SILENCED_SYSTEM_CHECKS = ['cachalot.E001']

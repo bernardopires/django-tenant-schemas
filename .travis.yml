@@ -14,7 +14,6 @@ script:
 - tox -e py${TRAVIS_PYTHON_VERSION/./}-dj${DJANGO/./}
 env:
 - DJANGO=1.8
-- DJANGO=1.9
 - DJANGO=1.10
 - DJANGO=1.11
 deploy:

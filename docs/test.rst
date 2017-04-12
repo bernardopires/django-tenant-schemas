@@ -1,6 +1,7 @@
-==================
+=====
 Tests
-==================
+=====
+
 Running the tests
 -----------------
 Run these tests from the project ``dts_test_project``, it comes prepacked with the correct settings file and extra apps to enable tests to ensure different apps can exist in ``SHARED_APPS`` and ``TENANT_APPS``.
@@ -27,7 +28,7 @@ Because django will not create tenants for you during your tests, we have packed
     class BaseSetup(TenantTestCase):
         def setUp(self):
             self.c = TenantClient(self.tenant)
-            
+
         def test_user_profile_view(self):
             response = self.c.get(reverse('user_profile'))
             self.assertEqual(response.status_code, 200)

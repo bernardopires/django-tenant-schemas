@@ -1,6 +1,7 @@
 ===========================
 Using django-tenant-schemas
 ===========================
+
 Supported versions
 ------------------
 You can use ``django-tenant-schemas`` with currently maintained versions of Django -- see the `Django's release process <https://docs.djangoproject.com/en/1.10/internals/release-process/>`_ and the present list of `Supported Versions <https://www.djangoproject.com/download/#supported-versions>`_.
@@ -9,7 +10,7 @@ It is necessary to use a PostgreSQL database. ``django-tenant-schemas`` will ens
 
 Creating a Tenant
 -----------------
-Creating a tenant works just like any other model in django. The first thing we should do is to create the ``public`` tenant to make our main website available. We'll use the previous model we defined for ``Client``.
+Creating a tenant works just like any other model in Django. The first thing we should do is to create the ``public`` tenant to make our main website available. We'll use the previous model we defined for ``Client``.
 
 .. code-block:: python
 
@@ -43,7 +44,7 @@ Any call to the methods ``filter``, ``get``, ``save``, ``delete`` or any other f
 
 Management commands
 -------------------
-Every command except tenant_command runs by default on all tenants. You can also create your own commands that run on every tenant by inheriting ``BaseTenantCommand``.
+By default, base commands run on the public tenant but you can also own commands that run on a specific tenant by inheriting ``BaseTenantCommand``.
 
 For example, if you have the following ``do_foo`` command in the ``foo`` app:
 
@@ -57,7 +58,7 @@ For example, if you have the following ``do_foo`` command in the ``foo`` app:
         def handle(self, *args, **options):
             do_foo()
 
-You could create a wrapper command ``tenant_do_foo`` by using ``BaseTenantCommand`` like so:
+You could create a wrapper command by using ``BaseTenantCommand``:
 
 ``foo/management/commands/tenant_do_foo.py``
 
@@ -68,11 +69,13 @@ You could create a wrapper command ``tenant_do_foo`` by using ``BaseTenantComman
     class Command(BaseTenantCommand):
         COMMAND_NAME = 'do_foo'
 
-To run only a particular schema, there is an optional argument called ``--schema``.
+To run the command on a particular schema, there is an optional argument called ``--schema``.
 
 .. code-block:: bash
 
-    ./manage.py migrate_schemas --schema=customer1
+    ./manage.py tenant_command do_foo --schema=customer1
+
+If you omit the ``schema`` argument, the interactive shell will ask you to select one.
 
 migrate_schemas
 ~~~~~~~~~~~~~~~

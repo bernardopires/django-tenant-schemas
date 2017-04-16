@@ -4,9 +4,9 @@ Using django-tenant-schemas
 
 Supported versions
 ------------------
-You can use ``django-tenant-schemas`` with currently maintained versions of Django -- see the `Django's release process <https://docs.djangoproject.com/en/1.10/internals/release-process/>`_ and the present list of `Supported Versions <https://www.djangoproject.com/download/#supported-versions>`_.
+You can use ``django-tenant-schemas`` with currently maintained versions of Django -- see the `Django's release process <https://docs.djangoproject.com/en/1.11/internals/release-process/>`_ and the present list of `Supported Versions <https://www.djangoproject.com/download/#supported-versions>`_.
 
-It is necessary to use a PostgreSQL database. ``django-tenant-schemas`` will ensure compatibility with the minimum required version of the latest Django release. At this time that is PostgreSQL 9.2, the minimum for Django 1.10.
+It is necessary to use a PostgreSQL database. ``django-tenant-schemas`` will ensure compatibility with the minimum required version of the latest Django release. At this time that is PostgreSQL 9.3, the minimum for Django 1.11.
 
 Creating a Tenant
 -----------------

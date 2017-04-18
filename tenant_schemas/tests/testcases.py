@@ -1,4 +1,5 @@
 import inspect
+
 from django.conf import settings
 from django.core.management import call_command
 from django.db import connection
@@ -20,6 +21,8 @@ class BaseTestCase(TestCase):
                                 'django.contrib.contenttypes',
                                 'django.contrib.auth', )
         settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
+        if '.test.com' not in settings.ALLOWED_HOSTS:
+            settings.ALLOWED_HOSTS += ['.test.com']
 
         # Django calls syncdb by default for the test database, but we want
         # a blank public schema for this set of tests.
@@ -28,6 +31,13 @@ class BaseTestCase(TestCase):
         cursor.execute('DROP SCHEMA IF EXISTS %s CASCADE; CREATE SCHEMA %s;'
                        % (get_public_schema_name(), get_public_schema_name()))
         super(BaseTestCase, cls).setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super(BaseTestCase, cls).tearDownClass()
+
+        if '.test.com' in settings.ALLOWED_HOSTS:
+            settings.ALLOWED_HOSTS.remove('.test.com')
 
     def setUp(self):
         connection.set_schema_to_public()

@@ -7,7 +7,11 @@ from django.db.backends.base.introspection import (
 )
 from django.utils.encoding import force_text
 
-FieldInfo = namedtuple('FieldInfo', FieldInfo._fields + ('default',))
+fields = FieldInfo._fields
+if 'default' not in fields:
+    fields += ('default',)
+
+FieldInfo = namedtuple('FieldInfo', fields)
 
 
 class DatabaseSchemaIntrospection(BaseDatabaseIntrospection):

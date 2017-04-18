@@ -11,8 +11,6 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
-import os
 import datetime
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -94,8 +92,8 @@ pygments_style = 'sphinx'
 
 intersphinx_mapping = {
     'django': (
-        'https://docs.djangoproject.com/en/1.10/',
-        'https://docs.djangoproject.com/en/1.10/_objects/'),
+        'https://docs.djangoproject.com/en/1.11/',
+        'https://docs.djangoproject.com/en/1.11/_objects/'),
 }
 
 # -- Options for HTML output ---------------------------------------------------

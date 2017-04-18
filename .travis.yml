@@ -12,11 +12,11 @@ env:
   - DJANGO=1.8
   - DJANGO=1.9
   - DJANGO=1.10
+  - DJANGO=1.11
 matrix:
   fast_finish: true
 script: tox
 before_script: psql -c "CREATE DATABASE dts_test_project;" -U postgres
-
 deploy:
   provider: pypi
   user: bcarneiro

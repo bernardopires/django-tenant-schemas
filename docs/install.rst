@@ -38,6 +38,8 @@ If you'd like to raise ``DisallowedHost`` and a HTTP 400 response instead, use t
 
 If you'd like to serve the public tenant for unrecognised hostnames instead, use ``tenant_schemas.middleware.DefaultTenantMiddleware``. To use a tenant other than the public tenant, create a subclass and register it instead.
 
+If you'd like a different tenant selection technique (e.g. using an HTTP Header), you can define a custom middleware. See :ref:`Advanced Usage`.
+
 .. code-block:: python
 
     from tenant_schemas.middleware import DefaultTenantMiddleware

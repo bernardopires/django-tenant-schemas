@@ -48,9 +48,10 @@ Contents
 
 .. toctree::
    :maxdepth: 2
-   
+
    install
    use
+   advanced_usage
    examples
    templates
    test

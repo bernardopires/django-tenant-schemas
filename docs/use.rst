@@ -306,6 +306,36 @@ This will result in logging output that looks similar to:
 
     [example:example.com] DEBUG 13:29 django.db.backends: (0.001) SELECT ...
 
+dumpdata_schemas
+~~~~~~~~~~~~~~~~
+
+The command ``dumpdata`` is wrapped as ``dumpdata_schemas`` to have a ``schema`` flag.
+
+.. code-block:: bash
+
+    ./manage.py dumpdata_schemas --schema=customer1
+
+loaddata_schemas
+~~~~~~~~~~~~~~~~
+
+The command ``loaddata`` is wrapped as ``loaddata_schemas`` to have a ``schema`` flag.
+
+.. code-block:: bash
+
+    ./manage.py loaddata_schemas --schema=customer1
+
+list_tenants
+~~~~~~~~~~~~
+
+Prints to standard output a tab separated list of schema:domain_url values for each tenant.
+
+.. code-block:: bash
+
+    for t in $(./manage.py list_tenants | cut -f1);
+    do
+        ./manage.py dumpdata_schemas --schema=$t --indent=2 auth.user > ${t}_users.json;
+    done
+
 
 Performance Considerations
 --------------------------

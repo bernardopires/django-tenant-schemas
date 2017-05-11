@@ -160,6 +160,10 @@ You can also specify extra schemas that should be visible to all queries using
 ``PG_EXTRA_SEARCH_PATHS`` should be a list of schemas you want to make visible
 globally.
 
+.. warning::
+
+   Be sure to not use your public schema name as ``PG_EXTRA_SEARCH_PATHS``, and to disallow creating tenant with schema of that names.
+
 .. tip::
 
    You can create a dedicated schema to hold postgresql extensions and make it

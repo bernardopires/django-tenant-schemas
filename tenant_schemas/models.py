@@ -6,6 +6,27 @@ from tenant_schemas.signals import post_schema_sync
 from tenant_schemas.utils import get_public_schema_name, schema_exists
 
 
+class TenantQueryset(models.QuerySet):
+    """
+    QuerySet for instances that inherit from the TenantMixin.
+    """
+    def delete(self):
+        """
+        Make sure we call the delete method of each object in the queryset so
+        that safety checks and schema deletion (if requested) are executed
+        even when using bulk delete.
+        """
+        counter, counter_dict = 0, {}
+        for obj in self:
+            result = obj.delete()
+            if result is not None:
+                current_counter, current_counter_dict = result
+                counter += current_counter
+                counter_dict.update(current_counter_dict)
+        if counter:
+            return counter, counter_dict
+
+
 class TenantMixin(models.Model):
     """
     All tenant models must inherit this class.
@@ -27,6 +48,7 @@ class TenantMixin(models.Model):
     domain_url = models.CharField(max_length=128, unique=True)
     schema_name = models.CharField(max_length=63, unique=True,
                                    validators=[_check_schema_name])
+    objects = TenantQueryset.as_manager()
 
     class Meta:
         abstract = True
@@ -69,7 +91,7 @@ class TenantMixin(models.Model):
             cursor = connection.cursor()
             cursor.execute('DROP SCHEMA IF EXISTS %s CASCADE' % self.schema_name)
 
-        super(TenantMixin, self).delete(*args, **kwargs)
+        return super(TenantMixin, self).delete(*args, **kwargs)
 
     def create_schema(self, check_if_exists=False, sync_schema=True,
                       verbosity=1):

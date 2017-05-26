@@ -51,12 +51,14 @@ def best_practice(app_configs, **kwargs):
                     obj="django.conf.settings",
                     hint="This is necessary to overwrite built-in django "
                          "management commands with their schema-aware "
-                         "implementations."))
+                         "implementations.",
+                    id="tenant_schemas.W001"))
 
     if not settings.TENANT_APPS:
         errors.append(
             Error("TENANT_APPS is empty.",
-                  hint="Maybe you don't need this app?"))
+                  hint="Maybe you don't need this app?",
+                  id="tenant_schemas.E001"))
 
     if hasattr(settings, 'PG_EXTRA_SEARCH_PATHS'):
         if get_public_schema_name() in settings.PG_EXTRA_SEARCH_PATHS:
@@ -74,25 +76,29 @@ def best_practice(app_configs, **kwargs):
 
     if not settings.SHARED_APPS:
         errors.append(
-            Warning("SHARED_APPS is empty."))
+            Warning("SHARED_APPS is empty.",
+                    id="tenant_schemas.W002"))
 
     if not set(settings.TENANT_APPS).issubset(INSTALLED_APPS):
         delta = set(settings.TENANT_APPS).difference(INSTALLED_APPS)
         errors.append(
             Error("You have TENANT_APPS that are not in INSTALLED_APPS",
-                  hint=[a for a in settings.TENANT_APPS if a in delta]))
+                  hint=[a for a in settings.TENANT_APPS if a in delta],
+                  id="tenant_schemas.E002"))
 
     if not set(settings.SHARED_APPS).issubset(INSTALLED_APPS):
         delta = set(settings.SHARED_APPS).difference(INSTALLED_APPS)
         errors.append(
             Error("You have SHARED_APPS that are not in INSTALLED_APPS",
-                  hint=[a for a in settings.SHARED_APPS if a in delta]))
+                  hint=[a for a in settings.SHARED_APPS if a in delta],
+                  id="tenant_schemas.E003"))
 
     if not isinstance(default_storage, TenantStorageMixin):
         errors.append(Warning(
             "Your default storage engine is not tenant aware.",
             hint="Set settings.DEFAULT_FILE_STORAGE to "
                  "'tenant_schemas.storage.TenantFileSystemStorage'",
+            id="tenant_schemas.W003"
         ))
 
     return errors

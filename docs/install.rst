@@ -38,6 +38,8 @@ If you'd like to raise ``DisallowedHost`` and a HTTP 400 response instead, use t
 
 If you'd like to serve the public tenant for unrecognised hostnames instead, use ``tenant_schemas.middleware.DefaultTenantMiddleware``. To use a tenant other than the public tenant, create a subclass and register it instead.
 
+If you'd like a different tenant selection technique (e.g. using an HTTP Header), you can define a custom middleware. See :ref:`Advanced Usage`.
+
 .. code-block:: python
 
     from tenant_schemas.middleware import DefaultTenantMiddleware
@@ -172,12 +174,6 @@ Optional Settings
     :Default: ``'public'``
 
     The schema name that will be treated as ``public``, that is, where the ``SHARED_APPS`` will be created.
-
-.. attribute:: TENANT_CREATION_FAKES_MIGRATIONS
-
-    :Default: ``'True'``
-
-    Sets if the models will be synced directly to the last version and all migration subsequently faked. Useful in the cases where migrations can not be faked and need to be ran individually. Be aware that setting this to `False` may significantly slow down the process of creating tenants.
 
 Tenant View-Routing
 -------------------

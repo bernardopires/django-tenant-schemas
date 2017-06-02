@@ -1,6 +1,7 @@
-==================
+============
 Installation
-==================
+============
+
 Assuming you have django installed, the first step is to install ``django-tenant-schemas``.
 
 .. code-block:: bash
@@ -57,7 +58,22 @@ If you'd like a different tenant selection technique (e.g. using an HTTP Header)
         #...
     )
 
-Make sure you have ``django.template.context_processors.request`` (``django.core.context_processors.request`` if you're on Django 1.8) listed under ``TEMPLATE_CONTEXT_PROCESSORS`` else the tenant will not be available on ``request``.
+.. code-block:: python
+
+    TEMPLATES = [
+        {
+            'BACKEND': # ...
+            'DIRS': [],
+            'APP_DIRS': True,
+            'OPTIONS': {
+                'context_processors': [
+                    # ...
+                    'django.template.context_processors.request',
+                    # ...
+                ]
+            }
+        }
+    ]
 
 .. code-block:: python
 
@@ -84,11 +100,7 @@ Now we have to create your tenant model. Your tenant model can contain whichever
         # default true, schema will be automatically created and synced when it is saved
         auto_create_schema = True
 
-Once you have defined your model, don't forget to create the migrations for it or otherwise Django >= 1.9 will not create its table. Replace ``customers`` with your app name.
-
-.. code-block:: bash
-
-    python manage.py makemigrations customers
+Before creating the migrations, we must configure a few specific settings.
 
 Configure Tenant and Shared Applications
 ========================================
@@ -138,7 +150,13 @@ You also have to set where your tenant model is.
 
     TENANT_MODEL = "customers.Client" # app.Model
 
-Now run ``migrate_schemas --shared`` to create the shared apps on the ``public`` schema. Note: your database should be empty if this is the first time you're running this command.
+Now you must create your app migrations for ``customers``:
+
+.. code-block:: bash
+
+    python manage.py makemigrations customers
+
+The command ``migrate_schemas --shared`` will create the shared apps on the ``public`` schema. Note: your database should be empty if this is the first time you're running this command.
 
 .. code-block:: bash
 

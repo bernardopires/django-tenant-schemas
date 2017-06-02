@@ -5,7 +5,6 @@ multi-tenant setting
 
 import hashlib
 
-from django import VERSION as DJANGO_VERSION
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import connection
@@ -17,15 +16,13 @@ from django.utils.encoding import force_bytes
 
 from tenant_schemas.postgresql_backend.base import FakeTenant
 
-DJANGO_1_9 = DJANGO_VERSION[0] == 1 and DJANGO_VERSION[1] >= 9
-
-if DJANGO_1_9:
+try:
     from django.template import Origin
-
 
     def make_origin(engine, name, loader, template_name, dirs):
         return Origin(name=name, template_name=template_name, loader=loader)
-else:
+
+except ImportError:  # Django 1.8 backwards compatibility
     def make_origin(engine, name, loader, template_name, dirs):
         return engine.make_origin(name, loader, template_name, dirs)
 

@@ -2,7 +2,6 @@ from django.conf import settings
 from django.core.management import call_command
 from django.db import connection
 from django.test import TestCase
-
 from tenant_schemas.utils import get_public_schema_name, get_tenant_model
 
 ALLOWED_TEST_DOMAIN = '.test.com'

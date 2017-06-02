@@ -73,8 +73,6 @@ If you'd like to serve the public tenant for unrecognised hostnames instead, use
         }
     ]
 
-If you are using an old version of Django (before v1.8), the following setting must be set in ``TEMPLATE_CONTEXT_PROCESSORS``:
-
 .. code-block:: python
 
     TEMPLATE_CONTEXT_PROCESSORS = (

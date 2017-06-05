@@ -4,6 +4,7 @@ from django.core.checks import Critical, Error, Warning, register
 from django.core.files.storage import default_storage
 from tenant_schemas.storage import TenantStorageMixin
 from tenant_schemas.utils import get_public_schema_name, get_tenant_model
+from django.db.utils import ProgrammingError
 
 
 class TenantSchemaConfig(AppConfig):
@@ -67,8 +68,12 @@ def best_practice(app_configs, **kwargs):
                 % get_public_schema_name()))
 
         # make sure no tenant schema is in settings.PG_EXTRA_SEARCH_PATHS
-        invalid_schemas = set(settings.PG_EXTRA_SEARCH_PATHS).intersection(
-            get_tenant_model().objects.all().values_list('schema_name', flat=True))
+        invalid_schemas = None
+        try:
+            invalid_schemas = set(settings.PG_EXTRA_SEARCH_PATHS).intersection(
+                get_tenant_model().objects.all().values_list('schema_name', flat=True))
+        except ProgrammingError:
+            pass
         if invalid_schemas:
             errors.append(Critical(
                 "Do not include tenant schemas (%s) on PG_EXTRA_SEARCH_PATHS."

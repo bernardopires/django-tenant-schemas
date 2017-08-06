@@ -40,7 +40,11 @@ class CachedLoader(BaseLoader):
     def cache_key(template_name, template_dirs):
         if connection.tenant:
             if not template_dirs:
-                template_dirs = settings.MULTITENANT_TEMPLATE_DIRS
+                try:
+                    template_dirs = settings.MULTITENANT_TEMPLATE_DIRS
+                except AttributeError:
+                    raise ImproperlyConfigured('To use %s.%s you must define the MULTITENANT_TEMPLATE_DIRS' %
+                                               (__name__, CachedLoader.__name__))
             return '-'.join([str(connection.tenant.pk), template_name,
                              hashlib.sha1(force_bytes('|'.join(template_dirs))).hexdigest()])
         if template_dirs:

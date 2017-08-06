@@ -2,6 +2,9 @@ import os
 
 from django.template.loader import get_template
 from django.test import SimpleTestCase, override_settings
+from django.db import connection
+
+from tenant_schemas.tests.models import Tenant
 
 
 @override_settings(
@@ -23,9 +26,18 @@ from django.test import SimpleTestCase, override_settings
                 ]
             },
         }
+    ],
+    MULTITENANT_TEMPLATE_DIRS = [
+        os.path.join(os.path.dirname(__file__), "templates")
     ]
 )
 class CachedLoaderTests(SimpleTestCase):
     def test_get_template(self):
         template = get_template("hello.html")
         self.assertEqual(template.render(), "Hello! (Django templates)\n")
+
+    def test_get_tenant_template(self):
+        connection.tenant = Tenant(domain_url="tenant", schema_name="tenant")
+        connection.tenant.save()
+        template = get_template("hello.html")
+        self.assertEqual(template.render(), "Hello Tenant! (Django templates)\n")

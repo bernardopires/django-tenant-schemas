@@ -37,7 +37,8 @@ class CachedLoaderTests(SimpleTestCase):
         self.assertEqual(template.render(), "Hello! (Django templates)\n")
 
     def test_get_tenant_template(self):
-        connection.tenant = Tenant(domain_url="tenant", schema_name="tenant")
-        connection.tenant.save()
+        tenant = Tenant(domain_url="tenant", schema_name="tenant")
+        tenant.save()
+        connection.set_tenant(tenant)
         template = get_template("hello.html")
         self.assertEqual(template.render(), "Hello Tenant! (Django templates)\n")

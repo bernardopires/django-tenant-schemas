@@ -1,7 +1,7 @@
 import os
 
 from django.template.loader import get_template
-from django.test import SimpleTestCase, override_settings
+from django.test import TransactionTestCase, override_settings
 from django.db import connection
 
 from tenant_schemas.tests.models import Tenant
@@ -31,7 +31,7 @@ from tenant_schemas.tests.models import Tenant
         os.path.join(os.path.dirname(__file__), "templates")
     ]
 )
-class CachedLoaderTests(SimpleTestCase):
+class CachedLoaderTests(TransactionTestCase):
     def test_get_template(self):
         template = get_template("hello.html")
         self.assertEqual(template.render(), "Hello! (Django templates)\n")

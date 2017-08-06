@@ -38,7 +38,7 @@ class CachedLoader(BaseLoader):
 
     @staticmethod
     def cache_key(template_name, template_dirs):
-        if connection.tenant:
+        if connection.tenant and not isinstance(connection.tenant, FakeTenant):
             if not template_dirs:
                 try:
                     template_dirs = settings.MULTITENANT_TEMPLATE_DIRS

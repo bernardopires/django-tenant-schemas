@@ -88,10 +88,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         """
         Instructs to stay in the common 'public' schema.
         """
-        self.tenant = FakeTenant(schema_name=get_public_schema_name())
-        self.schema_name = get_public_schema_name()
-        self.set_settings_schema(self.schema_name)
-        self.search_path_set = False
+        self.set_schema(get_public_schema_name())
 
     def set_settings_schema(self, schema_name):
         self.settings_dict['SCHEMA'] = schema_name

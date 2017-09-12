@@ -3,6 +3,7 @@ import warnings
 import psycopg2
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 import django.db.utils
 
@@ -67,11 +68,8 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         Main API method to current database schema,
         but it does not actually modify the db connection.
         """
+        self.set_schema(tenant.schema_name, include_public)
         self.tenant = tenant
-        self.schema_name = tenant.schema_name
-        self.include_public_schema = include_public
-        self.set_settings_schema(self.schema_name)
-        self.search_path_set = False
 
     def set_schema(self, schema_name, include_public=True):
         """
@@ -83,15 +81,20 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         self.include_public_schema = include_public
         self.set_settings_schema(schema_name)
         self.search_path_set = False
+        # Content type can no longer be cached as public and tenant schemas
+        # have different models. If someone wants to change this, the cache
+        # needs to be separated between public and shared schemas. If this
+        # cache isn't cleared, this can cause permission problems. For example,
+        # on public, a particular model has id 14, but on the tenants it has
+        # the id 15. if 14 is cached instead of 15, the permissions for the
+        # wrong model will be fetched.
+        ContentType.objects.clear_cache()
 
     def set_schema_to_public(self):
         """
         Instructs to stay in the common 'public' schema.
         """
-        self.tenant = FakeTenant(schema_name=get_public_schema_name())
-        self.schema_name = get_public_schema_name()
-        self.set_settings_schema(self.schema_name)
-        self.search_path_set = False
+        self.set_schema(get_public_schema_name())
 
     def set_settings_schema(self, schema_name):
         self.settings_dict['SCHEMA'] = schema_name

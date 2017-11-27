@@ -272,6 +272,27 @@ Returns the name of the public schema (from settings or the default ``public``).
 Returns the ``TENANT_LIMIT_SET_CALLS`` setting or the default (``False``). See below.
 
 
+Signals
+-------
+
+If you want to perform operations after creating a tenant and it's schema is saved and synced, you won't be able to use the built-in ``post_save`` signal, as it sends the signal immediately after the model is saved.
+
+For this purpose, we have provided a ``post_schema_sync`` signal, which is available in ``tenant_schemas.signals``
+
+.. code-block:: python
+    
+    
+    from tenant_schemas.signals import post_schema_sync
+    from tenant_schemas.models import TenantMixin
+
+    def foo_bar(sender, tenant, **kwargs):
+        ...
+        #This function will run after the tenant is saved, its schema created and synced.
+        ...
+
+    post_schema_sync.connect(foo_bar, sender=TenantMixin)
+
+
 Logging
 -------
 

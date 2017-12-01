@@ -184,6 +184,29 @@ globally.
    available globally. This helps avoid issues caused by hiding the public
    schema from queries.
 
+Working with Tenant specific schemas
+====================================
+Since each Tenant has it's own schema in the database you need a way to tell Django what
+schema to use when using the management commands. 
+
+A special management command ``tenant_command`` has been added to allow you to
+execute Django management commands in the context of a specific Tenant schema. 
+
+.. code-block:: python
+
+    python manage.py tenant_command loaddata --schema=my_tenant test_fixture
+
+.. warning::
+
+   Depending on the configuration of your applications, the command you execute
+   may impact shared data also. 
+
+Creating a new Tenant
+=====================
+See `Creating a new Tenant <use.html#creating-a-tenant>`_ for more details on how to create a new Tenant in our
+application.
+
+
 Optional Settings
 =================
 

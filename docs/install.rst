@@ -186,26 +186,25 @@ globally.
 
 Working with Tenant specific schemas
 ====================================
-Since each Tenant has it's own database you need a way to tell Django what
-database to use when using the management commands. 
+Since each Tenant has it's own schema in the database you need a way to tell Django what
+schema to use when using the management commands. 
 
 A special management command ``tenant_command`` has been added to allow you to
-execute Django management commands on a specific Tenant schema.
+execute Django management commands in the context of a specific Tenant schema. 
 
 .. code-block:: python
 
     python manage.py tenant_command loaddata --schema=my_tenant test_fixture
 
+.. warning::
+
+   Depending on the configuration of your applications, the command you execute
+   may impact shared data also. 
+
 Creating a new Tenant
 =====================
-To create a new Tenant you must simply create a new instance of your Tenant
-model. After creating the instance a new database schema will be created and
-the required migrations will be applied.
-
-.. code-block:: python
-
-    from accounts.models import Client
-    client = Client.objects.create(schema_name='ClientInc', schema_url='http://client.my-app.io', name='Client inc.')
+See `Creating a new Tenant <use.html#creating-a-tenant>`_ for more details on how to create a new Tenant in our
+application.
 
 
 Optional Settings

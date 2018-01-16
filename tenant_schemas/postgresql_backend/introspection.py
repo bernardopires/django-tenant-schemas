@@ -7,6 +7,13 @@ from django.db.backends.base.introspection import (
 )
 from django.utils.encoding import force_text
 
+# Class-based indexes were added in Django 1.11. This try/except block can be
+# removed when support for Django 1.8 is dropped.
+try:
+    from django.db.models.indexes import Index
+except ImportError:
+    Index = None
+
 fields = FieldInfo._fields
 if 'default' not in fields:
     fields += ('default',)
@@ -113,7 +120,8 @@ class DatabaseSchemaIntrospection(BaseDatabaseIntrospection):
             FROM pg_attribute AS fka
               JOIN pg_class AS fkc ON fka.attrelid = fkc.oid
             WHERE fka.attrelid = c.confrelid
-              AND fka.attnum = c.confkey[1])
+              AND fka.attnum = c.confkey[1]),
+            cl.reloptions
         FROM pg_constraint AS c
         JOIN pg_class AS cl ON c.conrelid = cl.oid
         JOIN pg_namespace AS ns ON cl.relnamespace = ns.oid
@@ -136,10 +144,11 @@ class DatabaseSchemaIntrospection(BaseDatabaseIntrospection):
     _get_index_constraints_query = """
         SELECT
                 indexname, array_agg(attname), indisunique, indisprimary,
-                array_agg(ordering), amname, exprdef
+                array_agg(ordering ORDER BY rnum), amname, exprdef, s2.attoptions
             FROM (
                 SELECT
-                    c2.relname as indexname, idx.*, attr.attname, am.amname,
+                    row_number() OVER () as rnum, c2.relname as indexname,
+                    idx.*, attr.attname, am.amname,
                     CASE
                         WHEN idx.indexprs IS NOT NULL THEN
                             pg_get_indexdef(idx.indexrelid)
@@ -149,7 +158,8 @@ class DatabaseSchemaIntrospection(BaseDatabaseIntrospection):
                             CASE (option & 1)
                                 WHEN 1 THEN 'DESC' ELSE 'ASC'
                             END
-                    END as ordering
+                    END as ordering,
+                    c2.reloptions as attoptions
                 FROM (
                     SELECT
                         *, unnest(i.indkey) as key, unnest(i.indoption) as option
@@ -163,7 +173,7 @@ class DatabaseSchemaIntrospection(BaseDatabaseIntrospection):
                 WHERE c.relname = %(table)s
                   AND n.nspname = %(schema)s
             ) s2
-            GROUP BY indexname, indisunique, indisprimary, amname, exprdef;
+            GROUP BY indexname, indisunique, indisprimary, amname, exprdef, attoptions;
     """
 
     def get_field_type(self, data_type, description):
@@ -274,7 +284,7 @@ class DatabaseSchemaIntrospection(BaseDatabaseIntrospection):
             'table': table_name,
         })
 
-        for constraint, columns, kind, used_cols in cursor.fetchall():
+        for constraint, columns, kind, used_cols, options in cursor.fetchall():
             constraints[constraint] = {
                 "columns": columns,
                 "primary_key": kind == "p",
@@ -283,6 +293,7 @@ class DatabaseSchemaIntrospection(BaseDatabaseIntrospection):
                 "check": kind == "c",
                 "index": False,
                 "definition": None,
+                "options": options,
             }
 
         # Now get indexes
@@ -291,7 +302,11 @@ class DatabaseSchemaIntrospection(BaseDatabaseIntrospection):
             'table': table_name,
         })
 
-        for index, columns, unique, primary, orders, type_, definition in cursor.fetchall():
+        # As with the Index import above, the "type" value assignment below can
+        # be simplified when support for Django 1.8 is dropped (i.e., change
+        # `"type": Index.suffix if Index and type_ == 'btree' else type_,` to
+        # `"type": Index.suffix if type_ == 'btree' else type_,`).
+        for index, columns, unique, primary, orders, type_, definition, options in cursor.fetchall():
             if index not in constraints:
                 constraints[index] = {
                     "columns": columns if columns != [None] else [],
@@ -301,7 +316,8 @@ class DatabaseSchemaIntrospection(BaseDatabaseIntrospection):
                     "foreign_key": None,
                     "check": False,
                     "index": True,
-                    "type": type_,
+                    "type": Index.suffix if Index and type_ == 'btree' else type_,
                     "definition": definition,
+                    "options": options,
                 }
         return constraints

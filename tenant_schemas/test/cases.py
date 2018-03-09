@@ -35,7 +35,7 @@ class TenantTestCase(TestCase):
         cls.add_allowed_test_domain()
         tenant_domain = 'tenant.test.com'
         cls.tenant = get_tenant_model()(domain_url=tenant_domain, schema_name='test')
-        cls.setup_tenant(cls, tenant=cls.tenant)
+        cls.setup_tenant(tenant=cls.tenant)
         cls.tenant.save(verbosity=0)  # todo: is there any way to get the verbosity from the test command here?
 
         connection.set_tenant(cls.tenant)

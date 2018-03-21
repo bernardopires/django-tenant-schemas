@@ -20,7 +20,7 @@ class TenantTestCase(TestCase):
             settings.ALLOWED_HOSTS.remove(ALLOWED_TEST_DOMAIN)
 
     @classmethod
-    def setup_tenant(tenant):
+    def setup_tenant(cls, tenant):
         """
         Add any additional setting to the tenant before it get saved. This is required if you have
         required fields.
@@ -35,7 +35,7 @@ class TenantTestCase(TestCase):
         cls.add_allowed_test_domain()
         tenant_domain = 'tenant.test.com'
         cls.tenant = get_tenant_model()(domain_url=tenant_domain, schema_name='test')
-        cls.setup_tenant(tenant=cls.tenant)
+        cls.setup_tenant(cls, tenant=cls.tenant)
         cls.tenant.save(verbosity=0)  # todo: is there any way to get the verbosity from the test command here?
 
         connection.set_tenant(cls.tenant)

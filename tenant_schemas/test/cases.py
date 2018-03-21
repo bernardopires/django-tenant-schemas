@@ -20,7 +20,7 @@ class TenantTestCase(TestCase):
             settings.ALLOWED_HOSTS.remove(ALLOWED_TEST_DOMAIN)
 
     @classmethod
-    def setup_tenant(cls, tenant):
+    def setup_tenant(tenant):
         """
         Add any additional setting to the tenant before it get saved. This is required if you have
         required fields.

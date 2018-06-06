@@ -38,7 +38,13 @@ class CachedLoader(BaseLoader):
 
     @staticmethod
     def cache_key(template_name, template_dirs):
-        if connection.tenant and template_dirs:
+        if connection.tenant and not isinstance(connection.tenant, FakeTenant):
+            if not template_dirs:
+                try:
+                    template_dirs = settings.MULTITENANT_TEMPLATE_DIRS
+                except AttributeError:
+                    raise ImproperlyConfigured('To use %s.%s you must define the MULTITENANT_TEMPLATE_DIRS' %
+                                               (__name__, CachedLoader.__name__))
             return '-'.join([str(connection.tenant.pk), template_name,
                              hashlib.sha1(force_bytes('|'.join(template_dirs))).hexdigest()])
         if template_dirs:
@@ -77,7 +83,7 @@ class CachedLoader(BaseLoader):
         template_tuple = self.template_cache.get(key)
         # A cached previous failure:
         if template_tuple is TemplateDoesNotExist:
-            raise TemplateDoesNotExist
+            raise TemplateDoesNotExist(template_name)
         elif template_tuple is None:
             template, origin = self.find_template(template_name, template_dirs)
             if not hasattr(template, 'render'):

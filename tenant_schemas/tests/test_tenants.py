@@ -266,18 +266,29 @@ class TenantCommandTest(BaseTestCase):
         settings.TENANT_APPS = ()
         settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
         self.sync_shared()
-        Tenant(domain_url='localhost', schema_name='public').save(verbosity=BaseTestCase.get_verbosity())
+
+        tenant = Tenant(domain_url='localhost', schema_name='public')
+        tenant.save(verbosity=BaseTestCase.get_verbosity())
 
         out = StringIO()
-        call_command('tenant_command',
-                     args=('dumpdata', 'tenant_schemas'),
-                     natural_foreign=True,
-                     schema_name=get_public_schema_name(),
-                     stdout=out)
-        self.assertEqual(
-            json.loads('[{"fields": {"domain_url": "localhost", "schema_name": "public"}, '
-                       '"model": "tenant_schemas.tenant", "pk": 1}]'),
-            json.loads(out.getvalue()))
+        call_command(
+            'tenant_command',
+            'dumpdata',
+            'tenant_schemas',
+            original_command_options={"natural_foreign": True},
+            schema_name=get_public_schema_name(),
+            stdout=out
+        )
+
+        expected_value = [{
+            'fields': {
+                'domain_url': 'localhost',
+                'schema_name': 'public'
+            },
+            'model': 'tenant_schemas.tenant',
+            'pk': tenant.pk
+        }]
+        self.assertEqual(json.loads(out.getvalue()), expected_value)
 
 
 class SharedAuthTest(BaseTestCase):

@@ -86,27 +86,31 @@ class InteractiveTenantOption(object):
     def add_arguments(self, parser):
         parser.add_argument("-s", "--schema", dest="schema_name", help="specify tenant schema")
 
-    def get_tenant_from_options_or_interactive(self, **options):
+    def get_tenant_from_options_or_interactive(self, schema_name=None):
         TenantModel = get_tenant_model()
-        all_tenants = TenantModel.objects.all()
+        values = TenantModel.objects.values_list(
+            "schema_name", "domain_url"
+        )
 
-        if not all_tenants:
+        if not values:
             raise CommandError("""There are no tenants in the system.
 To learn how create a tenant, see:
 https://django-tenant-schemas.readthedocs.io/en/latest/use.html#creating-a-tenant""")
 
-        if options.get('schema_name'):
-            tenant_schema = options['schema_name']
+        if schema_name is not None:
+            tenant_schema = schema_name
         else:
             while True:
                 tenant_schema = input("Enter Tenant Schema ('?' to list schemas): ")
                 if tenant_schema == '?':
-                    print('\n'.join(["%s - %s" % (t.schema_name, t.domain_url,) for t in all_tenants]))
+                    print('\n'.join(["%s - %s" % item for item in values]))
                 else:
                     break
 
-        if tenant_schema not in [t.schema_name for t in all_tenants]:
-            raise CommandError("Invalid tenant schema, '%s'" % (tenant_schema,))
+        if tenant_schema not in [schema_name for schema_name, _ in values]:
+            raise CommandError(
+                "Invalid tenant schema, '%s'" % (tenant_schema,)
+            )
 
         return TenantModel.objects.get(schema_name=tenant_schema)
 
@@ -130,7 +134,8 @@ class TenantWrappedCommand(InteractiveTenantOption, BaseCommand):
         self.command_instance.add_arguments(parser)
 
     def handle(self, *args, **options):
-        tenant = self.get_tenant_from_options_or_interactive(**options)
+        schema_name = options.pop("schema_name", None)
+        tenant = self.get_tenant_from_options_or_interactive(schema_name)
         connection.set_tenant(tenant)
 
         self.command_instance.execute(*args, **options)

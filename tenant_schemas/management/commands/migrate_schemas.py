@@ -15,20 +15,25 @@ else:
         pass
 
 
-def chunks(l, n):
-    for i in range(0, len(l), int(math.ceil(len(l) / n))):
-        yield l[i:i + n]
+def chunks(tenants, total_parts):
+    """
+    Iterates over tenants, returning each part, one at a time
+    """
+    # import ipdb; print('\a'); ipdb.sset_trace()
+    if total_parts == 1:
+        yield tenants
+    tenants_per_chunk = int(math.ceil(float(len(tenants)) / total_parts))
+    for i in range(0, len(tenants), tenants_per_chunk):
+        yield tenants[i:i + tenants_per_chunk]
 
 
-def greater_than_x(min_number, message):
-    def wrapper(astring):
-        if not astring.isdigit():
-            raise argparse.ArgumentTypeError('Needs to be a number')
-        number = int(astring)
-        if not number > min_number:
-            raise argparse.ArgumentTypeError(message)
-        return number
-    return wrapper
+def greater_than_zero(astring):
+    if not astring.isdigit():
+        raise argparse.ArgumentTypeError('Needs to be a number')
+    number = int(astring)
+    if not number > 0:
+        raise argparse.ArgumentTypeError('The number needs to be greated than zero')
+    return number
 
 
 class Command(SyncCommon):
@@ -46,22 +51,21 @@ class Command(SyncCommon):
         super(Command, self).add_arguments(parser)
         command = MigrateCommand()
         command.add_arguments(parser)
-        parser.add_argument('--part', action='store', dest='migration_part',
-                            type=greater_than_x(1, 'The number needs to be greated than one'), default=None,
-                            help=('Splits the tenant schemas into pieces of equal parts to then be proccessed in '
-                                  'parts (requires --of).'))
-        parser.add_argument('--of', action='store', dest='migration_part_of',
-                            type=greater_than_x(0, 'The number needs to be greated than zero'), default=None,
-                            help='The part you want to process from the pieces (requires --part).')
+        parser.add_argument('--part', action='store', dest='part', type=greater_than_zero, default=None,
+                            help=('The part you want to process from the pieces (requires --of). '
+                                  'Example: --part 2 --of 3'))
+        parser.add_argument('--of', action='store', dest='total_parts', type=greater_than_zero, default=None,
+                            help=('Splits the tenant schemas into specified number of pieces of equal size to '
+                                  'then be proccessed in parts (requires --part). Example: --part 2 --of 3'))
 
     def handle(self, *args, **options):
         super(Command, self).handle(*args, **options)
 
-        required_together = (self.options['migration_part'], self.options['migration_part_of'],)
+        required_together = (self.options['total_parts'], self.options['part'],)
         if any(required_together) and not all(required_together):
             raise Exception("--part and --of need to be used together.")
         elif all(required_together):
-            if self.options['migration_part_of'] > self.options['migration_part']:
+            if self.options['part'] > self.options['total_parts']:
                 raise Exception("--of cannot be greater than --part.")
             elif self.sync_public:
                 raise Exception("Cannot run public schema migrations along with --of and --part.")
@@ -85,7 +89,12 @@ class Command(SyncCommon):
             else:
                 tenants = get_tenant_model().objects.exclude(schema_name=get_public_schema_name()) \
                                             .order_by('pk').values_list('schema_name', flat=True)
-                if self.options['migration_part'] and self.options['migration_part'] > 1 and tenants:
-                    tenant_parts = list(chunks(tenants, self.options['migration_part'] - 1))
-                    tenants = tenant_parts[self.options['migration_part_of'] - 1]
+                if self.options['total_parts'] and tenants:
+                    tenant_parts = list(chunks(tenants, self.options['total_parts']))
+                    try:
+                        tenants = tenant_parts[self.options['part'] - 1]
+                    except IndexError:
+                        message = 'You have fewer tenants than parts. This part (%s) has nothing to do.\n'
+                        self.stdout.write(message % self.options['part'])
+                        return
             executor.run_migrations(tenants=tenants)

@@ -19,9 +19,6 @@ def chunks(tenants, total_parts):
     """
     Iterates over tenants, returning each part, one at a time
     """
-    # import ipdb; print('\a'); ipdb.sset_trace()
-    if total_parts == 1:
-        yield tenants
     tenants_per_chunk = int(math.ceil(float(len(tenants)) / total_parts))
     for i in range(0, len(tenants), tenants_per_chunk):
         yield tenants[i:i + tenants_per_chunk]

@@ -5,11 +5,7 @@ from collections import namedtuple
 from django.db.backends.base.introspection import (
     BaseDatabaseIntrospection, FieldInfo, TableInfo,
 )
-try:
-    # Django >= 1.11
-    from django.db.models.indexes import Index
-except ImportError:
-    Index = None
+from django.db.models.indexes import Index
 from django.utils.encoding import force_text
 
 fields = FieldInfo._fields
@@ -310,7 +306,7 @@ class DatabaseSchemaIntrospection(BaseDatabaseIntrospection):
                     "foreign_key": None,
                     "check": False,
                     "index": True,
-                    "type": Index.suffix if type_ == 'btree' and Index else type_,
+                    "type": Index.suffix if type_ == 'btree' else type_,
                     "definition": definition,
                     "options": options,
                 }

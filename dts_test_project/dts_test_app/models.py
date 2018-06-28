@@ -13,4 +13,9 @@ class DummyModel(models.Model):
 
 
 class ModelWithFkToPublicUser(models.Model):
-    user = models.ForeignKey(User)
+    """Test model with foreign key."""
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )

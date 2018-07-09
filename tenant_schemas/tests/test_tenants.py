@@ -479,6 +479,8 @@ class MigrateSchemasTest(BaseTestCase, TenantTestCase):
                          of=1)
         self.assertIn('need to be used together', str(context.exception))
 
+        # Note: Before django 2.0, django bypasses the the "type=" checker in the argparse completely, thats why
+        #       we check the underlining function directly.
         greater_than_zero('1')
         with self.assertRaises(argparse.ArgumentTypeError) as context:
             greater_than_zero('0')
@@ -487,10 +489,3 @@ class MigrateSchemasTest(BaseTestCase, TenantTestCase):
         with self.assertRaises(argparse.ArgumentTypeError) as context:
             greater_than_zero('0a')
         self.assertIn('Needs to be a number', str(context.exception))
-
-        # # Note: Before django 2.0, django bypasses the the "type=" checker in the argparse completely
-        # with self.assertRaises(Exception) as context:
-        #     call_command('migrate_schemas',
-        #                  tenant=True,
-        #                  part='a',
-        #                  of='a')

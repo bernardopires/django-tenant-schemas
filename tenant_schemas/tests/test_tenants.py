@@ -381,10 +381,10 @@ class TenantTestCaseTest(BaseTestCase, TenantTestCase):
 class MigrateSchemasTest(BaseTestCase, TenantTestCase):
 
     def test_simple_options_command(self):
-        get_tenant_model = patch('tenant_schemas.management.commands.migrate_schemas.get_tenant_model')
-        get_executor = patch('tenant_schemas.management.commands.migrate_schemas.get_executor')
+        get_tenant_model_mock = patch('tenant_schemas.management.commands.migrate_schemas.get_tenant_model')
+        get_executor_mock = patch('tenant_schemas.management.commands.migrate_schemas.get_executor')
 
-        with get_tenant_model, get_executor:
+        with get_tenant_model_mock as get_tenant_model, get_executor_mock as get_executor:
             run_migrations = get_executor.return_value.return_value.run_migrations
             query_obj = get_tenant_model.return_value.objects.exclude.return_value.order_by.return_value.values_list
             query_obj.return_value = ['a', 'b', 'c']
@@ -420,10 +420,10 @@ class MigrateSchemasTest(BaseTestCase, TenantTestCase):
             self.assertIn('--of cannot be greater than --part.', str(context.exception))
 
     def test_rounding_command(self):
-        get_tenant_model = patch('tenant_schemas.management.commands.migrate_schemas.get_tenant_model')
-        get_executor = patch('tenant_schemas.management.commands.migrate_schemas.get_executor')
+        get_tenant_model_mock = patch('tenant_schemas.management.commands.migrate_schemas.get_tenant_model')
+        get_executor_mock = patch('tenant_schemas.management.commands.migrate_schemas.get_executor')
 
-        with get_tenant_model, get_executor:
+        with get_tenant_model_mock as get_tenant_model, get_executor_mock as get_executor:
             run_migrations = get_executor.return_value.return_value.run_migrations
             query_obj = get_tenant_model.return_value.objects.exclude.return_value.order_by.return_value.values_list
             query_obj.return_value = ['a']
@@ -444,10 +444,10 @@ class MigrateSchemasTest(BaseTestCase, TenantTestCase):
             self.assertIn('You have fewer tenants than parts', out.getvalue())
 
     def test_rounding2_command(self):
-        get_tenant_model = patch('tenant_schemas.management.commands.migrate_schemas.get_tenant_model')
-        get_executor = patch('tenant_schemas.management.commands.migrate_schemas.get_executor')
+        get_tenant_model_mock = patch('tenant_schemas.management.commands.migrate_schemas.get_tenant_model')
+        get_executor_mock = patch('tenant_schemas.management.commands.migrate_schemas.get_executor')
 
-        with get_tenant_model, get_executor:
+        with get_tenant_model_mock as get_tenant_model, get_executor_mock as get_executor:
             run_migrations = get_executor.return_value.return_value.run_migrations
             query_obj = get_tenant_model.return_value.objects.exclude.return_value.order_by.return_value.values_list
             query_obj.return_value = list(range(53))

@@ -1,4 +1,4 @@
-from tenant_schemas.migration_executors.base import MigrationExecutor, run_migrations
+from tenant_schemas.migration_executors.base import MigrationExecutor
 
 
 class StandardExecutor(MigrationExecutor):
@@ -6,4 +6,4 @@ class StandardExecutor(MigrationExecutor):
 
     def run_tenant_migrations(self, tenants):
         for schema_name in tenants:
-            run_migrations(self.args, self.options, self.codename, schema_name)
+            self.run_migration(schema_name)

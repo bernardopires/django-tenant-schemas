@@ -3,7 +3,17 @@ import multiprocessing
 
 from django.conf import settings
 
-from tenant_schemas.migration_executors.base import MigrationExecutor, run_migrations
+from tenant_schemas.migration_executors.base import MigrationExecutor
+
+
+def _run_migration_alias(args, options, tenants, allow_atomic=True):
+    """
+    Alias for run_migration method that allows the method to be called in a
+    multiprocessing pool
+    """
+    parallel_executor = ParallelExecutor(args, options)
+    parallel_executor.run_migration(tenants, allow_atomic=allow_atomic)
+    return
 
 
 class ParallelExecutor(MigrationExecutor):
@@ -20,10 +30,9 @@ class ParallelExecutor(MigrationExecutor):
             connection.connection = None
 
             run_migrations_p = functools.partial(
-                run_migrations,
+                _run_migration_alias,
                 self.args,
                 self.options,
-                self.codename,
                 allow_atomic=False
             )
             p = multiprocessing.Pool(processes=processes)

@@ -150,7 +150,7 @@ class SyncCommon(BaseCommand):
                           'migration. Use the name "zero" to unapply all migrations.'))
         parser.add_argument("-s", "--schema", dest="schema_name")
         parser.add_argument('--executor', action='store', dest='executor', default=None,
-                            help='Executor for running migrations [standard (default)|parallel]')
+                            help='Executor for running migrations [standard (default)|parallel|async]')
 
     def handle(self, *args, **options):
         self.sync_tenant = options.get('tenant')

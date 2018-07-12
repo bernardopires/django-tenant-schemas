@@ -1,5 +1,5 @@
 from django.conf import settings
-from celery import group, chord
+from celery import group
 
 from tenant_schemas.migration_executors.base import MigrationExecutor
 

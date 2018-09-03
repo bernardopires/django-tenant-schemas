@@ -80,8 +80,7 @@ class DatabaseSchemaIntrospection(BaseDatabaseIntrospection):
                 ON ccu.constraint_catalog = kcu.constraint_catalog
                     AND ccu.constraint_schema = kcu.constraint_schema
                     AND ccu.constraint_name = kcu.constraint_name
-            LEFT JOIN information_sche
-            ma.table_constraints tc
+            LEFT JOIN information_schema.table_constraints tc
                 ON ccu.constraint_catalog = tc.constraint_catalog
                     AND ccu.constraint_schema = tc.constraint_schema
                     AND ccu.constraint_name = tc.constraint_name

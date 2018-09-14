@@ -21,10 +21,7 @@ def best_practice(app_configs, **kwargs):
 
     # Take the app_configs and turn them into *old style* application names.
     # This is what we expect in the SHARED_APPS and TENANT_APPS settings.
-    INSTALLED_APPS = [
-        config.name
-        for config in app_configs
-    ]
+    INSTALLED_APPS = settings.INSTALLED_APPS
 
     if not hasattr(settings, 'TENANT_APPS'):
         return [Critical('TENANT_APPS setting not set')]

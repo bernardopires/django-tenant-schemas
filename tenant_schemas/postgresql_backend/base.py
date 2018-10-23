@@ -171,6 +171,9 @@ class FakeTenant:
     We can't import any db model in a backend (apparently?), so this class is used
     for wrapping schema names in a tenant-like structure.
     """
-    def __init__(self, schema_name, domain_url=None):
+    def __init__(self, schema_name):
         self.schema_name = schema_name
-        self.domain_url = domain_url
+
+    @property
+    def domain_url(self):
+        return self.schema_name

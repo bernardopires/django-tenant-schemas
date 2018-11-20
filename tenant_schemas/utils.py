@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 
 from django.conf import settings
-from django.db import connection
+from django.db import connections
 
 try:
     from django.apps import apps, AppConfig
@@ -12,30 +12,75 @@ except ImportError:
 from django.core import mail
 
 
-@contextmanager
-def schema_context(schema_name):
-    previous_tenant = connection.tenant
-    try:
-        connection.set_schema(schema_name)
-        yield
-    finally:
-        if previous_tenant is None:
-            connection.set_schema_to_public()
-        else:
-            connection.set_tenant(previous_tenant)
+def all_tenant_enabled_databases():
+    return [db for db, config in settings.DATABASES.items()
+            if config['ENGINE'] == 'tenant_schemas.postgresql_backend' ]
 
 
 @contextmanager
-def tenant_context(tenant):
-    previous_tenant = connection.tenant
+def schema_context(schema_name, databases=None):
+    if databases is None:
+        databases = all_tenant_enabled_databases()
+    if isinstance(databases, str):
+        databases = [databases]
+
+    previous_tenants = {db: connections[db].tenant
+                        for db in databases}
     try:
-        connection.set_tenant(tenant)
+        for db in databases:
+            connections[db].set_schema(schema_name)
         yield
     finally:
-        if previous_tenant is None:
-            connection.set_schema_to_public()
-        else:
-            connection.set_tenant(previous_tenant)
+        for db, previous_tenant in previous_tenants.items():
+            _connection = connections[db]
+            if previous_tenant is None:
+                _connection.set_schema_to_public()
+            else:
+                _connection.set_tenant(previous_tenant)
+
+
+def set_schema(schema, databases=None):
+    if databases is None:
+        databases = all_tenant_enabled_databases()
+    if isinstance(databases, str):
+        databases = [databases]
+    for db in databases:
+        connections[db].set_schema(schema)
+
+
+def set_schema_to_public(databases=None):
+    set_schema(get_public_schema_name(), databases)
+
+
+@contextmanager
+def tenant_context(tenant, databases=None):
+    if databases is None:
+        databases = all_tenant_enabled_databases()
+    if isinstance(databases, str):
+        databases = [databases]
+
+    previous_tenants = {db: connections[db].tenant
+                        for db in databases}
+    try:
+        for db in databases:
+            connections[db].set_tenant(tenant)
+        yield
+    finally:
+        for db, previous_tenant in previous_tenants.items():
+            _connection = connections[db]
+            if previous_tenant is None:
+                _connection.set_schema_to_public()
+            else:
+                _connection.set_tenant(previous_tenant)
+
+
+def set_tenant(tenant, databases=None):
+    if databases is None:
+        databases = all_tenant_enabled_databases()
+    if isinstance(databases, str):
+        databases = [databases]
+    for db in databases:
+        connections[db].set_tenant(tenant)
 
 
 def get_tenant_model():
@@ -88,8 +133,8 @@ def django_is_in_test_mode():
     return hasattr(mail, 'outbox')
 
 
-def schema_exists(schema_name):
-    cursor = connection.cursor()
+def schema_exists(schema_name, db='default'):
+    cursor = connections[db].cursor()
 
     # check if this schema already exists in the db
     sql = 'SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_namespace WHERE LOWER(nspname) = LOWER(%s))'

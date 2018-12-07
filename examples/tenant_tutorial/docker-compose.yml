@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  tenant_tutorial_app:
+    container_name: tenant_tutorial_app
+    build: .
+    command: python3 manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - tenant_tutorial_db
+
+  tenant_tutorial_db:
+    container_name: tenant_tutorial_db
+    image: postgres:11.1-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: tenant_tutorial
+    # volumes:
+    #   - ./db:/var/lib/postgresql/data
+
+  tenant_tutorial_pgadmin:
+    container_name: tenant_tutorial_pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+   

@@ -198,7 +198,7 @@ tenant specific apps. Complete instructions can be found at
 .. _django: https://www.djangoproject.com/
 .. _PostgreSQL schemas: http://www.postgresql.org/docs/9.1/static/ddl-schemas.html
 .. _PostgreSQL's official documentation on schemas: http://www.postgresql.org/docs/9.1/static/ddl-schemas.html
-.. _Multi-Tenant Data Architecture: http://msdn.microsoft.com/en-us/library/aa479086.aspx
+.. _Multi-Tenant Data Architecture: http://web.archive.org/web/20170109221313/https://msdn.microsoft.com/en-us/library/aa479086.aspx
 
 .. |PyPi version| image:: https://img.shields.io/pypi/v/django-tenant-schemas.svg
    :target: https://pypi.python.org/pypi/django-tenant-schemas

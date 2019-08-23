@@ -5,6 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import DisallowedHost
 from django.db import connection
 from django.http import Http404
+from django.core.urlresolvers import set_urlconf
 from tenant_schemas.utils import (get_tenant_model, remove_www,
                                   get_public_schema_name)
 
@@ -65,6 +66,7 @@ class BaseTenantMiddleware(MIDDLEWARE_MIXIN):
         # Do we have a public-specific urlconf?
         if hasattr(settings, 'PUBLIC_SCHEMA_URLCONF') and request.tenant.schema_name == get_public_schema_name():
             request.urlconf = settings.PUBLIC_SCHEMA_URLCONF
+            set_urlconf(request.urlconf)
 
 class TenantMiddleware(BaseTenantMiddleware):
     """

@@ -43,7 +43,7 @@ setup(
     ],
     install_requires=[
         'Django >= 1.8.0',
-        'psycopg2',
+        'psycopg2-binary',
     ],
     zip_safe=False,
 )

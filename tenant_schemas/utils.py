@@ -116,3 +116,21 @@ def app_labels(apps_list):
     if AppConfig is None:
         return [app.split('.')[-1] for app in apps_list]
     return [AppConfig.create(app).label for app in apps_list]
+
+
+def parse_tenant_config_path(config_path):
+    """
+    Convenience function for parsing django-tenants' path configuration strings.
+    If the string contains '%s', then the current tenant's schema name will be inserted at that location. Otherwise
+    the schema name will be appended to the end of the string.
+    :param config_path: A configuration path string that optionally contains '%s' to indicate where the tenant
+    schema name should be inserted.
+    :return: The formatted string containing the schema name
+    """
+    try:
+        # Insert schema name
+        print("schema -> %s" % connection.schema_name)
+        return config_path % connection.schema_name
+    except (TypeError, ValueError):
+        # No %s in string; append schema name at the end
+        return os.path.join(config_path, connection.schema_name)

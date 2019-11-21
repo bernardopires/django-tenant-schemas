@@ -13,4 +13,4 @@ class DummyModel(models.Model):
 
 
 class ModelWithFkToPublicUser(models.Model):
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)

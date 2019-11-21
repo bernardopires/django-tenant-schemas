@@ -1,21 +1,25 @@
-import json
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.db import connection
+from dts_test_app.models import DummyModel, ModelWithFkToPublicUser
+from tenant_schemas.management.commands import tenant_command
+from tenant_schemas.test.cases import TenantTestCase
+from tenant_schemas.tests.models import NonAutoSyncTenant, Tenant
+from tenant_schemas.tests.testcases import BaseTestCase
+from tenant_schemas.utils import (
+    get_public_schema_name,
+    get_tenant_model,
+    schema_context,
+    schema_exists,
+    tenant_context,
+)
+
 try:
     # python 2
     from StringIO import StringIO
 except ImportError:
     # python 3
     from io import StringIO
-
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.core.management import call_command
-from django.db import connection
-from dts_test_app.models import DummyModel, ModelWithFkToPublicUser
-
-from tenant_schemas.test.cases import TenantTestCase
-from tenant_schemas.tests.models import Tenant, NonAutoSyncTenant
-from tenant_schemas.tests.testcases import BaseTestCase
-from tenant_schemas.utils import tenant_context, schema_context, schema_exists, get_tenant_model, get_public_schema_name
 
 
 class TenantDataAndSettingsTest(BaseTestCase):
@@ -27,19 +31,23 @@ class TenantDataAndSettingsTest(BaseTestCase):
     @classmethod
     def setUpClass(cls):
         super(TenantDataAndSettingsTest, cls).setUpClass()
-        settings.SHARED_APPS = ('tenant_schemas', )
-        settings.TENANT_APPS = ('dts_test_app',
-                                'django.contrib.contenttypes',
-                                'django.contrib.auth', )
+        settings.SHARED_APPS = ("tenant_schemas",)
+        settings.TENANT_APPS = (
+            "dts_test_app",
+            "django.contrib.contenttypes",
+            "django.contrib.auth",
+        )
         settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
         cls.sync_shared()
-        Tenant(domain_url='test.com', schema_name=get_public_schema_name()).save(verbosity=cls.get_verbosity())
+        Tenant(domain_url="test.com", schema_name=get_public_schema_name()).save(
+            verbosity=cls.get_verbosity()
+        )
 
     def test_tenant_schema_is_created(self):
         """
         When saving a tenant, it's schema should be created.
         """
-        tenant = Tenant(domain_url='something.test.com', schema_name='test')
+        tenant = Tenant(domain_url="something.test.com", schema_name="test")
         tenant.save(verbosity=BaseTestCase.get_verbosity())
 
         self.assertTrue(schema_exists(tenant.schema_name))
@@ -49,9 +57,10 @@ class TenantDataAndSettingsTest(BaseTestCase):
         When saving a tenant that has the flag auto_create_schema as
         False, the schema should not be created when saving the tenant.
         """
-        self.assertFalse(schema_exists('non_auto_sync_tenant'))
-        tenant = NonAutoSyncTenant(domain_url='something.test.com',
-                                   schema_name='non_auto_sync_tenant')
+        self.assertFalse(schema_exists("non_auto_sync_tenant"))
+        tenant = NonAutoSyncTenant(
+            domain_url="something.test.com", schema_name="non_auto_sync_tenant"
+        )
         tenant.save(verbosity=BaseTestCase.get_verbosity())
         self.assertFalse(schema_exists(tenant.schema_name))
 
@@ -59,7 +68,7 @@ class TenantDataAndSettingsTest(BaseTestCase):
         """
         When editing an existing tenant, all data should be kept.
         """
-        tenant = Tenant(domain_url='something.test.com', schema_name='test')
+        tenant = Tenant(domain_url="something.test.com", schema_name="test")
         tenant.save(verbosity=BaseTestCase.get_verbosity())
 
         # go to tenant's path
@@ -71,7 +80,7 @@ class TenantDataAndSettingsTest(BaseTestCase):
 
         # edit tenant
         connection.set_schema_to_public()
-        tenant.domain_url = 'example.com'
+        tenant.domain_url = "example.com"
         tenant.save(verbosity=BaseTestCase.get_verbosity())
 
         connection.set_tenant(tenant)
@@ -84,16 +93,15 @@ class TenantDataAndSettingsTest(BaseTestCase):
         When deleting a tenant with auto_drop_schema=True, it should delete
         the schema associated with the tenant.
         """
-        self.assertFalse(schema_exists('auto_drop_tenant'))
+        self.assertFalse(schema_exists("auto_drop_tenant"))
         Tenant.auto_drop_schema = True
-        tenant = Tenant(domain_url='something.test.com',
-                        schema_name='auto_drop_tenant')
+        tenant = Tenant(domain_url="something.test.com", schema_name="auto_drop_tenant")
         tenant.save(verbosity=BaseTestCase.get_verbosity())
         self.assertTrue(schema_exists(tenant.schema_name))
         cursor = connection.cursor()
 
         # Force pending trigger events to be executed
-        cursor.execute('SET CONSTRAINTS ALL IMMEDIATE')
+        cursor.execute("SET CONSTRAINTS ALL IMMEDIATE")
 
         tenant.delete()
         self.assertFalse(schema_exists(tenant.schema_name))
@@ -105,19 +113,16 @@ class TenantDataAndSettingsTest(BaseTestCase):
         tenants that have auto_drop_schema set to True.
         """
         Tenant.auto_drop_schema = True
-        schemas = ['auto_drop_schema1', 'auto_drop_schema2']
+        schemas = ["auto_drop_schema1", "auto_drop_schema2"]
         for schema in schemas:
             self.assertFalse(schema_exists(schema))
-            tenant = Tenant(
-                domain_url='%s.test.com' % schema,
-                schema_name=schema
-            )
+            tenant = Tenant(domain_url="%s.test.com" % schema, schema_name=schema)
             tenant.save(verbosity=BaseTestCase.get_verbosity())
             self.assertTrue(schema_exists(tenant.schema_name))
 
         # Force pending trigger events to be executed
         cursor = connection.cursor()
-        cursor.execute('SET CONSTRAINTS ALL IMMEDIATE')
+        cursor.execute("SET CONSTRAINTS ALL IMMEDIATE")
 
         # get a queryset of our 2 tenants and do a bulk delete
         Tenant.objects.filter(schema_name__in=schemas).delete()
@@ -129,12 +134,11 @@ class TenantDataAndSettingsTest(BaseTestCase):
         Tenant.auto_drop_schema = False
 
     def test_switching_search_path(self):
-        tenant1 = Tenant(domain_url='something.test.com',
-                         schema_name='tenant1')
+        tenant1 = Tenant(domain_url="something.test.com", schema_name="tenant1")
         tenant1.save(verbosity=BaseTestCase.get_verbosity())
 
         connection.set_schema_to_public()
-        tenant2 = Tenant(domain_url='example.com', schema_name='tenant2')
+        tenant2 = Tenant(domain_url="example.com", schema_name="tenant2")
         tenant2.save(verbosity=BaseTestCase.get_verbosity())
 
         # go to tenant1's path
@@ -159,7 +163,7 @@ class TenantDataAndSettingsTest(BaseTestCase):
             self.assertEqual(3, DummyModel.objects.count())
 
     def test_switching_tenant_without_previous_tenant(self):
-        tenant = Tenant(domain_url='something.test.com', schema_name='test')
+        tenant = Tenant(domain_url="something.test.com", schema_name="test")
         tenant.save(verbosity=BaseTestCase.get_verbosity())
 
         connection.tenant = None
@@ -176,6 +180,7 @@ class TenantSyncTest(BaseTestCase):
     Tests if the shared apps and the tenant apps get synced correctly
     depending on if the public schema or a tenant is being synced.
     """
+
     MIGRATION_TABLE_SIZE = 1
 
     def test_shared_apps_does_not_sync_tenant_apps(self):
@@ -183,76 +188,84 @@ class TenantSyncTest(BaseTestCase):
         Tests that if an app is in SHARED_APPS, it does not get synced to
         the a tenant schema.
         """
-        settings.SHARED_APPS = ('tenant_schemas',  # 2 tables
-                                'django.contrib.auth',  # 6 tables
-                                'django.contrib.contenttypes', )  # 1 table
-        settings.TENANT_APPS = ('django.contrib.sessions', )
+        settings.SHARED_APPS = (
+            "tenant_schemas",  # 2 tables
+            "django.contrib.auth",  # 6 tables
+            "django.contrib.contenttypes",
+        )  # 1 table
+        settings.TENANT_APPS = ("django.contrib.sessions",)
         settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
         self.sync_shared()
 
         shared_tables = self.get_tables_list_in_schema(get_public_schema_name())
         self.assertEqual(2 + 6 + 1 + self.MIGRATION_TABLE_SIZE, len(shared_tables))
-        self.assertNotIn('django_session', shared_tables)
+        self.assertNotIn("django_session", shared_tables)
 
     def test_tenant_apps_does_not_sync_shared_apps(self):
         """
         Tests that if an app is in TENANT_APPS, it does not get synced to
         the public schema.
         """
-        settings.SHARED_APPS = ('tenant_schemas',
-                                'django.contrib.auth',
-                                'django.contrib.contenttypes', )
-        settings.TENANT_APPS = ('django.contrib.sessions', )  # 1 table
+        settings.SHARED_APPS = (
+            "tenant_schemas",
+            "django.contrib.auth",
+            "django.contrib.contenttypes",
+        )
+        settings.TENANT_APPS = ("django.contrib.sessions",)  # 1 table
         settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
         self.sync_shared()
-        tenant = Tenant(domain_url='arbitrary.test.com', schema_name='test')
+        tenant = Tenant(domain_url="arbitrary.test.com", schema_name="test")
         tenant.save(verbosity=BaseTestCase.get_verbosity())
 
         tenant_tables = self.get_tables_list_in_schema(tenant.schema_name)
         self.assertEqual(1 + self.MIGRATION_TABLE_SIZE, len(tenant_tables))
-        self.assertIn('django_session', tenant_tables)
+        self.assertIn("django_session", tenant_tables)
 
     def test_tenant_apps_and_shared_apps_can_have_the_same_apps(self):
         """
         Tests that both SHARED_APPS and TENANT_APPS can have apps in common.
         In this case they should get synced to both tenant and public schemas.
         """
-        settings.SHARED_APPS = ('tenant_schemas',  # 2 tables
-                                'django.contrib.auth',  # 6 tables
-                                'django.contrib.contenttypes',  # 1 table
-                                'django.contrib.sessions', )  # 1 table
-        settings.TENANT_APPS = ('django.contrib.sessions', )  # 1 table
+        settings.SHARED_APPS = (
+            "tenant_schemas",  # 2 tables
+            "django.contrib.auth",  # 6 tables
+            "django.contrib.contenttypes",  # 1 table
+            "django.contrib.sessions",
+        )  # 1 table
+        settings.TENANT_APPS = ("django.contrib.sessions",)  # 1 table
         settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
         self.sync_shared()
-        tenant = Tenant(domain_url='arbitrary.test.com', schema_name='test')
+        tenant = Tenant(domain_url="arbitrary.test.com", schema_name="test")
         tenant.save(verbosity=BaseTestCase.get_verbosity())
 
         shared_tables = self.get_tables_list_in_schema(get_public_schema_name())
         tenant_tables = self.get_tables_list_in_schema(tenant.schema_name)
         self.assertEqual(2 + 6 + 1 + 1 + self.MIGRATION_TABLE_SIZE, len(shared_tables))
-        self.assertIn('django_session', shared_tables)
+        self.assertIn("django_session", shared_tables)
         self.assertEqual(1 + self.MIGRATION_TABLE_SIZE, len(tenant_tables))
-        self.assertIn('django_session', tenant_tables)
+        self.assertIn("django_session", tenant_tables)
 
     def test_content_types_is_not_mandatory(self):
         """
         Tests that even if content types is in SHARED_APPS, it's
         not required in TENANT_APPS.
         """
-        settings.SHARED_APPS = ('tenant_schemas',  # 2 tables
-                                'django.contrib.contenttypes', )  # 1 table
-        settings.TENANT_APPS = ('django.contrib.sessions', )  # 1 table
+        settings.SHARED_APPS = (
+            "tenant_schemas",  # 2 tables
+            "django.contrib.contenttypes",
+        )  # 1 table
+        settings.TENANT_APPS = ("django.contrib.sessions",)  # 1 table
         settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
         self.sync_shared()
-        tenant = Tenant(domain_url='something.test.com', schema_name='test')
+        tenant = Tenant(domain_url="something.test.com", schema_name="test")
         tenant.save(verbosity=BaseTestCase.get_verbosity())
 
         shared_tables = self.get_tables_list_in_schema(get_public_schema_name())
         tenant_tables = self.get_tables_list_in_schema(tenant.schema_name)
         self.assertEqual(2 + 1 + self.MIGRATION_TABLE_SIZE, len(shared_tables))
-        self.assertIn('django_session', tenant_tables)
+        self.assertIn("django_session", tenant_tables)
         self.assertEqual(1 + self.MIGRATION_TABLE_SIZE, len(tenant_tables))
-        self.assertIn('django_session', tenant_tables)
+        self.assertIn("django_session", tenant_tables)
 
 
 class TenantCommandTest(BaseTestCase):
@@ -261,46 +274,64 @@ class TenantCommandTest(BaseTestCase):
         Tests that tenant_command is capable of wrapping commands
         and its parameters.
         """
-        settings.SHARED_APPS = ('tenant_schemas',
-                                'django.contrib.contenttypes', )
+        settings.SHARED_APPS = (
+            "tenant_schemas",
+            "django.contrib.contenttypes",
+        )
         settings.TENANT_APPS = ()
         settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
         self.sync_shared()
-        Tenant(domain_url='localhost', schema_name='public').save(verbosity=BaseTestCase.get_verbosity())
+        Tenant(domain_url="localhost", schema_name="public").save(
+            verbosity=BaseTestCase.get_verbosity()
+        )
 
         out = StringIO()
-        call_command('tenant_command',
-                     args=('dumpdata', 'tenant_schemas'),
-                     natural_foreign=True,
-                     schema_name=get_public_schema_name(),
-                     stdout=out)
-        self.assertEqual(
-            json.loads('[{"fields": {"domain_url": "localhost", "schema_name": "public"}, '
-                       '"model": "tenant_schemas.tenant", "pk": 1}]'),
-            json.loads(out.getvalue()))
+        tenant_command.Command().handle(
+            "dumpdata",
+            get_public_schema_name(),
+            "tenant_schemas",
+            natural_foreign=True,
+            stdout=out,
+        )
+        self.assertJSONEqual(
+            out.getvalue(),
+            [
+                {
+                    "fields": {"domain_url": "localhost", "schema_name": "public"},
+                    "model": "tenant_schemas.tenant",
+                    "pk": 1,
+                }
+            ],
+        )
 
 
 class SharedAuthTest(BaseTestCase):
     @classmethod
     def setUpClass(cls):
         super(SharedAuthTest, cls).setUpClass()
-        settings.SHARED_APPS = ('tenant_schemas',
-                                'django.contrib.auth',
-                                'django.contrib.contenttypes', )
-        settings.TENANT_APPS = ('dts_test_app', )
+        settings.SHARED_APPS = (
+            "tenant_schemas",
+            "django.contrib.auth",
+            "django.contrib.contenttypes",
+        )
+        settings.TENANT_APPS = ("dts_test_app",)
         settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
         cls.sync_shared()
-        Tenant(domain_url='test.com', schema_name=get_public_schema_name()).save(verbosity=cls.get_verbosity())
+        Tenant(domain_url="test.com", schema_name=get_public_schema_name()).save(
+            verbosity=cls.get_verbosity()
+        )
 
         # Create a tenant
-        cls.tenant = Tenant(domain_url='tenant.test.com', schema_name='tenant')
+        cls.tenant = Tenant(domain_url="tenant.test.com", schema_name="tenant")
         cls.tenant.save(verbosity=cls.get_verbosity())
 
         # Create some users
-        with schema_context(get_public_schema_name()):  # this could actually also be executed inside a tenant
-            cls.user1 = User(username='arbitrary-1', email="arb1@test.com")
+        with schema_context(
+            get_public_schema_name()
+        ):  # this could actually also be executed inside a tenant
+            cls.user1 = User(username="arbitrary-1", email="arb1@test.com")
             cls.user1.save()
-            cls.user2 = User(username='arbitrary-2', email="arb2@test.com")
+            cls.user2 = User(username="arbitrary-2", email="arb2@test.com")
             cls.user2.save()
 
         # Create instances on the tenant that point to the users on public
@@ -328,35 +359,43 @@ class SharedAuthTest(BaseTestCase):
         WHERE constraint_type = 'FOREIGN KEY' AND tc.table_name=%s
         """
         cursor = connection.cursor()
-        cursor.execute(sql, (ModelWithFkToPublicUser._meta.db_table, ))
+        cursor.execute(sql, (ModelWithFkToPublicUser._meta.db_table,))
         fk_constraints = cursor.fetchall()
         self.assertEqual(1, len(fk_constraints))
 
         # The foreign key should reference the primary key of the user table
         fk = fk_constraints[0]
         self.assertEqual(User._meta.db_table, fk[3])
-        self.assertEqual('id', fk[4])
+        self.assertEqual("id", fk[4])
 
     def test_direct_relation_to_public(self):
         """
         Tests that a forward relationship through a foreign key to public from a model inside TENANT_APPS works.
         """
         with tenant_context(self.tenant):
-            self.assertEqual(User.objects.get(pk=self.user1.id),
-                             ModelWithFkToPublicUser.objects.get(pk=self.d1.id).user)
-            self.assertEqual(User.objects.get(pk=self.user2.id),
-                             ModelWithFkToPublicUser.objects.get(pk=self.d2.id).user)
+            self.assertEqual(
+                User.objects.get(pk=self.user1.id),
+                ModelWithFkToPublicUser.objects.get(pk=self.d1.id).user,
+            )
+            self.assertEqual(
+                User.objects.get(pk=self.user2.id),
+                ModelWithFkToPublicUser.objects.get(pk=self.d2.id).user,
+            )
 
     def test_reverse_relation_to_public(self):
         """
         Tests that a reverse relationship through a foreign keys to public from a model inside TENANT_APPS works.
         """
         with tenant_context(self.tenant):
-            users = User.objects.all().select_related().order_by('id')
-            self.assertEqual(ModelWithFkToPublicUser.objects.get(pk=self.d1.id),
-                             users[0].modelwithfktopublicuser_set.all()[:1].get())
-            self.assertEqual(ModelWithFkToPublicUser.objects.get(pk=self.d2.id),
-                             users[1].modelwithfktopublicuser_set.all()[:1].get())
+            users = User.objects.all().select_related().order_by("id")
+            self.assertEqual(
+                ModelWithFkToPublicUser.objects.get(pk=self.d1.id),
+                users[0].modelwithfktopublicuser_set.all()[:1].get(),
+            )
+            self.assertEqual(
+                ModelWithFkToPublicUser.objects.get(pk=self.d2.id),
+                users[1].modelwithfktopublicuser_set.all()[:1].get(),
+            )
 
 
 class TenantTestCaseTest(BaseTestCase, TenantTestCase):

@@ -1,26 +1,54 @@
-sudo: false
 language: python
+cache: pip
+
 python:
-  - 2.7
-  - 3.5
+  - 3.6
+  - 3.7
+
+matrix:
+  include:
+    - python: 2.7
+      env: DJANGO=1.11
+  fast_finish: true
+
 services:
   - postgresql
+
 addons:
-  postgresql: '9.4'
-install: pip install -q tox-travis
+  postgresql: "9.6"
+
+install:
+  - pip install -q tox-travis
+
+before_script:
+  - psql -c "CREATE DATABASE dts_test_project;" -U postgres
+
+script:
+  - tox
+
 env:
-  - DJANGO=1.8
-  - DJANGO=1.10
   - DJANGO=1.11
-matrix:
-  fast_finish: true
-script: tox
-before_script: psql -c "CREATE DATABASE dts_test_project;" -U postgres
+  - DJANGO=2.0
+  - DJANGO=2.1
+  - DJANGO=2.2
+  - DJANGO=3.0
+
 deploy:
   provider: pypi
   user: bcarneiro
   password:
-    secure: IJ23U+zTqDmHB8aB8GEhAAZRzOx5CorPe4Mi6KEyafuALWsY5CB95sN24Il01rhPX+3a88krwu+XNhsjEOVjNn4FE1sEiqO15p7hvIh5sj8JxjVqFvU58rScFTsvYIw4DwvO7cZSOQhFihEHtQRHbWd8b95GGqwRjh2yN1HzMsgOrptQC0Op038S4pSeFRGINj1HJbj320ctbLJoP9GBROpMJ71GR2V2RnTunxcMmlx4yVYEIHS1JijcDQ2BlG8ZikIVfeKqoipzd592Sq2JUuhPgL2MMeI8onHFGRJqUJv3elXev4qcXSqclQtGyTOewB5YZBHrqj3Pg134RmiOxapNWe0HaLPjsrflviJuZepU1ETh6epjcbZi4vl32MCQF/v1nhezoP4BLijJWstKmgmwXuFoDra6niUPcU97e1o5OnFkySlV9IcH+vrAo+sNGt0ztRen3zU+cab8ff0CnH1Me23Tzf3H6gkZCaHlol0xB5u75+5QSpgNAlgQfcbpZVqYsRPpCf61qJixfy/QPBydAWQ5uwG6KzgGTffAmAj4WOa3/n+19jsPNS6h0+VNEgRnoGfIzckQ/hrOV9wPIJ5oJ99SNYLnQ4SLl3JqqttryEHyBSRdYQ7wn3pb9oPfq58/47f/NTPNZRAsemVEx+9udm25+AtEAtS3OB6sQgQ=
+    secure: "IJ23U+zTqDmHB8aB8GEhAAZRzOx5CorPe4Mi6KEyafuALWsY5CB95sN24Il\
+             01rhPX+3a88krwu+XNhsjEOVjNn4FE1sEiqO15p7hvIh5sj8JxjVqFvU58r\
+             ScFTsvYIw4DwvO7cZSOQhFihEHtQRHbWd8b95GGqwRjh2yN1HzMsgOrptQC\
+             0Op038S4pSeFRGINj1HJbj320ctbLJoP9GBROpMJ71GR2V2RnTunxcMmlx4\
+             yVYEIHS1JijcDQ2BlG8ZikIVfeKqoipzd592Sq2JUuhPgL2MMeI8onHFGRJ\
+             qUJv3elXev4qcXSqclQtGyTOewB5YZBHrqj3Pg134RmiOxapNWe0HaLPjsr\
+             flviJuZepU1ETh6epjcbZi4vl32MCQF/v1nhezoP4BLijJWstKmgmwXuFoD\
+             ra6niUPcU97e1o5OnFkySlV9IcH+vrAo+sNGt0ztRen3zU+cab8ff0CnH1M\
+             e23Tzf3H6gkZCaHlol0xB5u75+5QSpgNAlgQfcbpZVqYsRPpCf61qJixfy/\
+             QPBydAWQ5uwG6KzgGTffAmAj4WOa3/n+19jsPNS6h0+VNEgRnoGfIzckQ/h\
+             rOV9wPIJ5oJ99SNYLnQ4SLl3JqqttryEHyBSRdYQ7wn3pb9oPfq58/47f/N\
+             TPNZRAsemVEx+9udm25+AtEAtS3OB6sQgQ="
   on:
     distributions: sdist bdist_wheel
     repo: bernardopires/django-tenant-schemas

@@ -1,17 +1,14 @@
 import django
-
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import DisallowedHost
 from django.db import connection
 from django.http import Http404
-from tenant_schemas.utils import (get_tenant_model, remove_www,
-                                  get_public_schema_name)
+from tenant_schemas.utils import (
+    get_public_schema_name,
+    get_tenant_model,
+    remove_www,
+)
 
-if django.VERSION >= (1, 10, 0):
-    MIDDLEWARE_MIXIN = django.utils.deprecation.MiddlewareMixin
-else:
-    MIDDLEWARE_MIXIN = object
 
 """
 These middlewares should be placed at the very top of the middleware stack.
@@ -22,7 +19,8 @@ Extend BaseTenantMiddleware for a custom tenant selection strategy,
 such as inspecting the header, or extracting it from some OAuth token.
 """
 
-class BaseTenantMiddleware(MIDDLEWARE_MIXIN):
+
+class BaseTenantMiddleware(django.utils.deprecation.MiddlewareMixin):
     TENANT_NOT_FOUND_EXCEPTION = Http404
 
     """
@@ -31,6 +29,7 @@ class BaseTenantMiddleware(MIDDLEWARE_MIXIN):
     of TENANT_MODEL. We have three parameters for backwards compatibility
     (the request would be enough).
     """
+
     def get_tenant(self, model, hostname, request):
         raise NotImplementedError
 
@@ -38,7 +37,7 @@ class BaseTenantMiddleware(MIDDLEWARE_MIXIN):
         """ Extracts hostname from request. Used for custom requests filtering.
             By default removes the request's port and common prefixes.
         """
-        return remove_www(request.get_host().split(':')[0]).lower()
+        return remove_www(request.get_host().split(":")[0]).lower()
 
     def process_request(self, request):
         # Connection needs first to be at the public schema, as this is where
@@ -54,17 +53,23 @@ class BaseTenantMiddleware(MIDDLEWARE_MIXIN):
             assert isinstance(tenant, TenantModel)
         except TenantModel.DoesNotExist:
             raise self.TENANT_NOT_FOUND_EXCEPTION(
-                'No tenant for {!r}'.format(request.get_host()))
+                "No tenant for {!r}".format(request.get_host())
+            )
         except AssertionError:
             raise self.TENANT_NOT_FOUND_EXCEPTION(
-                'Invalid tenant {!r}'.format(request.tenant))
+                "Invalid tenant {!r}".format(request.tenant)
+            )
 
         request.tenant = tenant
         connection.set_tenant(request.tenant)
 
         # Do we have a public-specific urlconf?
-        if hasattr(settings, 'PUBLIC_SCHEMA_URLCONF') and request.tenant.schema_name == get_public_schema_name():
+        if (
+            hasattr(settings, "PUBLIC_SCHEMA_URLCONF")
+            and request.tenant.schema_name == get_public_schema_name()
+        ):
             request.urlconf = settings.PUBLIC_SCHEMA_URLCONF
+
 
 class TenantMiddleware(BaseTenantMiddleware):
     """
@@ -72,7 +77,7 @@ class TenantMiddleware(BaseTenantMiddleware):
     """
 
     def get_tenant(self, model, hostname, request):
-            return model.objects.get(domain_url=hostname)
+        return model.objects.get(domain_url=hostname)
 
 
 class SuspiciousTenantMiddleware(TenantMiddleware):
@@ -85,6 +90,7 @@ class SuspiciousTenantMiddleware(TenantMiddleware):
     See https://github.com/bernardopires/django-tenant-schemas/pull/269 for
     discussion on this middleware.
     """
+
     TENANT_NOT_FOUND_EXCEPTION = DisallowedHost
 
 
@@ -100,12 +106,14 @@ class DefaultTenantMiddleware(SuspiciousTenantMiddleware):
         class MyTenantMiddleware(DefaultTenantMiddleware):
             DEFAULT_SCHEMA_NAME = 'default'
     """
+
     DEFAULT_SCHEMA_NAME = None
 
     def get_tenant(self, model, hostname, request):
         try:
             return super(DefaultTenantMiddleware, self).get_tenant(
-                model, hostname, request)
+                model, hostname, request
+            )
         except model.DoesNotExist:
             schema_name = self.DEFAULT_SCHEMA_NAME
             if not schema_name:

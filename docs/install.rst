@@ -75,13 +75,6 @@ If you'd like a different tenant selection technique (e.g. using an HTTP Header)
         }
     ]
 
-.. code-block:: python
-
-    TEMPLATE_CONTEXT_PROCESSORS = (
-        'django.core.context_processors.request',
-        #...
-    )
-
 The Tenant Model
 ================
 Now we have to create your tenant model. Your tenant model can contain whichever fields you want, however, you **must** inherit from ``TenantMixin``. This Mixin only has two fields (``domain_url`` and ``schema_name``) and both are required. Here's an example, suppose we have an app named ``customers`` and we want to create a model called ``Client``.
@@ -187,10 +180,10 @@ globally.
 Working with Tenant specific schemas
 ====================================
 Since each Tenant has it's own schema in the database you need a way to tell Django what
-schema to use when using the management commands. 
+schema to use when using the management commands.
 
 A special management command ``tenant_command`` has been added to allow you to
-execute Django management commands in the context of a specific Tenant schema. 
+execute Django management commands in the context of a specific Tenant schema.
 
 .. code-block:: python
 
@@ -199,7 +192,7 @@ execute Django management commands in the context of a specific Tenant schema.
 .. warning::
 
    Depending on the configuration of your applications, the command you execute
-   may impact shared data also. 
+   may impact shared data also.
 
 Creating a new Tenant
 =====================

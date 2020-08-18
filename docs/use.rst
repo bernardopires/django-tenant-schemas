@@ -140,7 +140,7 @@ The command ``createsuperuser`` is already automatically wrapped to have a ``sch
 
 .. code-block:: bash
 
-    ./manage.py createsuperuser --username=admin --schema=customer1
+    ./manage.py tenant_command createsuperuser --username=admin --schema=customer1
 
 
 list_tenants

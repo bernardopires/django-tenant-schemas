@@ -1,21 +1,13 @@
 from os.path import exists
 
+from setuptools import find_packages
 from setuptools import setup
 
 setup(
     name="django-tenant-schemas",
     author="Bernardo Pires Carneiro",
     author_email="carneiro.be@gmail.com",
-    packages=[
-        "tenant_schemas",
-        "tenant_schemas.migration_executors",
-        "tenant_schemas.postgresql_backend",
-        "tenant_schemas.management",
-        "tenant_schemas.management.commands",
-        "tenant_schemas.templatetags",
-        "tenant_schemas.test",
-        "tenant_schemas.tests",
-    ],
+    packages=find_packages(),
     scripts=[],
     url="https://github.com/bcarneiro/django-tenant-schemas",
     license="MIT",

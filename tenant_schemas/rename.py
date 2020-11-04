@@ -18,9 +18,3 @@ def rename_schema(*, schema_name, new_schema_name):
     sql = 'ALTER SCHEMA {0} RENAME TO {1}'.format(schema_name, new_schema_name)
     cursor.execute(sql)
     cursor.close()
-
-
-def rename_tenant(*, tenant, new_schema_name):
-    rename_schema(schema_name=tenant.schema_name, new_schema_name=new_schema_name)
-    tenant.schema_name = new_schema_name
-    tenant.save()

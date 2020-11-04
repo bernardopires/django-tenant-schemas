@@ -833,5 +833,12 @@ def clone_schema(schema_name, clone_schema_name, set_connection=True):
         _create_clone_schema_function()
         transaction.commit()
 
-    cursor.execute(f'SELECT clone_schema({schema_name}, {clone_schema_name}, true, false)')
+    sql = 'SELECT clone_schema(%(schema_name)s, %(clone_schema_name)s, true, false)'
+    cursor.execute(
+        sql,
+        {
+            'schema_name': schema_name,
+            'clone_schema_name': clone_schema_name
+        }
+    )
     cursor.close()

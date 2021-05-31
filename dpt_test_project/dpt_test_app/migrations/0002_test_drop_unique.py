@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('dts_test_app', '0001_initial'),
+        ('dpt_test_app', '0001_initial'),
     ]
 
     operations = [

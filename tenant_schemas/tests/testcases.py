@@ -17,7 +17,7 @@ class BaseTestCase(TestCase):
     def setUpClass(cls):
         settings.TENANT_MODEL = 'tenant_schemas.Tenant'
         settings.SHARED_APPS = ('tenant_schemas', )
-        settings.TENANT_APPS = ('dts_test_app',
+        settings.TENANT_APPS = ('dpt_test_app',
                                 'django.contrib.contenttypes',
                                 'django.contrib.auth', )
         settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS

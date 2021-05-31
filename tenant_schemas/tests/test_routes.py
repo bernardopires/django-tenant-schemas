@@ -26,7 +26,7 @@ class RoutesTestCase(BaseTestCase):
         super(RoutesTestCase, cls).setUpClass()
         settings.SHARED_APPS = ("tenant_schemas",)
         settings.TENANT_APPS = (
-            "dts_test_app",
+            "dpt_test_app",
             "django.contrib.contenttypes",
             "django.contrib.auth",
         )

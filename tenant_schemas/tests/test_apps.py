@@ -47,7 +47,7 @@ class AppConfigTests(TestCase):
         ])
 
     @override_settings(INSTALLED_APPS=[
-        'dts_test_app',
+        'dpt_test_app',
         'customers',
         'django.contrib.auth',
         'django.contrib.contenttypes',
@@ -68,7 +68,7 @@ class AppConfigTests(TestCase):
         ])
 
     @override_settings(INSTALLED_APPS=[
-        'dts_test_app',
+        'dpt_test_app',
         'customers',
         'tenant_schemas',
         'django.contrib.auth',
@@ -108,7 +108,7 @@ class AppConfigTests(TestCase):
         ])
 
     @override_settings(TENANT_APPS=(
-        'dts_test_app',
+        'dpt_test_app',
         'django.contrib.flatpages',
     ))
     def test_tenant_app_missing_from_install_apps(self):

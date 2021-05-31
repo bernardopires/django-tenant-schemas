@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import connection
-from dts_test_app.models import DummyModel, ModelWithFkToPublicUser
+from dpt_test_app.models import DummyModel, ModelWithFkToPublicUser
 from tenant_schemas.management.commands import tenant_command
 from tenant_schemas.test.cases import TenantTestCase
 from tenant_schemas.tests.models import NonAutoSyncTenant, Tenant
@@ -33,7 +33,7 @@ class TenantDataAndSettingsTest(BaseTestCase):
         super(TenantDataAndSettingsTest, cls).setUpClass()
         settings.SHARED_APPS = ("tenant_schemas",)
         settings.TENANT_APPS = (
-            "dts_test_app",
+            "dpt_test_app",
             "django.contrib.contenttypes",
             "django.contrib.auth",
         )
@@ -314,7 +314,7 @@ class SharedAuthTest(BaseTestCase):
             "django.contrib.auth",
             "django.contrib.contenttypes",
         )
-        settings.TENANT_APPS = ("dts_test_app",)
+        settings.TENANT_APPS = ("dpt_test_app",)
         settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
         cls.sync_shared()
         Tenant(domain_url="test.com", schema_name=get_public_schema_name()).save(

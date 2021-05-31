@@ -4,9 +4,9 @@ Advanced Usage
 
 Custom tenant strategies (custom middleware support)
 ====================================================
-By default, ``django-tenant-schemas``'s strategies for determining the correct tenant involve extracting it from the URL (e.g. ``mytenant.mydomain.com``). This is done through a middleware, typically ``TenantMiddleware``.
+By default, ``django-pg-tenants``'s strategies for determining the correct tenant involve extracting it from the URL (e.g. ``mytenant.mydomain.com``). This is done through a middleware, typically ``TenantMiddleware``.
 
-In some situations, it might be useful to use **alternative tenant selection strategies**. For example, consider a website with a fixed URL. An approach for this website might be to pass the tenant through a special header, or to determine it in some other manner based on the request (e.g. using an OAuth token mapped to a tenant). ``django-tenant-schemas`` offer an **easily extensible way to provide your own middleware** with minimal code changes.
+In some situations, it might be useful to use **alternative tenant selection strategies**. For example, consider a website with a fixed URL. An approach for this website might be to pass the tenant through a special header, or to determine it in some other manner based on the request (e.g. using an OAuth token mapped to a tenant). ``django-pg-tenants`` offer an **easily extensible way to provide your own middleware** with minimal code changes.
 
 To add custom tenant selection strategies, you need to **subclass the** ``BaseTenantMiddleware`` **class and implement its** ``get_tenant`` **method**. This method accepts the current ``request`` object through which you can determine the tenant to use. In addition, for backwards-compatibility reasons, the method also accepts the tenant model class (``TENANT_MODEL``) and the ``hostname`` of the current request. **You should return an instance of your** ``TENANT_MODEL`` **class** from this function.
 After creating your middleware, you should make it the top-most middleware in your list. You should only have one subclass of ``BaseTenantMiddleware`` per project.

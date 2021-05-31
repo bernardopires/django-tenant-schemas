@@ -21,7 +21,7 @@ install:
   - pip install -q tox-travis
 
 before_script:
-  - psql -c "CREATE DATABASE dts_test_project;" -U postgres
+  - psql -c "CREATE DATABASE dpt_test_project;" -U postgres
 
 script:
   - tox
@@ -35,22 +35,11 @@ env:
 
 deploy:
   provider: pypi
-  user: bcarneiro
+  user: vintasoftware
   password:
-    secure: "IJ23U+zTqDmHB8aB8GEhAAZRzOx5CorPe4Mi6KEyafuALWsY5CB95sN24Il\
-             01rhPX+3a88krwu+XNhsjEOVjNn4FE1sEiqO15p7hvIh5sj8JxjVqFvU58r\
-             ScFTsvYIw4DwvO7cZSOQhFihEHtQRHbWd8b95GGqwRjh2yN1HzMsgOrptQC\
-             0Op038S4pSeFRGINj1HJbj320ctbLJoP9GBROpMJ71GR2V2RnTunxcMmlx4\
-             yVYEIHS1JijcDQ2BlG8ZikIVfeKqoipzd592Sq2JUuhPgL2MMeI8onHFGRJ\
-             qUJv3elXev4qcXSqclQtGyTOewB5YZBHrqj3Pg134RmiOxapNWe0HaLPjsr\
-             flviJuZepU1ETh6epjcbZi4vl32MCQF/v1nhezoP4BLijJWstKmgmwXuFoD\
-             ra6niUPcU97e1o5OnFkySlV9IcH+vrAo+sNGt0ztRen3zU+cab8ff0CnH1M\
-             e23Tzf3H6gkZCaHlol0xB5u75+5QSpgNAlgQfcbpZVqYsRPpCf61qJixfy/\
-             QPBydAWQ5uwG6KzgGTffAmAj4WOa3/n+19jsPNS6h0+VNEgRnoGfIzckQ/h\
-             rOV9wPIJ5oJ99SNYLnQ4SLl3JqqttryEHyBSRdYQ7wn3pb9oPfq58/47f/N\
-             TPNZRAsemVEx+9udm25+AtEAtS3OB6sQgQ="
+    secure: "lXMVYTyPme6qVEjy1RHhDNlxZyfKAgEd4cbErqeH+t9lfdHLwvWumi1RwdxG+SJwdW3BXRVZCFNc1iNftdCFxBdZFQxEDKQDoPkJYES5j0yFXy+jVO5qa5D8GtCpERnp5cuz6WLvpms4BUKn6epTGChijS2g8gi1llAWwnQ6PdwRiBZ8ZlDT1mjpWm+vWTrom+JnHaQQsJmjPdfHcO7KnmsUXF+4SbKdvsJqJIIhVUf9qRb6vmuzkxNSU0htdogUMOd3DA/Cx0SsChqFgXHc+9HqP7UZnoOKT/1sOJIKnAGkMPFRulvIuOvgAa/WV4obcnEOQ7vnp8TDjWAo43AqpS1VcEea7lOtv2c69MQ9WvJl+Hn3yCtnzOsoyF8TJboGiaDGXFBV7WuomZD5INBy9L2ogyAiEETCylslnrl4lxZduncPYBhA3Ihab1vUWrdhXILHR6Sm4naCTC/Pixeu2/2ha76Jni91DBtVqEtW033PmBz+vL/AypEbbgJG0Vy6qiOrttNkH+VrbEywLNDzFuhhk/F5/DjEVoEpMnu7Yayu8F5d2H4JejgM7jK5P9KfkhX2DhVArZkEnnCmVor9Q+EoXGSql0cmm3hRfQk673qXK67bDTtKD0biJoetj+OjzoLU2KR7qY68M7S5AUHza3U6lfSV3COf2OH/TTx8xmk="
   on:
     distributions: sdist bdist_wheel
-    repo: bernardopires/django-tenant-schemas
+    repo: vintasoftware/django-pg-tenants
     tags: true
     skip_existing: true

@@ -1,7 +1,9 @@
-django-tenant-schemas
+django-pg-tenants
 =====================
 
 |PyPi version| |PyPi downloads| |Python versions| |Travis CI| |PostgreSQL|
+
+This is a fork of [django-tenant-schemas](https://github.com/bernardopires/django-tenant-schemas).
 
 This application enables `django`_ powered websites to have multiple
 tenants via `PostgreSQL schemas`_. A vital feature for every
@@ -102,7 +104,7 @@ Setup & Documentation
 
 **This is just a short setup guide**, it is **strongly** recommended
 that you read the complete version at
-`django-tenant-schemas.readthedocs.io`_.
+`django-pg-tenants.readthedocs.io`_.
 
 Your ``DATABASE_ENGINE`` setting needs to be changed to
 
@@ -191,7 +193,7 @@ so you shouldn't need to change anything at your views.
 You're all set, but we have left key details outside of this short
 tutorial, such as creating the public tenant and configuring shared and
 tenant specific apps. Complete instructions can be found at
-`django-tenant-schemas.readthedocs.io`_.
+`django-pg-tenants.readthedocs.io`_.
 
 
 
@@ -200,13 +202,13 @@ tenant specific apps. Complete instructions can be found at
 .. _PostgreSQL's official documentation on schemas: http://www.postgresql.org/docs/9.1/static/ddl-schemas.html
 .. _Multi-Tenant Data Architecture: http://msdn.microsoft.com/en-us/library/aa479086.aspx
 
-.. |PyPi version| image:: https://img.shields.io/pypi/v/django-tenant-schemas.svg
-   :target: https://pypi.python.org/pypi/django-tenant-schemas
-.. |PyPi downloads| image:: https://img.shields.io/pypi/dm/django-tenant-schemas.svg
-   :target: https://pypi.python.org/pypi/django-tenant-schemas
-.. |Python versions| image:: https://img.shields.io/pypi/pyversions/django-tenant-schemas.svg
-.. |Travis CI| image:: https://travis-ci.org/bernardopires/django-tenant-schemas.svg?branch=master
-   :target: https://travis-ci.org/bernardopires/django-tenant-schemas
+.. |PyPi version| image:: https://img.shields.io/pypi/v/django-pg-tenants.svg
+   :target: https://pypi.python.org/pypi/django-pg-tenants
+.. |PyPi downloads| image:: https://img.shields.io/pypi/dm/django-pg-tenants.svg
+   :target: https://pypi.python.org/pypi/django-pg-tenants
+.. |Python versions| image:: https://img.shields.io/pypi/pyversions/django-pg-tenants.svg
+.. |Travis CI| image:: https://travis-ci.org/vintasoftware/django-pg-tenants.svg?branch=master
+   :target: https://travis-ci.org/vintasoftware/django-pg-tenants
 .. |PostgreSQL| image:: https://img.shields.io/badge/PostgreSQL-9.2%2C%209.3%2C%209.4%2C%209.5%2C%209.6-blue.svg
-.. _setup: https://django-tenant-schemas.readthedocs.io/en/latest/install.html
-.. _django-tenant-schemas.readthedocs.io: https://django-tenant-schemas.readthedocs.io/en/latest/
+.. _setup: https://django-pg-tenants.readthedocs.io/en/latest/install.html
+.. _django-pg-tenants.readthedocs.io: https://django-pg-tenants.readthedocs.io/en/latest/

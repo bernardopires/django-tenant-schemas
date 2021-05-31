@@ -38,7 +38,7 @@ SHARED_APPS = (
     "django.contrib.staticfiles",
 )
 
-TENANT_APPS = ("dts_test_app",)
+TENANT_APPS = ("dpt_test_app",)
 
 TENANT_MODEL = "customers.Client"  # app.Model
 
@@ -46,7 +46,7 @@ TEST_RUNNER = "django.test.runner.DiscoverRunner"
 
 INSTALLED_APPS = (
     "tenant_schemas",
-    "dts_test_app",
+    "dpt_test_app",
     "customers",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -55,9 +55,9 @@ INSTALLED_APPS = (
     "django.contrib.staticfiles",
 )
 
-ROOT_URLCONF = "dts_test_project.urls"
+ROOT_URLCONF = "dpt_test_project.urls"
 
-WSGI_APPLICATION = "dts_test_project.wsgi.application"
+WSGI_APPLICATION = "dpt_test_project.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
@@ -65,7 +65,7 @@ WSGI_APPLICATION = "dts_test_project.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "tenant_schemas.postgresql_backend",
-        "NAME": os.environ.get("PG_NAME", "dts_test_project"),
+        "NAME": os.environ.get("PG_NAME", "dpt_test_project"),
         "USER": os.environ.get("PG_USER"),
         "PASSWORD": os.environ.get("PG_PASSWORD"),
         "HOST": os.environ.get("PG_HOST"),

@@ -2,11 +2,11 @@
 Installation
 ============
 
-Assuming you have django installed, the first step is to install ``django-tenant-schemas``.
+Assuming you have django installed, the first step is to install ``django-pg-tenants``.
 
 .. code-block:: bash
 
-    pip install django-tenant-schemas
+    pip install django-pg-tenants
 
 Basic Settings
 ==============

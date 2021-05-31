@@ -1,12 +1,12 @@
 ===========================
-Using django-tenant-schemas
+Using django-pg-tenants
 ===========================
 
 Supported versions
 ------------------
-You can use ``django-tenant-schemas`` with currently maintained versions of Django -- see the `Django's release process <https://docs.djangoproject.com/en/1.11/internals/release-process/>`_ and the present list of `Supported Versions <https://www.djangoproject.com/download/#supported-versions>`_.
+You can use ``django-pg-tenants`` with currently maintained versions of Django -- see the `Django's release process <https://docs.djangoproject.com/en/1.11/internals/release-process/>`_ and the present list of `Supported Versions <https://www.djangoproject.com/download/#supported-versions>`_.
 
-It is necessary to use a PostgreSQL database. ``django-tenant-schemas`` will ensure compatibility with the minimum required version of the latest Django release. At this time that is PostgreSQL 9.3, the minimum for Django 1.11.
+It is necessary to use a PostgreSQL database. ``django-pg-tenants`` will ensure compatibility with the minimum required version of the latest Django release. At this time that is PostgreSQL 9.3, the minimum for Django 1.11.
 
 Creating a Tenant
 -----------------
@@ -280,8 +280,8 @@ If you want to perform operations after creating a tenant and it's schema is sav
 For this purpose, we have provided a ``post_schema_sync`` signal, which is available in ``tenant_schemas.signals``
 
 .. code-block:: python
-    
-    
+
+
     from tenant_schemas.signals import post_schema_sync
     from tenant_schemas.models import TenantMixin
 
@@ -339,7 +339,7 @@ The hook for ensuring the ``search_path`` is set properly happens inside the ``D
 
     TENANT_LIMIT_SET_CALLS = True
 
-When set, ``django-tenant-schemas`` will set the search path only once per request. The default is ``False``.
+When set, ``django-pg-tenants`` will set the search path only once per request. The default is ``False``.
 
 
 Third Party Apps

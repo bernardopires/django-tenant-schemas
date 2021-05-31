@@ -1,4 +1,4 @@
-Welcome to django-tenant-schemas documentation!
+Welcome to django-pg-tenants documentation!
 ===============================================
 This application enables `Django <https://www.djangoproject.com/>`_ powered websites to have multiple tenants via `PostgreSQL schemas <http://www.postgresql.org/docs/9.2/static/ddl-schemas.html>`_. A vital feature for every Software-as-a-Service website.
 

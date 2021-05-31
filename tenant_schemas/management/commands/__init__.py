@@ -110,7 +110,7 @@ class InteractiveTenantOption(object):
             raise CommandError(
                 """There are no tenants in the system.
 To learn how create a tenant, see:
-https://django-tenant-schemas.readthedocs.io/en/latest/use.html#creating-a-tenant"""
+https://django-pg-tenants.readthedocs.io/en/latest/use.html#creating-a-tenant"""
             )
 
         if options.get("schema_name"):

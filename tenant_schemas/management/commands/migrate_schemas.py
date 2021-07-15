@@ -3,16 +3,15 @@ import django
 import argparse
 
 from django.core.management.commands.migrate import Command as MigrateCommand
+from django.db.migrations.exceptions import MigrationSchemaMissing
 
 from tenant_schemas.management.commands import SyncCommon
 from tenant_schemas.migration_executors import get_executor
-from tenant_schemas.utils import get_public_schema_name, get_tenant_model, schema_exists
-
-if django.VERSION >= (1, 9, 0):
-    from django.db.migrations.exceptions import MigrationSchemaMissing
-else:
-    class MigrationSchemaMissing(django.db.utils.DatabaseError):
-        pass
+from tenant_schemas.utils import (
+    get_public_schema_name,
+    get_tenant_model,
+    schema_exists,
+)
 
 
 def chunks(tenants, total_parts):
@@ -34,15 +33,9 @@ def greater_than_zero(astring):
 
 
 class Command(SyncCommon):
-    help = "Updates database schema. Manages both apps with migrations and those without."
-
-    def __init__(self, stdout=None, stderr=None, no_color=False):
-        """
-        Changes the option_list to use the options from the wrapped migrate command.
-        """
-        if django.VERSION <= (1, 10, 0):
-            self.option_list += MigrateCommand.option_list
-        super(Command, self).__init__(stdout, stderr, no_color)
+    help = (
+        "Updates database schema. Manages both apps with migrations and those without."
+    )
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
@@ -79,13 +72,17 @@ class Command(SyncCommon):
         if self.sync_tenant:
             if self.schema_name and self.schema_name != self.PUBLIC_SCHEMA_NAME:
                 if not schema_exists(self.schema_name):
-                    raise MigrationSchemaMissing('Schema "{}" does not exist'.format(
-                        self.schema_name))
+                    raise MigrationSchemaMissing(
+                        'Schema "{}" does not exist'.format(self.schema_name)
+                    )
                 else:
                     tenants = [self.schema_name]
             else:
-                tenants = get_tenant_model().objects.exclude(schema_name=get_public_schema_name()) \
-                                            .order_by('pk').values_list('schema_name', flat=True)
+                tenants = (
+                    get_tenant_model()
+                    .objects.exclude(schema_name=get_public_schema_name())
+                    .values_list('schema_name', flat=True).order_by('pk')
+                )
                 if self.options['total_parts'] and tenants:
                     tenant_parts = list(chunks(tenants, self.options['total_parts']))
                     try:
@@ -94,4 +91,5 @@ class Command(SyncCommon):
                         message = 'You have fewer tenants than parts. This part (%s) has nothing to do.\n'
                         self.stdout.write(message % self.options['part'])
                         return
+
             executor.run_migrations(tenants=tenants)

@@ -1,5 +1,6 @@
 from django.core.management.commands.migrate import Command as MigrateCommand
 from django.db.migrations.exceptions import MigrationSchemaMissing
+import django
 from tenant_schemas.management.commands import SyncCommon
 from tenant_schemas.migration_executors import get_executor
 from tenant_schemas.utils import (
@@ -10,6 +11,9 @@ from tenant_schemas.utils import (
 
 
 class Command(SyncCommon):
+    if django.VERSION >= (3, 1):
+        # https://github.com/bernardopires/django-tenant-schemas/issues/648#issuecomment-671115840
+        requires_system_checks = []
     help = (
         "Updates database schema. Manages both apps with migrations and those without."
     )
@@ -41,7 +45,7 @@ class Command(SyncCommon):
             else:
                 tenants = (
                     get_tenant_model()
-                    .objects.exclude(schema_name=get_public_schema_name())
-                    .values_list("schema_name", flat=True)
+                        .objects.exclude(schema_name=get_public_schema_name())
+                        .values_list("schema_name", flat=True)
                 )
             executor.run_migrations(tenants=tenants)

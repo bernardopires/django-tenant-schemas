@@ -4,12 +4,8 @@ cache: pip
 python:
   - 3.6
   - 3.7
-
-matrix:
-  include:
-    - python: 2.7
-      env: DJANGO=1.11
-  fast_finish: true
+  - 3.8
+  - 3.9
 
 services:
   - postgresql
@@ -27,11 +23,9 @@ script:
   - tox
 
 env:
-  - DJANGO=1.11
-  - DJANGO=2.0
-  - DJANGO=2.1
   - DJANGO=2.2
-  - DJANGO=3.0
+  - DJANGO=3.1
+  - DJANGO=3.2
 
 deploy:
   provider: pypi

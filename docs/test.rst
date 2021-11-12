@@ -43,4 +43,20 @@ Running tests using ``TenantTestCase`` can start being a bottleneck once the num
     from tenant_schemas.test.cases import FastTenantTestCase
 
 
+Updating TestCase for more complicated tenant
+---------------------------------------------
+
+If you set your tenant to not automatically create schema by setting ``auto_create_schema = False`` or if you have some fields that have to be filled for the tenant, you can override the provided ``TenantTestCase`` or ``FastTenantTestCase`` and implement the class method ``modify_tenant_instance`` with all the updates you need. Here's a example for tenant which doesn't create schemas automatically and has to have a name set up.
+
+.. code-block:: python
+
+    from tenant_schemas.test import cases
+
+    class TenantTestCase(cases.TenantTestCase):
+        @classmethod
+        def modify_tenant_instace(cls):
+            cls.auto_create_schema = True
+            cls.name = "Name of the tenant"
+
+
 .. _tox: https://tox.readthedocs.io/

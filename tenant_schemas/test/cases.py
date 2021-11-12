@@ -9,6 +9,13 @@ ALLOWED_TEST_DOMAIN = '.test.com'
 
 class TenantTestCase(TestCase):
     @classmethod
+    def modify_tenant_instance(cls):
+        """ Allows modifications of tenant for all tests, e.g. to set `auto_create_schema` to True
+            or to set required attributes of the model.
+        """
+        pass
+
+    @classmethod
     def add_allowed_test_domain(cls):
         # ALLOWED_HOSTS is a special setting of Django setup_test_environment so we can't modify it with helpers
         if ALLOWED_TEST_DOMAIN not in settings.ALLOWED_HOSTS:
@@ -25,6 +32,7 @@ class TenantTestCase(TestCase):
         cls.add_allowed_test_domain()
         tenant_domain = 'tenant.test.com'
         cls.tenant = get_tenant_model()(domain_url=tenant_domain, schema_name='test')
+        cls.modify_tenant_instance()
         cls.tenant.save(verbosity=0)  # todo: is there any way to get the verbosity from the test command here?
 
         connection.set_tenant(cls.tenant)
@@ -58,6 +66,7 @@ class FastTenantTestCase(TenantTestCase):
             cls.tenant = TenantModel.objects.get(domain_url=tenant_domain, schema_name='test')
         except:
             cls.tenant = TenantModel(domain_url=tenant_domain, schema_name='test')
+            cls.modify_tenant_instance()
             cls.tenant.save(verbosity=0)
 
         connection.set_tenant(cls.tenant)

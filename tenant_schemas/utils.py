@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 
 from django.conf import settings
-from django.db import connection
+from django.db import connection, connections, router
 
 try:
     from django.apps import apps, AppConfig
@@ -13,7 +13,13 @@ from django.core import mail
 
 
 @contextmanager
-def schema_context(schema_name):
+def schema_context(schema_name, db=None):
+    from django.db import connection, connections
+    if has_multiple_db() and not db:
+        raise MultipleDBError("DB not specified")
+    if db:
+        connection = connections[db]
+
     previous_tenant = connection.tenant
     try:
         connection.set_schema(schema_name)
@@ -26,7 +32,13 @@ def schema_context(schema_name):
 
 
 @contextmanager
-def tenant_context(tenant):
+def tenant_context(tenant, db=None):
+    from django.db import connection, connections
+    if has_multiple_db() and not db:
+        raise MultipleDBError("DB not specified")
+    if db:
+        connection = connections[db]
+
     previous_tenant = connection.tenant
     try:
         connection.set_tenant(tenant)
@@ -88,7 +100,12 @@ def django_is_in_test_mode():
     return hasattr(mail, 'outbox')
 
 
-def schema_exists(schema_name):
+def schema_exists(schema_name, db=None):
+    from django.db import connection, connections
+    if has_multiple_db() and not db:
+        raise MultipleDBError("DB not specified")
+    if db:
+        connection = connections[db]
     cursor = connection.cursor()
 
     # check if this schema already exists in the db
@@ -106,6 +123,7 @@ def schema_exists(schema_name):
     return exists
 
 
+
 def app_labels(apps_list):
     """
     Returns a list of app labels of the given apps_list, now properly handles
@@ -116,3 +134,18 @@ def app_labels(apps_list):
     if AppConfig is None:
         return [app.split('.')[-1] for app in apps_list]
     return [AppConfig.create(app).label for app in apps_list]
+
+
+class MultipleDBError(Exception):
+    """Raised when muliple DB's are defined in settings but not 
+    specified during usage"""
+    pass    
+
+
+def has_multiple_db():
+    """
+    checks if multile databases are defined in settings
+    """
+    if len(settings.DATABASES) > 1:
+        return True
+    return False

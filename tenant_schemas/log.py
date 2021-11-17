@@ -1,6 +1,6 @@
 import logging
 
-from django.db import connection
+from django.db import connection, connections, router
 
 
 class TenantContextFilter(logging.Filter):
@@ -10,6 +10,7 @@ class TenantContextFilter(logging.Filter):
     Thanks to @regolith for the snippet on #248
     """
     def filter(self, record):
-        record.schema_name = connection.tenant.schema_name
-        record.domain_url = getattr(connection.tenant, 'domain_url', '')
+    	db = router.db_for_read(None)
+        record.schema_name = connections[db].tenant.schema_name
+        record.domain_url = getattr(connections[db].tenant, 'domain_url', '')
         return True

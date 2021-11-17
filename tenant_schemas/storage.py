@@ -3,10 +3,12 @@ import os
 from django.core.exceptions import SuspiciousOperation
 from django.utils._os import safe_join
 
-from django.db import connection
+from django.db import connection, connections, router
 
 from django.core.files.storage import FileSystemStorage
 from django.contrib.staticfiles.storage import StaticFilesStorage
+
+from tenant_schemas.utils import has_multiple_db
 
 __all__ = (
     'TenantStorageMixin',
@@ -32,7 +34,11 @@ class TenantStorageMixin(object):
         if name is None:
             name = ''
         try:
-            location = safe_join(self.location, connection.tenant.domain_url)
+            if has_multiple_db():
+                connection = connections[router.db_for_read(None)]
+                location = safe_join(self.location, connection.tenant.domain_url, router.db_for_read(None))            
+            else:
+                location = safe_join(self.location, connection.tenant.domain_url)
         except AttributeError:
             location = self.location
         try:

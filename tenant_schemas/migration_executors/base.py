@@ -7,11 +7,12 @@ from tenant_schemas.utils import get_public_schema_name
 
 
 def run_migrations(args, options, executor_codename, schema_name, allow_atomic=True):
+
     from django.core.management import color
     from django.core.management.base import OutputWrapper
-    from django.db import connection
+    from django.db import connection, connections
 
-    style = color.color_style()
+    style = color.color_style() 
 
     def style_func(msg):
         return '[%s:%s] %s' % (
@@ -24,9 +25,16 @@ def run_migrations(args, options, executor_codename, schema_name, allow_atomic=T
     stdout.style_func = style_func
     stderr = OutputWrapper(sys.stderr)
     stderr.style_func = style_func
-    if int(options.get('verbosity', 1)) >= 1:
-        stdout.write(style.NOTICE("=== Running migrate for schema %s" % schema_name))
+    
+    db = options.get('db', None) or options.get('database', None)
+    if db:
+        connection = connections[db]
 
+    if int(options.get('verbosity', 1)) >= 1:
+        if db:
+            stdout.write(style.NOTICE("=== Running migrate for schema %s and database %s" % (schema_name, db)))
+        else:
+            stdout.write(style.NOTICE("=== Running migrate for schema %s" % schema_name))            
     connection.set_schema(schema_name)
     MigrateCommand(stdout=stdout, stderr=stderr).execute(*args, **options)
 
@@ -53,7 +61,6 @@ class MigrationExecutor(object):
 
     def run_migrations(self, tenants):
         public_schema_name = get_public_schema_name()
-
         if public_schema_name in tenants:
             run_migrations(self.args, self.options, self.codename, public_schema_name)
             tenants.pop(tenants.index(public_schema_name))

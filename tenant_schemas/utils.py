@@ -16,6 +16,8 @@ from django.core import mail
 @contextmanager
 def schema_context(schema_name, db=None):
     from django.db import connection, connections
+    if not db and schema_name == get_public_schema_name():
+        db = 'default'
     if has_multiple_db() and not db:
         raise MultipleDBError("DB not specified")
     if db:

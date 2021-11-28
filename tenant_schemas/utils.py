@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from itertools import islice, cycle
 
 from django.conf import settings
 from django.db import connection, connections, router
@@ -30,6 +31,21 @@ def schema_context(schema_name, db=None):
         else:
             connection.set_tenant(previous_tenant)
 
+
+def get_db_string(schema_name):
+    if schema_name == get_public_schema_name():
+        db_string = 'default'
+    else:
+        options = settings.DATABASES.keys().remove('default')
+        connections['default'].set_schema_to_public()
+        last = get_tenant_model().objects.exclude(schema_name=get_public_schema_name()).latest('id')
+        if not last:
+            db_string = options[0]
+        else:
+            last_index = options.index(last.db_string)
+            starting_at_last_index = islice(cycle(options), last_index, None)
+            db_string = next(starting_at_last_index)
+    return db_string
 
 @contextmanager
 def tenant_context(tenant, db=None):
@@ -137,9 +153,9 @@ def app_labels(apps_list):
 
 
 class MultipleDBError(Exception):
-    """Raised when muliple DB's are defined in settings but not 
+    """Raised when muliple DB's are defined in settings but not
     specified during usage"""
-    pass    
+    pass
 
 
 def has_multiple_db():

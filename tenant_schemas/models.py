@@ -3,8 +3,8 @@ from django.db import connection, connections, models
 
 from tenant_schemas.postgresql_backend.base import _check_schema_name
 from tenant_schemas.signals import post_schema_sync
-from tenant_schemas.utils import (get_public_schema_name, schema_exists, 
-                                MultipleDBError, has_multiple_db)
+from tenant_schemas.utils import (get_public_schema_name, schema_exists,
+                                  MultipleDBError, has_multiple_db, get_db_string)
 
 
 
@@ -48,8 +48,10 @@ class TenantMixin(models.Model):
     """
 
     domain_url = models.CharField(max_length=128, unique=True)
+    db_string = models.CharField(max_length=128, blank=True, null=True)
     schema_name = models.CharField(max_length=63, unique=True,
                                    validators=[_check_schema_name])
+
     objects = TenantQueryset.as_manager()
 
     class Meta:
@@ -59,24 +61,17 @@ class TenantMixin(models.Model):
         """
         If single db, return default
         If multiple_db and db specified in 'using' kwarg, return db
-        If request_cfg set through multidb router, return set db        
+        If request_cfg set through multidb router, return set db
         """
-        if not has_multiple_db():
-            return 'default'
-        db = kwargs.get('using', None)
-        if db:
-            return db
-        from .multidb import request_cfg
-        if hasattr(request_cfg, 'db'):
-            return request_cfg.db
-        raise MultipleDBError("DB not specified")
+        return self.db_string
 
 
     def save(self, verbosity=1, *args, **kwargs):
 
         is_new = self.pk is None
-        db = self.get_db(**kwargs)
-        
+        self.db_string = get_db_string(self.schema_name)
+        db = self.db_string
+
         from django.db import connection
         if db:
             connection = connections[db]
@@ -108,7 +103,7 @@ class TenantMixin(models.Model):
         auto_drop_schema set to True.
         """
         from django.db import connection
-        db = self.get_db(**kwargs)
+        db = self.db_string
         if db:
             connection = connections[db]
 

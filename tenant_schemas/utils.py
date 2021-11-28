@@ -52,6 +52,8 @@ def get_db_string(schema_name):
 @contextmanager
 def tenant_context(tenant, db=None):
     from django.db import connection, connections
+    if not db and tenant.schema_name == get_public_schema_name():
+        db = 'default'
     if has_multiple_db() and not db:
         raise MultipleDBError("DB not specified")
     if db:

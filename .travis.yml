@@ -26,6 +26,7 @@ env:
   - DJANGO=2.2
   - DJANGO=3.1
   - DJANGO=3.2
+  - DJANGO=4.0
 
 deploy:
   provider: pypi

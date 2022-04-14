@@ -19,6 +19,9 @@ class MissingDefaultTenantMiddleware(DefaultTenantMiddleware):
     DEFAULT_SCHEMA_NAME = "missing"
 
 
+def dummy_get_response(request):  # pragma: no cover
+    return None
+
 @unittest.skipIf(six.PY2, "Unexpectedly failing only on Python 2.7")
 class RoutesTestCase(BaseTestCase):
     @classmethod
@@ -40,8 +43,8 @@ class RoutesTestCase(BaseTestCase):
     def setUp(self):
         super(RoutesTestCase, self).setUp()
         self.factory = RequestFactory()
-        self.tm = TenantMiddleware()
-        self.dtm = DefaultTenantMiddleware()
+        self.tm = TenantMiddleware(dummy_get_response)
+        self.dtm = DefaultTenantMiddleware(dummy_get_response)
 
         self.tenant_domain = "tenant.test.com"
         self.tenant = Tenant(domain_url=self.tenant_domain, schema_name="test")
@@ -84,7 +87,7 @@ class RoutesTestCase(BaseTestCase):
 
     def test_non_existent_tenant_custom_middleware(self):
         """Route unrecognised hostnames to the 'test' tenant."""
-        dtm = TestDefaultTenantMiddleware()
+        dtm = TestDefaultTenantMiddleware(dummy_get_response)
         request = self.factory.get(
             self.url, HTTP_HOST=self.non_existent_tenant.domain_url
         )
@@ -94,7 +97,7 @@ class RoutesTestCase(BaseTestCase):
 
     def test_non_existent_tenant_and_default_custom_middleware(self):
         """Route unrecognised hostnames to the 'missing' tenant."""
-        dtm = MissingDefaultTenantMiddleware()
+        dtm = MissingDefaultTenantMiddleware(dummy_get_response)
         request = self.factory.get(
             self.url, HTTP_HOST=self.non_existent_tenant.domain_url
         )

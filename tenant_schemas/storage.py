@@ -24,23 +24,12 @@ class TenantStorageMixin(object):
     gets served up, while any code interactions will account for the multiple
     tenancy of the project.
     """
-    def path(self, name):
-        """
-        Look for files in subdirectory of MEDIA_ROOT using the tenant's
-        domain_url value as the specifier.
-        """
-        if name is None:
-            name = ''
-        try:
-            location = safe_join(self.location, connection.tenant.domain_url)
-        except AttributeError:
-            location = self.location
-        try:
-            path = safe_join(location, name)
-        except ValueError:
-            raise SuspiciousOperation(
-                "Attempted access to '%s' denied." % name)
-        return os.path.normpath(path)
+    @property
+    def location(self):
+        if connection.tenant:
+            return safe_join(settings.TENANT_BASE, connection.tenant.domain_url, 'media')
+        else:
+            return os.path.abspath(self.base_location)
 
 
 class TenantFileSystemStorage(TenantStorageMixin, FileSystemStorage):

@@ -3,7 +3,6 @@ import warnings
 import psycopg2
 
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 import django.db.utils
 
@@ -76,6 +75,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         Main API method to current database schema,
         but it does not actually modify the db connection.
         """
+        is_init = not has_attr(self, 'schema_name')
         self.tenant = FakeTenant(schema_name=schema_name)
         self.schema_name = schema_name
         self.include_public_schema = include_public
@@ -88,7 +88,9 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         # on public, a particular model has id 14, but on the tenants it has
         # the id 15. if 14 is cached instead of 15, the permissions for the
         # wrong model will be fetched.
-        ContentType.objects.clear_cache()
+        if not is_init:
+            from django.contrib.contenttypes.models import ContentType
+            ContentType.objects.clear_cache()
 
     def set_schema_to_public(self):
         """

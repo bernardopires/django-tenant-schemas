@@ -75,7 +75,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         Main API method to current database schema,
         but it does not actually modify the db connection.
         """
-        is_init = not has_attr(self, 'schema_name')
+        is_init = not hasattr(self, 'schema_name')
         self.tenant = FakeTenant(schema_name=schema_name)
         self.schema_name = schema_name
         self.include_public_schema = include_public

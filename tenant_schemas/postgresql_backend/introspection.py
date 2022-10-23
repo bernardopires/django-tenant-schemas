@@ -10,7 +10,7 @@ try:
     from django.db.models.indexes import Index
 except ImportError:
     Index = None
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 
 fields = FieldInfo._fields
 if 'default' not in fields:

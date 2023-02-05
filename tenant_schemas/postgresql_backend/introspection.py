@@ -10,7 +10,7 @@ try:
     from django.db.models.indexes import Index
 except ImportError:
     Index = None
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 
 fields = FieldInfo._fields
 if 'default' not in fields:
@@ -213,9 +213,9 @@ class DatabaseSchemaIntrospection(BaseDatabaseIntrospection):
 
         return [
             FieldInfo(*(
-                (force_text(line[0]),) +
+                (force_str(line[0]),) +
                 line[1:6] +
-                (field_map[force_text(line[0])][0] == 'YES', field_map[force_text(line[0])][1])
+                (field_map[force_str(line[0])][0] == 'YES', field_map[force_str(line[0])][1])
             )) for line in cursor.description
         ]
 

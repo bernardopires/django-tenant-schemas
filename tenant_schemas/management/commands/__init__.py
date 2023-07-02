@@ -77,7 +77,6 @@ class BaseTenantCommand(BaseCommand):
         """
         Iterates a command over all registered schemata.
         """
-        arguments = ["schema_name", "skip_public"]
         if options["schema_name"]:
             # only run on a particular schema
             connection.set_schema_to_public()
@@ -85,7 +84,7 @@ class BaseTenantCommand(BaseCommand):
                 get_tenant_model().objects.get(schema_name=options["schema_name"]),
                 self.COMMAND_NAME,
                 *args,
-                **{k: v for k, v in options.items() if k not in arguments}
+                **options
             )
         else:
             for tenant in get_tenant_model().objects.all():
@@ -97,7 +96,7 @@ class BaseTenantCommand(BaseCommand):
                         tenant,
                         self.COMMAND_NAME,
                         *args,
-                        **{k: v for k, v in options.items() if k not in arguments}
+                        **options
                     )
 
 

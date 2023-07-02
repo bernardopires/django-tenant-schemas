@@ -40,7 +40,7 @@ class RoutesTestCase(BaseTestCase):
     def setUp(self):
         super(RoutesTestCase, self).setUp()
         self.factory = RequestFactory()
-        self.tm = TenantMiddleware()
+        self.tm = TenantMiddleware(lambda r:r)
         self.dtm = DefaultTenantMiddleware()
 
         self.tenant_domain = "tenant.test.com"

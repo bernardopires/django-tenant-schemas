@@ -221,7 +221,7 @@ This is a context manager. Database queries performed inside it will be executed
 
 .. function:: tenant_context(tenant_object)
 
-This context manager is very similiar to the ``schema_context`` function,
+This context manager is very similar to the ``schema_context`` function,
 but it takes a tenant model object as the argument instead.
 
 .. code-block:: python

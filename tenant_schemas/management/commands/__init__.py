@@ -121,22 +121,31 @@ https://django-tenant-schemas.readthedocs.io/en/latest/use.html#creating-a-tenan
         if options.get("schema_name"):
             tenant_schema = options["schema_name"]
         else:
-            while True:
-                tenant_schema = input("Enter Tenant Schema ('?' to list schemas): ")
-                if tenant_schema == "?":
-                    print(
-                        "\n".join(
-                            [
-                                "%s - %s" % (t.schema_name, t.domain_url,)
-                                for t in all_tenants
-                            ]
-                        )
+            if all_tenants.count() == 1:
+                only_tenant = all_tenants.first()
+                print(
+                    '"%s - %s" schema selected since it is the only existing schema.' % (
+                        only_tenant.schema_name, only_tenant.domain_url
                     )
-                else:
-                    break
+                )
+                tenant_schema = only_tenant.schema_name
+            else:
+                while True:
+                    tenant_schema = input("Enter Tenant Schema ('?' to list schemas): ")
+                    if tenant_schema == "?":
+                        print(
+                            "\n".join(
+                                [
+                                    "%s - %s" % (t.schema_name, t.domain_url,)
+                                    for t in all_tenants
+                                ]
+                            )
+                        )
+                    else:
+                        break
 
-        if tenant_schema not in [t.schema_name for t in all_tenants]:
-            raise CommandError("Invalid tenant schema, '%s'" % (tenant_schema,))
+                if tenant_schema not in [t.schema_name for t in all_tenants]:
+                    raise CommandError("Invalid tenant schema, '%s'" % (tenant_schema,))
 
         return TenantModel.objects.get(schema_name=tenant_schema)
 

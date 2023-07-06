@@ -53,7 +53,7 @@ class TenantMixin(models.Model):
     class Meta:
         abstract = True
 
-    def save(self, verbosity=1, *args, **kwargs):
+    def save(self, verbosity=1, run_syncdb=False, *args, **kwargs):
         is_new = self.pk is None
 
         if is_new and connection.schema_name != get_public_schema_name():
@@ -68,7 +68,7 @@ class TenantMixin(models.Model):
 
         if is_new and self.auto_create_schema:
             try:
-                self.create_schema(check_if_exists=True, verbosity=verbosity)
+                self.create_schema(check_if_exists=True, verbosity=verbosity, run_syncdb=run_syncdb)
             except:
                 # We failed creating the tenant, delete what we created and
                 # re-raise the exception
@@ -94,7 +94,7 @@ class TenantMixin(models.Model):
         return super(TenantMixin, self).delete(*args, **kwargs)
 
     def create_schema(self, check_if_exists=False, sync_schema=True,
-                      verbosity=1):
+                      verbosity=1, run_syncdb=False):
         """
         Creates the schema 'schema_name' for this tenant. Optionally checks if
         the schema already exists before creating it. Returns true if the
@@ -115,6 +115,7 @@ class TenantMixin(models.Model):
             call_command('migrate_schemas',
                          schema_name=self.schema_name,
                          interactive=False,
-                         verbosity=verbosity)
+                         verbosity=verbosity,
+                         run_syncdb=run_syncdb)
 
         connection.set_schema_to_public()

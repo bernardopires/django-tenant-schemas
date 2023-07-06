@@ -25,7 +25,7 @@ class TenantTestCase(TestCase):
         cls.add_allowed_test_domain()
         tenant_domain = 'tenant.test.com'
         cls.tenant = get_tenant_model()(domain_url=tenant_domain, schema_name='test')
-        cls.tenant.save(verbosity=0)  # todo: is there any way to get the verbosity from the test command here?
+        cls.tenant.save(verbosity=0, run_syncdb=True)  # todo: is there any way to get the verbosity from the test command here?
 
         connection.set_tenant(cls.tenant)
 
@@ -58,7 +58,7 @@ class FastTenantTestCase(TenantTestCase):
             cls.tenant = TenantModel.objects.get(domain_url=tenant_domain, schema_name='test')
         except:
             cls.tenant = TenantModel(domain_url=tenant_domain, schema_name='test')
-            cls.tenant.save(verbosity=0)
+            cls.tenant.save(verbosity=0, run_syncdb=True)
 
         connection.set_tenant(cls.tenant)
 

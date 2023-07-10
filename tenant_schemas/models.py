@@ -53,7 +53,7 @@ class TenantMixin(models.Model):
     class Meta:
         abstract = True
 
-    def save(self, verbosity=1, *args, **kwargs):
+    def save(self, verbosity=1, force_create=False, *args, **kwargs):
         is_new = self.pk is None
 
         if is_new and connection.schema_name != get_public_schema_name():
@@ -66,7 +66,7 @@ class TenantMixin(models.Model):
 
         super(TenantMixin, self).save(*args, **kwargs)
 
-        if is_new and self.auto_create_schema:
+        if is_new and (self.auto_create_schema or force_create):
             try:
                 self.create_schema(check_if_exists=True, verbosity=verbosity)
             except:

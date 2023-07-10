@@ -64,6 +64,17 @@ class TenantDataAndSettingsTest(BaseTestCase):
         tenant.save(verbosity=BaseTestCase.get_verbosity())
         self.assertFalse(schema_exists(tenant.schema_name))
 
+    def test_tenant_schema_is_force_created(self):
+        """
+        When saving a tenant with force_create=True and has auto_create_schema
+        as False, the schema should be created when saving the tenant.
+        """
+        self.assertFalse(schema_exists('force_create_tenant'))
+        tenant = NonAutoSyncTenant(domain_url='something.test.com',
+                                   schema_name='force_create_tenant')
+        tenant.save(verbosity=BaseTestCase.get_verbosity(), force_create=True)
+        self.assertTrue(schema_exists(tenant.schema_name))
+
     def test_sync_tenant(self):
         """
         When editing an existing tenant, all data should be kept.
@@ -87,6 +98,25 @@ class TenantDataAndSettingsTest(BaseTestCase):
 
         # test if data is still there
         self.assertEqual(DummyModel.objects.count(), 2)
+
+    def test_force_drop_schema(self):
+        """
+        When deleting a tenant with force_drop=True, it should delete
+        the schema associated with the tenant. Regardless of auto_drop_schema
+        """
+        self.assertFalse(schema_exists('auto_drop_tenant'))
+        Tenant.auto_drop_schema = False
+        tenant = Tenant(domain_url='something.test.com',
+                        schema_name='auto_drop_tenant')
+        tenant.save(verbosity=BaseTestCase.get_verbosity())
+        self.assertTrue(schema_exists(tenant.schema_name))
+        cursor = connection.cursor()
+
+        # Force pending trigger events to be executed
+        cursor.execute('SET CONSTRAINTS ALL IMMEDIATE')
+
+        tenant.delete(force_drop=True)
+        self.assertFalse(schema_exists(tenant.schema_name))
 
     def test_auto_drop_schema(self):
         """

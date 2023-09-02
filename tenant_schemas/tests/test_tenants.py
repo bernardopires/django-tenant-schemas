@@ -1,7 +1,11 @@
+from mock import patch
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import connection
 from dts_test_app.models import DummyModel, ModelWithFkToPublicUser
+
+from tenant_schemas.management.commands.migrate_schemas import greater_than_zero
 from tenant_schemas.management.commands import tenant_command
 from tenant_schemas.test.cases import TenantTestCase
 from tenant_schemas.tests.models import NonAutoSyncTenant, Tenant
@@ -411,3 +415,116 @@ class TenantTestCaseTest(BaseTestCase, TenantTestCase):
     def test_tenant_survives_after_method2(self):
         # The same tenant still exists even after the previous method call
         self.assertEquals(1, get_tenant_model().objects.all().count())
+
+
+class MigrateSchemasTest(BaseTestCase, TenantTestCase):
+
+    def test_simple_options_command(self):
+        get_tenant_model_mock = patch('tenant_schemas.management.commands.migrate_schemas.get_tenant_model')
+        get_executor_mock = patch('tenant_schemas.management.commands.migrate_schemas.get_executor')
+
+        with get_tenant_model_mock as get_tenant_model, get_executor_mock as get_executor:
+            run_migrations = get_executor.return_value.return_value.run_migrations
+            query_obj = get_tenant_model.return_value.objects.exclude.return_value.order_by.return_value.values_list
+            query_obj.return_value = ['a', 'b', 'c']
+
+            call_command('migrate_schemas',
+                         tenant=True,
+                         part=1,
+                         of=3)
+
+            query_obj.assert_called_once()
+            run_migrations.assert_called_once_with(tenants=['a'])
+
+            call_command('migrate_schemas',
+                         tenant=True,
+                         part=2,
+                         of=3)
+
+            run_migrations.assert_called_with(tenants=['b'])
+
+            call_command('migrate_schemas',
+                         tenant=True,
+                         part=3,
+                         of=3)
+
+            run_migrations.assert_called_with(tenants=['c'])
+
+            with self.assertRaises(Exception) as context:
+                call_command('migrate_schemas',
+                             tenant=True,
+                             part=4,
+                             of=3)
+
+            self.assertIn('--of cannot be greater than --part.', str(context.exception))
+
+    def test_rounding_command(self):
+        get_tenant_model_mock = patch('tenant_schemas.management.commands.migrate_schemas.get_tenant_model')
+        get_executor_mock = patch('tenant_schemas.management.commands.migrate_schemas.get_executor')
+
+        with get_tenant_model_mock as get_tenant_model, get_executor_mock as get_executor:
+            run_migrations = get_executor.return_value.return_value.run_migrations
+            query_obj = get_tenant_model.return_value.objects.exclude.return_value.order_by.return_value.values_list
+            query_obj.return_value = ['a']
+
+            call_command('migrate_schemas',
+                         tenant=True,
+                         part=1,
+                         of=2)
+
+            run_migrations.assert_called_with(tenants=['a'])
+
+            out = StringIO()
+            call_command('migrate_schemas',
+                         tenant=True,
+                         part=2,
+                         of=2,
+                         stdout=out)
+            self.assertIn('You have fewer tenants than parts', out.getvalue())
+
+    def test_rounding2_command(self):
+        get_tenant_model_mock = patch('tenant_schemas.management.commands.migrate_schemas.get_tenant_model')
+        get_executor_mock = patch('tenant_schemas.management.commands.migrate_schemas.get_executor')
+
+        with get_tenant_model_mock as get_tenant_model, get_executor_mock as get_executor:
+            run_migrations = get_executor.return_value.return_value.run_migrations
+            query_obj = get_tenant_model.return_value.objects.exclude.return_value.order_by.return_value.values_list
+            query_obj.return_value = list(range(53))
+
+            call_command('migrate_schemas',
+                         tenant=True,
+                         part=1,
+                         of=7)
+
+            run_migrations.assert_called_with(tenants=[0, 1, 2, 3, 4, 5, 6, 7])
+
+            call_command('migrate_schemas',
+                         tenant=True,
+                         part=7,
+                         of=7)
+
+            run_migrations.assert_called_with(tenants=[48, 49, 50, 51, 52])
+
+    def test_errors_command(self):
+
+        with self.assertRaises(Exception) as context:
+            call_command('migrate_schemas',
+                         part=1,
+                         of=1)
+        self.assertIn('Cannot run public schema migrations along with --of and --part.', str(context.exception))
+
+        with self.assertRaises(Exception) as context:
+            call_command('migrate_schemas',
+                         of=1)
+        self.assertIn('need to be used together', str(context.exception))
+
+        # Note: Before django 2.0, django bypasses the the "type=" checker in the argparse completely, thats why
+        #       we check the underlining function directly.
+        greater_than_zero('1')
+        with self.assertRaises(argparse.ArgumentTypeError) as context:
+            greater_than_zero('0')
+        self.assertIn('The number needs to be greated than zero', str(context.exception))
+
+        with self.assertRaises(argparse.ArgumentTypeError) as context:
+            greater_than_zero('0a')
+        self.assertIn('Needs to be a number', str(context.exception))

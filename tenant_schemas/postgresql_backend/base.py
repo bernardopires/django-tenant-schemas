@@ -1,6 +1,6 @@
 import re
 import warnings
-import psycopg2
+import psycopg
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -131,7 +131,6 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
                                            "to call set_schema() or set_tenant()?")
             _check_schema_name(self.schema_name)
             public_schema_name = get_public_schema_name()
-            search_paths = []
 
             if self.schema_name == public_schema_name:
                 search_paths = [public_schema_name]
@@ -155,7 +154,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
             # we do not have to worry that it's not the good one
             try:
                 cursor_for_search_path.execute('SET search_path = {0}'.format(','.join(search_paths)))
-            except (django.db.utils.DatabaseError, psycopg2.InternalError):
+            except (django.db.utils.DatabaseError, psycopg.InternalError):
                 self.search_path_set = False
             else:
                 self.search_path_set = True

@@ -153,11 +153,10 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
             # if the next instruction is not a rollback it will just fail also, so
             # we do not have to worry that it's not the good one
             try:
+                self.search_path_set = True
                 cursor_for_search_path.execute('SET search_path = {0}'.format(','.join(search_paths)))
             except (django.db.utils.DatabaseError, psycopg.InternalError):
                 self.search_path_set = False
-            else:
-                self.search_path_set = True
 
             if name:
                 cursor_for_search_path.close()

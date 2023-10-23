@@ -1,6 +1,5 @@
 import re
 import warnings
-import psycopg
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -10,6 +9,15 @@ import django.db.utils
 from tenant_schemas.utils import get_public_schema_name, get_limit_set_calls
 from tenant_schemas.postgresql_backend.introspection import DatabaseSchemaIntrospection
 
+try:
+    from django.db.backends.postgresql.psycopg_any import is_psycopg3
+except ImportError:
+    is_psycopg3 = False
+
+if is_psycopg3:
+    import psycopg
+else:
+    import psycopg2 as psycopg
 
 ORIGINAL_BACKEND = getattr(settings, 'ORIGINAL_BACKEND', 'django.db.backends.postgresql_psycopg2')
 # Django 1.9+ takes care to rename the default backend to 'django.db.backends.postgresql'
@@ -141,24 +149,22 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
 
             search_paths.extend(EXTRA_SEARCH_PATHS)
 
-            if name:
-                # Named cursor can only be used once
-                cursor_for_search_path = self.connection.cursor()
-            else:
-                # Reuse
-                cursor_for_search_path = cursor
+            # Named cursor can only be used once, just like psycopg3 cursors.
+            needs_new_cursor = name or is_psycopg3
+            cursor_for_search_path = self.connection.cursor() if needs_new_cursor else cursor
 
             # In the event that an error already happened in this transaction and we are going
             # to rollback we should just ignore database error when setting the search_path
             # if the next instruction is not a rollback it will just fail also, so
             # we do not have to worry that it's not the good one
             try:
-                self.search_path_set = True
                 cursor_for_search_path.execute('SET search_path = {0}'.format(','.join(search_paths)))
             except (django.db.utils.DatabaseError, psycopg.InternalError):
                 self.search_path_set = False
+            else:
+                self.search_path_set = True
 
-            if name:
+            if needs_new_cursor:
                 cursor_for_search_path.close()
 
         return cursor
@@ -169,5 +175,6 @@ class FakeTenant:
     We can't import any db model in a backend (apparently?), so this class is used
     for wrapping schema names in a tenant-like structure.
     """
+
     def __init__(self, schema_name):
         self.schema_name = schema_name

@@ -1,3 +1,5 @@
+import shlex
+
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import connection
@@ -13,4 +15,8 @@ class Command(InteractiveTenantOption, BaseCommand):
             schema_name=schema_name, **options
         )
         connection.set_tenant(tenant)
-        call_command(command, *args, **options)
+
+        # allow passing a command as string including parameters
+        #  eg. `./manage.py tenant_command -s tenant "test_command --foo 123"`
+        parsed_command = shlex.split(command)
+        call_command(*parsed_command, *args, **options)

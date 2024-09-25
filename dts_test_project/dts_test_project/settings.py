@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import django
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -24,7 +25,19 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-DEFAULT_FILE_STORAGE = "tenant_schemas.storage.TenantFileSystemStorage"
+if django.VERSION > (4, 2):
+    STORAGES = {
+        "default": {
+            "BACKEND": "tenant_schemas.storage.TenantStaticFilesStorage"
+        },
+        "staticfiles": {
+            "BACKEND": "tenant_schemas.storage.TenantStaticFilesStorage"
+        }
+    }
+else:
+    STATICFILES_STORAGE = "tenant_schemas.storage.TenantStaticFilesStorage"
+    DEFAULT_FILE_STORAGE = "tenant_schemas.storage.TenantFileSystemStorage"
+
 
 # Application definition
 
@@ -126,7 +139,7 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
-STATICFILES_STORAGE = "tenant_schemas.storage.TenantStaticFilesStorage"
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGGING = {
     "version": 1,

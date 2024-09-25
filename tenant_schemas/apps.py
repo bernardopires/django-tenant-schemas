@@ -1,3 +1,4 @@
+import django
 from django.apps import AppConfig, apps
 from django.conf import settings
 from django.core.checks import Critical, Error, Warning, register
@@ -93,11 +94,24 @@ def best_practice(app_configs, **kwargs):
                   hint=[a for a in settings.SHARED_APPS if a in delta],
                   id="tenant_schemas.E003"))
 
+    if django.VERSION >= (4, 2):
+        storage_hint = "Set settings.STORAGES to %s" % {
+            "default": {
+                "BACKEND": "tenant_schemas.storage.TenantStaticFilesStorage"
+            },
+            "staticfiles": {
+                "BACKEND": "tenant_schemas.storage.TenantStaticFilesStorage"
+            }
+        }
+    else:
+        storage_hint = (
+            "Set settings.DEFAULT_FILE_STORAGE to "
+            "'tenant_schemas.storage.TenantFileSystemStorage'"
+        )
     if not isinstance(default_storage, TenantStorageMixin):
         errors.append(Warning(
             "Your default storage engine is not tenant aware.",
-            hint="Set settings.DEFAULT_FILE_STORAGE to "
-                 "'tenant_schemas.storage.TenantFileSystemStorage'",
+            hint=storage_hint,
             id="tenant_schemas.W003"
         ))
 

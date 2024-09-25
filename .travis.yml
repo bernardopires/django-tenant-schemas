@@ -2,10 +2,9 @@ language: python
 cache: pip
 
 python:
-  - 3.6
-  - 3.7
-  - 3.8
-  - 3.9
+  - "3.9"
+  - "3.11"
+  - "3.12"
 
 services:
   - postgresql
@@ -23,10 +22,9 @@ script:
   - tox
 
 env:
-  - DJANGO=2.2
-  - DJANGO=3.1
   - DJANGO=3.2
-  - DJANGO=4.0
+  - DJANGO=4.2
+  - DJANGO=5.1
 
 deploy:
   provider: pypi

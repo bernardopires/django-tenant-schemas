@@ -174,6 +174,21 @@ class DatabaseSchemaIntrospection(BaseDatabaseIntrospection):
         GROUP BY indexname, indisunique, indisprimary, amname, exprdef, attoptions;
     """
 
+    _get_sequences_query = """
+        SELECT s.relname as sequence_name, col.attname
+        FROM pg_class s
+            JOIN pg_namespace sn ON sn.oid = s.relnamespace
+            JOIN pg_depend d ON d.refobjid = s.oid AND d.refclassid='pg_class'::regclass
+            JOIN pg_attrdef ad ON ad.oid = d.objid AND d.classid = 'pg_attrdef'::regclass
+            JOIN pg_attribute col ON col.attrelid = ad.adrelid AND col.attnum = ad.adnum
+            JOIN pg_class tbl ON tbl.oid = ad.adrelid
+            JOIN pg_namespace n ON n.oid = tbl.relnamespace
+        WHERE s.relkind = 'S'
+            AND d.deptype in ('a', 'n')
+            AND n.nspname = %(schema)s
+            AND tbl.relname = %(table)s
+    """
+
     def get_field_type(self, data_type, description):
         field_type = super(DatabaseSchemaIntrospection, self).get_field_type(data_type, description)
         if description.default and 'nextval' in description.default:
@@ -315,3 +330,14 @@ class DatabaseSchemaIntrospection(BaseDatabaseIntrospection):
                     "options": options,
                 }
         return constraints
+    
+    def get_sequences(self, cursor, table_name, table_fields=()):
+        sequences = []
+        cursor.execute(self._get_sequences_query, {
+            'schema': self.connection.schema_name,
+            'table': table_name,
+        })
+
+        for row in cursor.fetchall():
+            sequences.append({'name': row[0], 'table': table_name, 'column': row[1]})
+        return sequences

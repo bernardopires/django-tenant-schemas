@@ -7,7 +7,8 @@ from tenant_schemas.utils import get_public_schema_name, get_tenant_model
 
 
 class TenantSchemaConfig(AppConfig):
-    name = 'tenant_schemas'
+    name = "tenant_schemas"
+    default_auto_field = "django.db.models.BigAutoField"
 
 
 @register('config')

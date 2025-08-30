@@ -24,7 +24,15 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-DEFAULT_FILE_STORAGE = "tenant_schemas.storage.TenantFileSystemStorage"
+STORAGES = {
+    "default": {
+        "BACKEND": "tenant_schemas.storage.TenantFileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "tenant_schemas.storage.TenantFileSystemStorage",
+    },
+}
+
 
 # Application definition
 
@@ -125,8 +133,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = "/static/"
-
-STATICFILES_STORAGE = "tenant_schemas.storage.TenantStaticFilesStorage"
 
 LOGGING = {
     "version": 1,

@@ -1,6 +1,5 @@
 import unittest
 
-import six
 from django.conf import settings
 from django.core.exceptions import DisallowedHost
 from django.http import Http404
@@ -19,7 +18,6 @@ class MissingDefaultTenantMiddleware(DefaultTenantMiddleware):
     DEFAULT_SCHEMA_NAME = "missing"
 
 
-@unittest.skipIf(six.PY2, "Unexpectedly failing only on Python 2.7")
 class RoutesTestCase(BaseTestCase):
     @classmethod
     def setUpClass(cls):
@@ -40,8 +38,8 @@ class RoutesTestCase(BaseTestCase):
     def setUp(self):
         super(RoutesTestCase, self).setUp()
         self.factory = RequestFactory()
-        self.tm = TenantMiddleware(lambda r:r)
-        self.dtm = DefaultTenantMiddleware()
+        self.tm = TenantMiddleware(lambda r: r)
+        self.dtm = DefaultTenantMiddleware(lambda r: r)
 
         self.tenant_domain = "tenant.test.com"
         self.tenant = Tenant(domain_url=self.tenant_domain, schema_name="test")
@@ -56,46 +54,46 @@ class RoutesTestCase(BaseTestCase):
 
     def test_tenant_routing(self):
         request = self.factory.get(self.url, HTTP_HOST=self.tenant_domain)
-        self.tm.process_request(request)
-        self.assertEquals(request.path_info, self.url)
-        self.assertEquals(request.tenant, self.tenant)
+        self.tm(request)
+        self.assertEqual(request.path_info, self.url)
+        self.assertEqual(request.tenant, self.tenant)
 
     def test_public_schema_routing(self):
         request = self.factory.get(self.url, HTTP_HOST=self.public_tenant.domain_url)
-        self.tm.process_request(request)
-        self.assertEquals(request.path_info, self.url)
-        self.assertEquals(request.tenant, self.public_tenant)
+        self.tm(request)
+        self.assertEqual(request.path_info, self.url)
+        self.assertEqual(request.tenant, self.public_tenant)
 
     def test_non_existent_tenant_routing(self):
         """Raise 404 for unrecognised hostnames."""
         request = self.factory.get(
             self.url, HTTP_HOST=self.non_existent_tenant.domain_url
         )
-        self.assertRaises(Http404, self.tm.process_request, request)
+        self.assertRaises(Http404, self.tm, request)
 
     def test_non_existent_tenant_to_default_schema_routing(self):
         """Route unrecognised hostnames to the 'public' tenant."""
         request = self.factory.get(
             self.url, HTTP_HOST=self.non_existent_tenant.domain_url
         )
-        self.dtm.process_request(request)
-        self.assertEquals(request.path_info, self.url)
-        self.assertEquals(request.tenant, self.public_tenant)
+        self.dtm(request)
+        self.assertEqual(request.path_info, self.url)
+        self.assertEqual(request.tenant, self.public_tenant)
 
     def test_non_existent_tenant_custom_middleware(self):
         """Route unrecognised hostnames to the 'test' tenant."""
-        dtm = TestDefaultTenantMiddleware()
+        dtm = TestDefaultTenantMiddleware(lambda r: r)
         request = self.factory.get(
             self.url, HTTP_HOST=self.non_existent_tenant.domain_url
         )
-        dtm.process_request(request)
-        self.assertEquals(request.path_info, self.url)
-        self.assertEquals(request.tenant, self.tenant)
+        dtm(request)
+        self.assertEqual(request.path_info, self.url)
+        self.assertEqual(request.tenant, self.tenant)
 
     def test_non_existent_tenant_and_default_custom_middleware(self):
         """Route unrecognised hostnames to the 'missing' tenant."""
-        dtm = MissingDefaultTenantMiddleware()
+        dtm = MissingDefaultTenantMiddleware(lambda r: r)
         request = self.factory.get(
             self.url, HTTP_HOST=self.non_existent_tenant.domain_url
         )
-        self.assertRaises(DisallowedHost, dtm.process_request, request)
+        self.assertRaises(DisallowedHost, dtm, request)

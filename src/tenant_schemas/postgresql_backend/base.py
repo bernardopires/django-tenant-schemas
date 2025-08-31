@@ -1,6 +1,5 @@
 import re
 import warnings
-import psycopg2
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -10,9 +9,16 @@ import django.db.utils
 from tenant_schemas.utils import get_public_schema_name, get_limit_set_calls
 from tenant_schemas.postgresql_backend.introspection import DatabaseSchemaIntrospection
 
+try:
+    try:
+        from psycopg import InternalError
+    except ImportError:
+        from psycopg2 import InternalError
+except ImportError:
+    raise ImproperlyConfigured("Error loading psycopg2 or psycopg module")
 
-ORIGINAL_BACKEND = getattr(settings, 'ORIGINAL_BACKEND', 'django.db.backends.postgresql_psycopg2')
-# Django 1.9+ takes care to rename the default backend to 'django.db.backends.postgresql'
+
+ORIGINAL_BACKEND = getattr(settings, 'ORIGINAL_BACKEND', 'django.db.backends.postgresql')
 original_backend = django.db.utils.load_backend(ORIGINAL_BACKEND)
 
 EXTRA_SEARCH_PATHS = getattr(settings, 'PG_EXTRA_SEARCH_PATHS', [])
@@ -155,7 +161,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
             # we do not have to worry that it's not the good one
             try:
                 cursor_for_search_path.execute('SET search_path = {0}'.format(','.join(search_paths)))
-            except (django.db.utils.DatabaseError, psycopg2.InternalError):
+            except (django.db.utils.DatabaseError, InternalError):
                 self.search_path_set = False
             else:
                 self.search_path_set = True

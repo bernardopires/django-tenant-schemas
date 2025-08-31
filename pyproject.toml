@@ -30,7 +30,6 @@ classifiers = [
 dependencies = [
     "Django>=4.2",
     "ordered-set",
-    "psycopg2-binary",
 ]
 dynamic = ["version"]
 
@@ -62,6 +61,10 @@ ignore = ["C901", "E501", "E731", "W503"]
 
 [tool.bdist_wheel]
 universal = false
+
+[project.optional-dependencies]
+psycopg2 = ["psycopg2-binary"]
+psycopg = ["psycopg[binary]>=3.0"]
 
 [dependency-groups]
 dev = [

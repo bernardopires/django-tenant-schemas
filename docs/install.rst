@@ -2,11 +2,22 @@
 Installation
 ============
 
-Assuming you have django installed, the first step is to install ``django-tenant-schemas``.
+Assuming you have django installed, the first step is to install ``django-tenant-schemas`` with your preferred PostgreSQL client.
+
+.. code-block:: bash
+
+    # For psycopg2
+    pip install django-tenant-schemas[psycopg2]
+
+    # For psycopg
+    pip install django-tenant-schemas[psycopg]
+
+You can also install the base package without a PostgreSQL client if you want to manage the dependency separately:
 
 .. code-block:: bash
 
     pip install django-tenant-schemas
+    pip install psycopg2-binary  # or psycopg[binary]>=3.0
 
 Basic Settings
 ==============

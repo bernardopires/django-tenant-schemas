@@ -97,6 +97,19 @@ Magic
 Everyone loves magic! You'll be able to have all this barely having to
 change your code!
 
+Installation
+------------
+
+Install django-tenant-schemas with your preferred PostgreSQL client:
+
+.. code-block:: bash
+
+    # For psycopg2
+    pip install django-tenant-schemas[psycopg2]
+
+    # For psycopg
+    pip install django-tenant-schemas[psycopg]
+
 Setup & Documentation
 ---------------------
 

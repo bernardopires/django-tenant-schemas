@@ -28,8 +28,8 @@ class AppLabelsTestCase(TestCase):
 
     def test_app_labels(self):
         """
-        Verifies that app_labels handle Django 1.7+ AppConfigs properly.
-        https://docs.djangoproject.com/en/1.7/ref/applications/
+        Verifies that app_labels handle Django AppConfigs properly.
+        https://docs.djangoproject.com/en/4.2/ref/applications/
         """
         self.set_up_module('example1')
         apps = self.set_up_module('example2.apps')

@@ -31,7 +31,7 @@ Add `tenant_schemas.routers.TenantSyncRouter` to your `DATABASE_ROUTERS` setting
         'tenant_schemas.routers.TenantSyncRouter',
     )
 
-Add the middleware ``tenant_schemas.middleware.TenantMiddleware`` to the top of ``MIDDLEWARE_CLASSES``, so that each request can be set to use the correct schema.
+Add the middleware ``tenant_schemas.middleware.TenantMiddleware`` to the top of ``MIDDLEWARE``, so that each request can be set to use the correct schema.
 
 If the hostname in the request does not match a valid tenant ``domain_url``, a HTTP 404 Not Found will be returned.
 
@@ -50,13 +50,13 @@ If you'd like a different tenant selection technique (e.g. using an HTTP Header)
 
 .. code-block:: python
 
-    MIDDLEWARE_CLASSES = (
+    MIDDLEWARE = [
         'tenant_schemas.middleware.TenantMiddleware',
         # 'tenant_schemas.middleware.SuspiciousTenantMiddleware',
         # 'tenant_schemas.middleware.DefaultTenantMiddleware',
         # 'myproject.middleware.MyDefaultTenantMiddleware',
         #...
-    )
+    ]
 
 .. code-block:: python
 

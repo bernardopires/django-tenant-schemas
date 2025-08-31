@@ -21,7 +21,7 @@ class BaseTenantCommand(BaseCommand):
         """
         Sets option_list and help dynamically.
         """
-        obj = super(BaseTenantCommand, cls).__new__(cls, *args, **kwargs)
+        obj = super().__new__(cls, *args, **kwargs)
 
         app_name = get_commands()[obj.COMMAND_NAME]
         if isinstance(app_name, BaseCommand):
@@ -43,7 +43,7 @@ class BaseTenantCommand(BaseCommand):
         return obj
 
     def add_arguments(self, parser):
-        super(BaseTenantCommand, self).add_arguments(parser)
+        super().add_arguments(parser)
         parser.add_argument("-s", "--schema", dest="schema_name")
         parser.add_argument(
             "-p",
@@ -148,12 +148,12 @@ class TenantWrappedCommand(InteractiveTenantOption, BaseCommand):
     """
 
     def __new__(cls, *args, **kwargs):
-        obj = super(TenantWrappedCommand, cls).__new__(cls, *args, **kwargs)
+        obj = super().__new__(cls, *args, **kwargs)
         obj.command_instance = obj.COMMAND()
         return obj
 
     def add_arguments(self, parser):
-        super(TenantWrappedCommand, self).add_arguments(parser)
+        super().add_arguments(parser)
         self.command_instance.add_arguments(parser)
 
     def handle(self, *args, **options):

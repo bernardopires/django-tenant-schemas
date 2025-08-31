@@ -18,12 +18,12 @@ class Command(SyncCommon):
     )
 
     def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         command = MigrateCommand()
         command.add_arguments(parser)
 
     def handle(self, *args, **options):
-        super(Command, self).handle(*args, **options)
+        super().handle(*args, **options)
         self.PUBLIC_SCHEMA_NAME = get_public_schema_name()
 
         executor = get_executor(codename=self.executor)(self.args, self.options)

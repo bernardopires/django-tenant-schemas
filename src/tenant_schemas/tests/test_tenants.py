@@ -30,7 +30,7 @@ class TenantDataAndSettingsTest(BaseTestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TenantDataAndSettingsTest, cls).setUpClass()
+        super().setUpClass()
         settings.SHARED_APPS = ("tenant_schemas",)
         settings.TENANT_APPS = (
             "dts_test_app",
@@ -308,7 +308,7 @@ class TenantCommandTest(BaseTestCase):
 class SharedAuthTest(BaseTestCase):
     @classmethod
     def setUpClass(cls):
-        super(SharedAuthTest, cls).setUpClass()
+        super().setUpClass()
         settings.SHARED_APPS = (
             "tenant_schemas",
             "django.contrib.auth",

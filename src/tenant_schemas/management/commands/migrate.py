@@ -15,7 +15,7 @@ class Command(BaseCommand):
             raise CommandError("migrate has been disabled, for database '{0}'. Use migrate_schemas "
                                "instead. Please read the documentation if you don't know why you "
                                "shouldn't call migrate directly!".format(database))
-        super(Command, self).handle(*args, **options)
+        super().handle(*args, **options)
 
 
 if django_is_in_test_mode():

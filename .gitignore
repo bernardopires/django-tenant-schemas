@@ -5,6 +5,7 @@
 VERSION
 _build/
 dist/
-django_tenant_schemas.egg-info
+*.egg-info
 .eggs/
 .idea/
+uv.lock

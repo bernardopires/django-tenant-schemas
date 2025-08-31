@@ -406,8 +406,8 @@ class TenantTestCaseTest(BaseTestCase, TenantTestCase):
 
     def test_tenant_survives_after_method1(self):
         # There is one tenant in the database, the one created by TenantTestCase
-        self.assertEquals(1, get_tenant_model().objects.all().count())
+        self.assertEqual(1, get_tenant_model().objects.all().count())
 
     def test_tenant_survives_after_method2(self):
         # The same tenant still exists even after the previous method call
-        self.assertEquals(1, get_tenant_model().objects.all().count())
+        self.assertEqual(1, get_tenant_model().objects.all().count())

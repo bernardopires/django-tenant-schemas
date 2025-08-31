@@ -7,7 +7,8 @@ from tenant_schemas.utils import get_public_schema_name, get_tenant_model
 
 
 class TenantSchemaConfig(AppConfig):
-    name = 'tenant_schemas'
+    name = "tenant_schemas"
+    default_auto_field = "django.db.models.BigAutoField"
 
 
 @register('config')
@@ -94,11 +95,13 @@ def best_practice(app_configs, **kwargs):
                   id="tenant_schemas.E003"))
 
     if not isinstance(default_storage, TenantStorageMixin):
-        errors.append(Warning(
-            "Your default storage engine is not tenant aware.",
-            hint="Set settings.DEFAULT_FILE_STORAGE to "
-                 "'tenant_schemas.storage.TenantFileSystemStorage'",
-            id="tenant_schemas.W003"
-        ))
+        errors.append(
+            Warning(
+                f"Your default storage engine is not tenant aware.",
+                hint="Set settings.STORAGES default backend to "
+                "'tenant_schemas.storage.TenantFileSystemStorage'",
+                id="tenant_schemas.W003",
+            )
+        )
 
     return errors

@@ -121,7 +121,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         must go through this to get the cursor handle. We change the path.
         """
         if name:
-            # Only supported and required by Django 1.11 (server-side cursor)
+            # Create server-side cursor (supported across Django versions)
             cursor = super()._cursor(name=name)
         else:
             cursor = super()._cursor()

@@ -14,12 +14,7 @@ from tenant_schemas.utils import (
     tenant_context,
 )
 
-try:
-    # python 2
-    from StringIO import StringIO
-except ImportError:
-    # python 3
-    from io import StringIO
+from io import StringIO
 
 
 class TenantDataAndSettingsTest(BaseTestCase):

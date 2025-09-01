@@ -21,7 +21,7 @@ class MissingDefaultTenantMiddleware(DefaultTenantMiddleware):
 class RoutesTestCase(BaseTestCase):
     @classmethod
     def setUpClass(cls):
-        super(RoutesTestCase, cls).setUpClass()
+        super().setUpClass()
         settings.SHARED_APPS = ("tenant_schemas",)
         settings.TENANT_APPS = (
             "dts_test_app",
@@ -36,7 +36,7 @@ class RoutesTestCase(BaseTestCase):
         cls.public_tenant.save(verbosity=BaseTestCase.get_verbosity())
 
     def setUp(self):
-        super(RoutesTestCase, self).setUp()
+        super().setUp()
         self.factory = RequestFactory()
         self.tm = TenantMiddleware(lambda r: r)
         self.dtm = DefaultTenantMiddleware(lambda r: r)

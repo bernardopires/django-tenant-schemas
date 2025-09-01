@@ -1,15 +1,9 @@
-from __future__ import unicode_literals
-
 from collections import namedtuple
 
 from django.db.backends.base.introspection import (
     BaseDatabaseIntrospection, FieldInfo, TableInfo,
 )
-try:
-    # Django >= 1.11
-    from django.db.models.indexes import Index
-except ImportError:
-    Index = None
+from django.db.models.indexes import Index
 from django.utils.encoding import force_str
 
 fields = FieldInfo._fields
@@ -175,7 +169,7 @@ class DatabaseSchemaIntrospection(BaseDatabaseIntrospection):
     """
 
     def get_field_type(self, data_type, description):
-        field_type = super(DatabaseSchemaIntrospection, self).get_field_type(data_type, description)
+        field_type = super().get_field_type(data_type, description)
         if description.default and 'nextval' in description.default:
             if field_type == 'IntegerField':
                 return 'AutoField'
@@ -310,7 +304,7 @@ class DatabaseSchemaIntrospection(BaseDatabaseIntrospection):
                     "foreign_key": None,
                     "check": False,
                     "index": True,
-                    "type": Index.suffix if type_ == 'btree' and Index else type_,
+                    "type": Index.suffix if type_ == 'btree' else type_,
                     "definition": definition,
                     "options": options,
                 }

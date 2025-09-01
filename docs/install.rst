@@ -257,7 +257,7 @@ Or you can create a completely separate project for the main website.
 Caching
 -------
 
-To enable tenant aware caching you can set the `KEY_FUNCTION <https://docs.djangoproject.com/en/1.8/ref/settings/#std:setting-CACHES-KEY_FUNCTION>`_ setting to use the provided ``make_key`` helper function which
+To enable tenant aware caching you can set the `KEY_FUNCTION <https://docs.djangoproject.com/en/4.2/ref/settings/#key-function>`_ setting to use the provided ``make_key`` helper function which
 adds the tenants ``schema_name`` as the first key prefix.
 
 .. code-block:: python

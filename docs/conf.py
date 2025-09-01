@@ -92,8 +92,8 @@ pygments_style = 'sphinx'
 
 intersphinx_mapping = {
     'django': (
-        'https://docs.djangoproject.com/en/1.11/',
-        'https://docs.djangoproject.com/en/1.11/_objects/'),
+        'https://docs.djangoproject.com/en/4.2/',
+        'https://docs.djangoproject.com/en/4.2/_objects/'),
 }
 
 # -- Options for HTML output ---------------------------------------------------

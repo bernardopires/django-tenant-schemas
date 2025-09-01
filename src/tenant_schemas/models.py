@@ -64,7 +64,7 @@ class TenantMixin(models.Model):
                             "the public schema. Current schema is %s."
                             % connection.schema_name)
 
-        super(TenantMixin, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
         if is_new and self.auto_create_schema:
             try:
@@ -91,7 +91,7 @@ class TenantMixin(models.Model):
             cursor = connection.cursor()
             cursor.execute('DROP SCHEMA IF EXISTS %s CASCADE' % self.schema_name)
 
-        return super(TenantMixin, self).delete(*args, **kwargs)
+        return super().delete(*args, **kwargs)
 
     def create_schema(self, check_if_exists=False, sync_schema=True,
                       verbosity=1):

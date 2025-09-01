@@ -14,12 +14,7 @@ from tenant_schemas.utils import (
     tenant_context,
 )
 
-try:
-    # python 2
-    from StringIO import StringIO
-except ImportError:
-    # python 3
-    from io import StringIO
+from io import StringIO
 
 
 class TenantDataAndSettingsTest(BaseTestCase):
@@ -30,7 +25,7 @@ class TenantDataAndSettingsTest(BaseTestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TenantDataAndSettingsTest, cls).setUpClass()
+        super().setUpClass()
         settings.SHARED_APPS = ("tenant_schemas",)
         settings.TENANT_APPS = (
             "dts_test_app",
@@ -308,7 +303,7 @@ class TenantCommandTest(BaseTestCase):
 class SharedAuthTest(BaseTestCase):
     @classmethod
     def setUpClass(cls):
-        super(SharedAuthTest, cls).setUpClass()
+        super().setUpClass()
         settings.SHARED_APPS = (
             "tenant_schemas",
             "django.contrib.auth",

@@ -30,18 +30,18 @@ class BaseTestCase(TestCase):
         cursor = connection.cursor()
         cursor.execute('DROP SCHEMA IF EXISTS %s CASCADE; CREATE SCHEMA %s;'
                        % (get_public_schema_name(), get_public_schema_name()))
-        super(BaseTestCase, cls).setUpClass()
+        super().setUpClass()
 
     @classmethod
     def tearDownClass(cls):
-        super(BaseTestCase, cls).tearDownClass()
+        super().tearDownClass()
 
         if '.test.com' in settings.ALLOWED_HOSTS:
             settings.ALLOWED_HOSTS.remove('.test.com')
 
     def setUp(self):
         connection.set_schema_to_public()
-        super(BaseTestCase, self).setUp()
+        super().setUp()
 
     @classmethod
     def get_verbosity(self):

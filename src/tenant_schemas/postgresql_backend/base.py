@@ -239,9 +239,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         Override to avoid opening a fresh cursor during mogrify when there are no params.
         This helps prevent recursion issues with psycopg3 when DEBUG=True.
         """
-        if (
-            params is None or len(params) == 0
-        ):  # no need to mogrify, avoids opening a fresh cursor
+        if not params:  # no need to mogrify, avoids opening a fresh cursor
             return sql
         # Delegate to the operations class
         return self.ops.last_executed_query(cursor, sql, params)

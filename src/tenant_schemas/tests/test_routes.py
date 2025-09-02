@@ -1,4 +1,3 @@
-import unittest
 
 from django.conf import settings
 from django.core.exceptions import DisallowedHost

@@ -72,7 +72,7 @@ class AppConfigTests(TestCase):
         self.assertBestPractice(
             [
                 Warning(
-                    f"Your default storage engine is not tenant aware.",
+                    "Your default storage engine is not tenant aware.",
                     hint="Set settings.STORAGES default backend to "
                     "'tenant_schemas.storage.TenantFileSystemStorage'",
                     id="tenant_schemas.W003",

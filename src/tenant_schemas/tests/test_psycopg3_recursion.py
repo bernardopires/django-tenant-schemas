@@ -1,10 +1,8 @@
-import unittest
-import sys
-from unittest.mock import patch, MagicMock, Mock
+from unittest.mock import patch, Mock
 
 from django.conf import settings
 from django.db import connection
-from django.test import override_settings, TransactionTestCase
+from django.test import override_settings
 from tenant_schemas.tests.testcases import BaseTestCase
 from tenant_schemas.tests.models import Tenant
 from tenant_schemas.utils import get_public_schema_name
@@ -166,10 +164,6 @@ class Psycopg3RecursionFixTest(BaseTestCase):
             self.assertEqual(result, "formatted")
             mock_ops.assert_called_once_with(cursor, "SELECT %s", ["test"])
 
-    @unittest.skipUnless(
-        "psycopg" in sys.modules or "psycopg2" in sys.modules,
-        "Requires psycopg or psycopg2",
-    )
     @override_settings(DEBUG=True)
     def test_integration_with_real_connection(self):
         """Integration test with real database connection and DEBUG=True."""

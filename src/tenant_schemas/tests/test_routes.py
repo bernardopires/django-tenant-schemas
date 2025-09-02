@@ -1,6 +1,3 @@
-import unittest
-
-from django.conf import settings
 from django.core.exceptions import DisallowedHost
 from django.http import Http404
 from django.test.client import RequestFactory
@@ -22,13 +19,6 @@ class RoutesTestCase(BaseTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        settings.SHARED_APPS = ("tenant_schemas",)
-        settings.TENANT_APPS = (
-            "dts_test_app",
-            "django.contrib.contenttypes",
-            "django.contrib.auth",
-        )
-        settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
         cls.sync_shared()
         cls.public_tenant = Tenant(
             domain_url="test.com", schema_name=get_public_schema_name()

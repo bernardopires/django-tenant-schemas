@@ -1,4 +1,5 @@
 from unittest.mock import patch, Mock
+import django.db.utils
 
 from django.db import connection
 from django.test import override_settings
@@ -76,8 +77,10 @@ class Psycopg3RecursionFixTest(BaseTestCase):
         token = _SETTING_SEARCH_PATH.set(True)
         try:
             # Mock the super()._cursor() call and connection to avoid actual DB calls
+            # Get the original backend DatabaseWrapper that our class inherits from
+            original_backend = django.db.utils.load_backend("django.db.backends.postgresql")
             with patch.object(
-                DatabaseWrapper.__bases__[0], "_cursor"
+                original_backend.DatabaseWrapper, "_cursor"
             ) as mock_super_cursor, patch.object(wrapper, "connection") as mock_conn:
                 mock_super_cursor.return_value = Mock()
                 mock_conn.cursor.return_value = Mock()
@@ -147,8 +150,10 @@ class Psycopg3RecursionFixTest(BaseTestCase):
         wrapper._ts_last_path_sig = ("tenant1", "public")
 
         # Rollback should clear cache
+        # Get the original backend DatabaseWrapper that our class inherits from
+        original_backend = django.db.utils.load_backend("django.db.backends.postgresql")
         with patch.object(
-            wrapper.__class__.__bases__[0], "rollback"
+            original_backend.DatabaseWrapper, "rollback"
         ):  # Mock parent rollback
             wrapper.rollback()
         self.assertIsNone(wrapper._ts_last_path_sig)

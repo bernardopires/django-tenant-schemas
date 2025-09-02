@@ -130,6 +130,31 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         )
         return self.tenant
 
+    def _should_set_search_path(self, path_sig):
+        """
+        Determine if search_path needs to be set based on current configuration.
+        
+        Returns True if:
+        - Limit set calls is disabled OR search_path is not set
+        - AND the path signature has changed
+        """
+        return (
+            not get_limit_set_calls() or not self.search_path_set
+        ) and self._ts_last_path_sig != path_sig
+
+    def _get_raw_cursor(self, cursor_for_search_path):
+        """
+        Get the raw DB-API cursor for psycopg2/psycopg3 compatibility.
+        
+        In psycopg2, cursor_for_search_path may have a 'cursor' attribute 
+        pointing to the raw DB-API cursor.
+        In psycopg3, the cursor object itself is the raw DB-API cursor.
+        """
+        if hasattr(cursor_for_search_path, "cursor"):
+            return cursor_for_search_path.cursor
+        else:
+            return cursor_for_search_path
+
     def _cursor(self, name=None):
         """
         Here it happens. We hope every Django db operation using PostgreSQL
@@ -163,11 +188,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         path_sig = tuple(search_paths)
 
         # Check if we need to set the search path
-        should_set_path = (
-            not get_limit_set_calls() or not self.search_path_set
-        ) and self._ts_last_path_sig != path_sig
-
-        if should_set_path:
+        if self._should_set_search_path(path_sig):
             # Prevent recursion during debug/mogrify operations with psycopg3
             if _SETTING_SEARCH_PATH.get():
                 return cursor
@@ -180,13 +201,7 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
                 else:
                     # Reuse - get raw cursor to avoid Django's debug wrapper
                     cursor_for_search_path = cursor
-                    # For psycopg3 compatibility, get the raw DB-API cursor.
-                    # In psycopg2, cursor_for_search_path may have a 'cursor' attribute pointing to the raw DB-API cursor.
-                    # In psycopg3, the cursor object itself is the raw DB-API cursor.
-                    if hasattr(cursor_for_search_path, "cursor"):
-                        raw_cursor = cursor_for_search_path.cursor
-                    else:
-                        raw_cursor = cursor_for_search_path
+                    raw_cursor = self._get_raw_cursor(cursor_for_search_path)
 
                 # In the event that an error already happened in this transaction and we are going
                 # to rollback we should just ignore database error when setting the search_path

@@ -180,10 +180,13 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
                 else:
                     # Reuse - get raw cursor to avoid Django's debug wrapper
                     cursor_for_search_path = cursor
-                    # For psycopg3 compatibility, get the raw DB-API cursor
-                    raw_cursor = getattr(
-                        cursor_for_search_path, "cursor", cursor_for_search_path
-                    )
+                    # For psycopg3 compatibility, get the raw DB-API cursor.
+                    # In psycopg2, cursor_for_search_path may have a 'cursor' attribute pointing to the raw DB-API cursor.
+                    # In psycopg3, the cursor object itself is the raw DB-API cursor.
+                    if hasattr(cursor_for_search_path, "cursor"):
+                        raw_cursor = cursor_for_search_path.cursor
+                    else:
+                        raw_cursor = cursor_for_search_path
 
                 # In the event that an error already happened in this transaction and we are going
                 # to rollback we should just ignore database error when setting the search_path
@@ -221,7 +224,9 @@ class DatabaseWrapper(original_backend.DatabaseWrapper):
         Override to avoid opening a fresh cursor during mogrify when there are no params.
         This helps prevent recursion issues with psycopg3 when DEBUG=True.
         """
-        if not params:  # no need to mogrify, avoids opening a fresh cursor
+        if (
+            params is None or len(params) == 0
+        ):  # no need to mogrify, avoids opening a fresh cursor
             return sql
         # Delegate to the operations class
         return self.ops.last_executed_query(cursor, sql, params)

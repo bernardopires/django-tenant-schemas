@@ -1,6 +1,5 @@
 from unittest.mock import patch, Mock
 
-from django.conf import settings
 from django.db import connection
 from django.test import override_settings
 from tenant_schemas.tests.testcases import BaseTestCase
@@ -19,11 +18,22 @@ class Psycopg3RecursionFixTest(BaseTestCase):
     """
 
     @classmethod
+    @override_settings(
+        SHARED_APPS=("tenant_schemas",),
+        TENANT_APPS=(
+            "dts_test_app",
+            "django.contrib.contenttypes",
+            "django.contrib.auth",
+        ),
+        INSTALLED_APPS=(
+            "tenant_schemas",
+            "dts_test_app",
+            "django.contrib.contenttypes",
+            "django.contrib.auth",
+        ),
+    )
     def setUpClass(cls):
         super().setUpClass()
-        settings.SHARED_APPS = ("tenant_schemas",)
-        settings.TENANT_APPS = ("dts_test_app", "django.contrib.contenttypes")
-        settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
         cls.sync_shared()
         Tenant(domain_url="test.com", schema_name=get_public_schema_name()).save(
             verbosity=cls.get_verbosity()
@@ -169,7 +179,7 @@ class Psycopg3RecursionFixTest(BaseTestCase):
         """Integration test with real database connection and DEBUG=True."""
         # Use existing public schema to avoid tenant creation complexity
         connection.set_schema_to_public()
-        
+
         try:
             # This should work without recursion error even with DEBUG=True
             cursor = connection._cursor()
@@ -179,21 +189,21 @@ class Psycopg3RecursionFixTest(BaseTestCase):
             cursor.execute("SELECT 1")
             result = cursor.fetchone()
             self.assertEqual(result[0], 1)
-            
+
             # Verify we can switch search paths without issues
             # Create a mock tenant for search path testing
             mock_tenant = Mock()
             mock_tenant.schema_name = "public"  # Use public schema that exists
-            
+
             connection.set_tenant(mock_tenant)
             cursor2 = connection._cursor()
             self.assertIsNotNone(cursor2)
-            
+
             # Another simple query to ensure search_path changes work
             cursor2.execute("SELECT 2")
             result2 = cursor2.fetchone()
             self.assertEqual(result2[0], 2)
-            
+
         finally:
             # Clean up any state changes
             connection.set_schema_to_public()

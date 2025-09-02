@@ -1,6 +1,6 @@
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import connection
+from django.test import override_settings
 from dts_test_app.models import DummyModel, ModelWithFkToPublicUser
 from tenant_schemas.management.commands import tenant_command
 from tenant_schemas.test.cases import TenantTestCase
@@ -26,13 +26,6 @@ class TenantDataAndSettingsTest(BaseTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        settings.SHARED_APPS = ("tenant_schemas",)
-        settings.TENANT_APPS = (
-            "dts_test_app",
-            "django.contrib.contenttypes",
-            "django.contrib.auth",
-        )
-        settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
         cls.sync_shared()
         Tenant(domain_url="test.com", schema_name=get_public_schema_name()).save(
             verbosity=cls.get_verbosity()
@@ -178,36 +171,50 @@ class TenantSyncTest(BaseTestCase):
 
     MIGRATION_TABLE_SIZE = 1
 
+    @override_settings(
+        SHARED_APPS=(
+            "tenant_schemas",  # 2 tables
+            "django.contrib.auth",  # 6 tables
+            "django.contrib.contenttypes",
+        ),  # 1 table
+        TENANT_APPS=("django.contrib.sessions",),
+        INSTALLED_APPS=(
+            "tenant_schemas",
+            "django.contrib.auth",
+            "django.contrib.contenttypes",
+            "django.contrib.sessions",
+        ),
+    )
     def test_shared_apps_does_not_sync_tenant_apps(self):
         """
         Tests that if an app is in SHARED_APPS, it does not get synced to
         the a tenant schema.
         """
-        settings.SHARED_APPS = (
-            "tenant_schemas",  # 2 tables
-            "django.contrib.auth",  # 6 tables
-            "django.contrib.contenttypes",
-        )  # 1 table
-        settings.TENANT_APPS = ("django.contrib.sessions",)
-        settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
         self.sync_shared()
 
         shared_tables = self.get_tables_list_in_schema(get_public_schema_name())
         self.assertEqual(2 + 6 + 1 + self.MIGRATION_TABLE_SIZE, len(shared_tables))
         self.assertNotIn("django_session", shared_tables)
 
+    @override_settings(
+        SHARED_APPS=(
+            "tenant_schemas",
+            "django.contrib.auth",
+            "django.contrib.contenttypes",
+        ),
+        TENANT_APPS=("django.contrib.sessions",),  # 1 table
+        INSTALLED_APPS=(
+            "tenant_schemas",
+            "django.contrib.auth",
+            "django.contrib.contenttypes",
+            "django.contrib.sessions",
+        ),
+    )
     def test_tenant_apps_does_not_sync_shared_apps(self):
         """
         Tests that if an app is in TENANT_APPS, it does not get synced to
         the public schema.
         """
-        settings.SHARED_APPS = (
-            "tenant_schemas",
-            "django.contrib.auth",
-            "django.contrib.contenttypes",
-        )
-        settings.TENANT_APPS = ("django.contrib.sessions",)  # 1 table
-        settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
         self.sync_shared()
         tenant = Tenant(domain_url="arbitrary.test.com", schema_name="test")
         tenant.save(verbosity=BaseTestCase.get_verbosity())
@@ -216,19 +223,26 @@ class TenantSyncTest(BaseTestCase):
         self.assertEqual(1 + self.MIGRATION_TABLE_SIZE, len(tenant_tables))
         self.assertIn("django_session", tenant_tables)
 
+    @override_settings(
+        SHARED_APPS=(
+            "tenant_schemas",  # 2 tables
+            "django.contrib.auth",  # 6 tables
+            "django.contrib.contenttypes",  # 1 table
+            "django.contrib.sessions",
+        ),  # 1 table
+        TENANT_APPS=("django.contrib.sessions",),  # 1 table
+        INSTALLED_APPS=(
+            "tenant_schemas",
+            "django.contrib.auth",
+            "django.contrib.contenttypes",
+            "django.contrib.sessions",
+        ),
+    )
     def test_tenant_apps_and_shared_apps_can_have_the_same_apps(self):
         """
         Tests that both SHARED_APPS and TENANT_APPS can have apps in common.
         In this case they should get synced to both tenant and public schemas.
         """
-        settings.SHARED_APPS = (
-            "tenant_schemas",  # 2 tables
-            "django.contrib.auth",  # 6 tables
-            "django.contrib.contenttypes",  # 1 table
-            "django.contrib.sessions",
-        )  # 1 table
-        settings.TENANT_APPS = ("django.contrib.sessions",)  # 1 table
-        settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
         self.sync_shared()
         tenant = Tenant(domain_url="arbitrary.test.com", schema_name="test")
         tenant.save(verbosity=BaseTestCase.get_verbosity())
@@ -240,17 +254,23 @@ class TenantSyncTest(BaseTestCase):
         self.assertEqual(1 + self.MIGRATION_TABLE_SIZE, len(tenant_tables))
         self.assertIn("django_session", tenant_tables)
 
+    @override_settings(
+        SHARED_APPS=(
+            "tenant_schemas",  # 2 tables
+            "django.contrib.contenttypes",
+        ),  # 1 table
+        TENANT_APPS=("django.contrib.sessions",),  # 1 table
+        INSTALLED_APPS=(
+            "tenant_schemas",
+            "django.contrib.contenttypes",
+            "django.contrib.sessions",
+        ),
+    )
     def test_content_types_is_not_mandatory(self):
         """
         Tests that even if content types is in SHARED_APPS, it's
         not required in TENANT_APPS.
         """
-        settings.SHARED_APPS = (
-            "tenant_schemas",  # 2 tables
-            "django.contrib.contenttypes",
-        )  # 1 table
-        settings.TENANT_APPS = ("django.contrib.sessions",)  # 1 table
-        settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
         self.sync_shared()
         tenant = Tenant(domain_url="something.test.com", schema_name="test")
         tenant.save(verbosity=BaseTestCase.get_verbosity())
@@ -264,17 +284,22 @@ class TenantSyncTest(BaseTestCase):
 
 
 class TenantCommandTest(BaseTestCase):
+    @override_settings(
+        SHARED_APPS=(
+            "tenant_schemas",
+            "django.contrib.contenttypes",
+        ),
+        TENANT_APPS=(),
+        INSTALLED_APPS=(
+            "tenant_schemas",
+            "django.contrib.contenttypes",
+        ),
+    )
     def test_command(self):
         """
         Tests that tenant_command is capable of wrapping commands
         and its parameters.
         """
-        settings.SHARED_APPS = (
-            "tenant_schemas",
-            "django.contrib.contenttypes",
-        )
-        settings.TENANT_APPS = ()
-        settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
         self.sync_shared()
         Tenant(domain_url="localhost", schema_name="public").save(
             verbosity=BaseTestCase.get_verbosity()
@@ -300,17 +325,24 @@ class TenantCommandTest(BaseTestCase):
         )
 
 
+@override_settings(
+    SHARED_APPS=(
+        "tenant_schemas",
+        "django.contrib.auth",
+        "django.contrib.contenttypes",
+    ),
+    TENANT_APPS=("dts_test_app",),
+    INSTALLED_APPS=(
+        "tenant_schemas",
+        "django.contrib.auth",
+        "django.contrib.contenttypes",
+        "dts_test_app",
+    ),
+)
 class SharedAuthTest(BaseTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        settings.SHARED_APPS = (
-            "tenant_schemas",
-            "django.contrib.auth",
-            "django.contrib.contenttypes",
-        )
-        settings.TENANT_APPS = ("dts_test_app",)
-        settings.INSTALLED_APPS = settings.SHARED_APPS + settings.TENANT_APPS
         cls.sync_shared()
         Tenant(domain_url="test.com", schema_name=get_public_schema_name()).save(
             verbosity=cls.get_verbosity()

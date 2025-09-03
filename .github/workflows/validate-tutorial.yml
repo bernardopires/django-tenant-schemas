@@ -3,18 +3,16 @@ name: Validate Tutorial
 on:
   push:
     branches: [ master ]
-    paths:
-      - 'examples/tenant_tutorial/**'
-      - 'docs/examples.rst'
   pull_request:
     branches: [ master ]
-    paths:
-      - 'examples/tenant_tutorial/**'
-      - 'docs/examples.rst'
 
 jobs:
   validate-tutorial:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: examples/tenant_tutorial
 
     services:
       postgres:
@@ -35,90 +33,48 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v4
       with:
-        python-version: '3.11'
+        version: "latest"
 
     - name: Change to tutorial directory
-      run: cd examples/tenant_tutorial
+      run: pwd  # Just to verify we're in the right directory
 
     - name: Create virtual environment and install dependencies
       run: |
-        cd examples/tenant_tutorial
-        python -m venv tutorial_env
+        uv venv tutorial_env
         source tutorial_env/bin/activate
-        pip install --upgrade pip
-        pip install -r requirements.txt
+        uv pip sync requirements.txt
 
     - name: Verify database connection
       run: |
-        cd examples/tenant_tutorial
         source tutorial_env/bin/activate
-        python -c "
-        import os
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tenant_tutorial.settings')
-        import django
-        django.setup()
-        from django.db import connection
-        with connection.cursor() as cursor:
-            cursor.execute('SELECT 1')
-            result = cursor.fetchone()
-            print(f'Database connection successful: {result}')
-        "
+        echo "SELECT 1" | uv run python manage.py dbshell
 
     - name: Run initial migrations
       run: |
-        cd examples/tenant_tutorial
         source tutorial_env/bin/activate
-        python manage.py migrate_schemas --shared
+        uv run python manage.py migrate_schemas --shared
 
     - name: Create public tenant
       run: |
-        cd examples/tenant_tutorial
         source tutorial_env/bin/activate
-        python manage.py shell << 'EOF'
-        from customers.models import Client
-        Client(
-            domain_url='localhost',
-            schema_name='public',
-            name='Tutorial Public Tenant',
-            description='Public tenant for tutorial validation'
-        ).save()
-        EOF
+        uv run python manage.py create_client public localhost "Tutorial Public Tenant" --description "Public tenant for tutorial validation"
 
     - name: Create sample tenants
       run: |
-        cd examples/tenant_tutorial
         source tutorial_env/bin/activate
-        python manage.py shell << 'EOF'
-        from customers.models import Client
-        
-        # Create first tenant
-        Client(
-            domain_url='tenant1.example.com',
-            schema_name='tenant1',
-            name='Tenant 1 - Test Company',
-            description='First test tenant for validation'
-        ).save()
-        
-        # Create second tenant  
-        Client(
-            domain_url='tenant2.example.com',
-            schema_name='tenant2',
-            name='Tenant 2 - Another Company',
-            description='Second test tenant for validation'
-        ).save()
-        EOF
+        uv run python manage.py create_client tenant1 tenant1.example.com "Tenant 1 - Test Company" --description "First test tenant for validation"
+        uv run python manage.py create_client tenant2 tenant2.example.com "Tenant 2 - Another Company" --description "Second test tenant for validation"
 
     - name: Verify tenants were created
       run: |
-        cd examples/tenant_tutorial
         source tutorial_env/bin/activate
-        python manage.py list_tenants
+        uv run python manage.py list_tenants
         
         # Verify we have exactly 3 tenants (public + 2 test tenants)
-        tenant_count=$(python manage.py list_tenants | grep -E '^(public|tenant1|tenant2)' | wc -l)
+        tenant_count=$(uv run python manage.py list_tenants | grep -E '^(public|tenant1|tenant2)' | wc -l)
         if [ "$tenant_count" != "3" ]; then
           echo "Expected 3 tenants, found $tenant_count"
           exit 1
@@ -127,22 +83,18 @@ jobs:
 
     - name: Start Django development server
       run: |
-        cd examples/tenant_tutorial
         source tutorial_env/bin/activate
-        nohup python manage.py runserver 0.0.0.0:8000 > server.log 2>&1 &
-        echo $! > django_server.pid
+        uv run gunicorn -D -p django_server.pid -b 0.0.0.0:8000 tenant_tutorial.wsgi:application
         # Wait for server to start
-        sleep 15
+        sleep 10
         # Check if server is running
         if ! kill -0 $(cat django_server.pid) 2>/dev/null; then
           echo "Server failed to start"
-          cat server.log
           exit 1
         fi
 
     - name: Test public tenant endpoint
       run: |
-        cd examples/tenant_tutorial
         response=$(curl -s -w "%{http_code}" -H "Host: localhost" http://localhost:8000/ -o /tmp/public_response.html)
         echo "Public tenant response code: $response"
         if [ "$response" != "200" ]; then
@@ -162,7 +114,6 @@ jobs:
 
     - name: Test first tenant endpoint
       run: |
-        cd examples/tenant_tutorial
         response=$(curl -s -w "%{http_code}" -H "Host: tenant1.example.com" http://localhost:8000/ -o /tmp/tenant1_response.html)
         echo "Tenant 1 response code: $response"
         if [ "$response" != "200" ]; then
@@ -182,7 +133,6 @@ jobs:
 
     - name: Test second tenant endpoint
       run: |
-        cd examples/tenant_tutorial
         response=$(curl -s -w "%{http_code}" -H "Host: tenant2.example.com" http://localhost:8000/ -o /tmp/tenant2_response.html)
         echo "Tenant 2 response code: $response"
         if [ "$response" != "200" ]; then
@@ -202,18 +152,17 @@ jobs:
 
     - name: Test tenant data isolation
       run: |
-        cd examples/tenant_tutorial
         source tutorial_env/bin/activate
         
         # Add users to tenant1
-        python manage.py tenant_command shell --schema=tenant1 << 'EOF'
+        uv run python manage.py tenant_command shell --schema=tenant1 << 'EOF'
         from django.contrib.auth.models import User
         User.objects.create_user('tenant1user', 'user@tenant1.com', 'password')
         print(f"Tenant1 users count: {User.objects.count()}")
         EOF
         
         # Check that tenant2 doesn't have these users
-        python manage.py tenant_command shell --schema=tenant2 << 'EOF'
+        uv run python manage.py tenant_command shell --schema=tenant2 << 'EOF'
         from django.contrib.auth.models import User
         count = User.objects.count()
         print(f"Tenant2 users count: {count}")
@@ -226,19 +175,10 @@ jobs:
     - name: Stop Django server
       if: always()
       run: |
-        cd examples/tenant_tutorial
         if [ -f django_server.pid ]; then
           kill $(cat django_server.pid) || true
           rm django_server.pid
         fi
-
-    - name: Upload server logs on failure
-      if: failure()
-      uses: actions/upload-artifact@v4
-      with:
-        name: server-logs
-        path: examples/tenant_tutorial/server.log
-        retention-days: 1
 
     - name: Upload response files on failure
       if: failure()

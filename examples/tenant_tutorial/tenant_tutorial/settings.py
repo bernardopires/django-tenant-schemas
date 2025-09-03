@@ -23,7 +23,7 @@ DATABASES = {
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["localhost", ".trendy-sass.com"]
+ALLOWED_HOSTS = ['*']  # For development purposes - be more restrictive in production
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -90,7 +90,7 @@ DATABASE_ROUTERS = ("tenant_schemas.routers.TenantSyncRouter",)
 TEST_RUNNER = "django.test.runner.DiscoverRunner"
 
 MIDDLEWARE = (
-    "tenant_tutorial.middleware.TenantTutorialMiddleware",
+    "tenant_schemas.middleware.TenantMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -152,6 +152,16 @@ TENANT_APPS = (
 TENANT_MODEL = "customers.Client"  # app.Model
 
 DEFAULT_FILE_STORAGE = "tenant_schemas.storage.TenantFileSystemStorage"
+
+# Modern Django STORAGES setting
+STORAGES = {
+    "default": {
+        "BACKEND": "tenant_schemas.storage.TenantFileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
 INSTALLED_APPS = (
     "tenant_schemas",

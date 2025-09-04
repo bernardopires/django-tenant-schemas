@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.management import call_command
 from django.db import connection
 from django.test import override_settings
 from dts_test_app.models import DummyModel, ModelWithFkToPublicUser
@@ -323,6 +324,59 @@ class TenantCommandTest(BaseTestCase):
                 }
             ],
         )
+
+    @override_settings(
+        SHARED_APPS=(
+            "tenant_schemas",
+            "django.contrib.contenttypes",
+            "django.contrib.auth",
+        ),
+        TENANT_APPS=(
+            "dts_test_app",  # Has models with AutoField primary keys
+        ),
+        INSTALLED_APPS=(
+            "tenant_schemas",
+            "django.contrib.contenttypes",
+            "django.contrib.auth",
+            "dts_test_app",
+        ),
+    )
+    def test_get_sequences_introspection_flush_command(self):
+        """
+        Test that the get_sequences() method works properly for database introspection.
+        This test reproduces the issue from #538 where running flush command would fail
+        with NotImplementedError: subclasses of BaseDatabaseIntrospection may require 
+        a get_sequences() method.
+        """
+        self.sync_shared()
+        
+        # Create public tenant
+        public_tenant = Tenant(domain_url="localhost", schema_name="public")
+        public_tenant.save(verbosity=BaseTestCase.get_verbosity())
+        
+        # Create a test tenant with models that have AutoField primary keys
+        tenant = Tenant(domain_url="test.localhost", schema_name="test_sequences")
+        tenant.save(verbosity=BaseTestCase.get_verbosity())
+        
+        # Switch to tenant schema and test get_sequences() method directly
+        # This should not raise NotImplementedError
+        with tenant_context(tenant):
+            try:
+                # Test get_sequences() method directly - this will definitely trigger the bug
+                cursor = connection.cursor()
+                introspection = connection.introspection
+                sequences = introspection.get_sequences(cursor, 'dts_test_app_dummymodel')
+                # If we get here, the method exists and works
+            except NotImplementedError as e:
+                if "get_sequences() method" in str(e):
+                    self.fail("get_sequences() method not implemented in tenant schema introspection")
+                else:
+                    raise  # Re-raise if it's a different NotImplementedError
+            except AttributeError as e:
+                if "get_sequences" in str(e):
+                    self.fail("get_sequences() method not implemented in tenant schema introspection")
+                else:
+                    raise  # Re-raise if it's a different AttributeError
 
 
 @override_settings(

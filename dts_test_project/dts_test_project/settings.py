@@ -24,7 +24,15 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-DEFAULT_FILE_STORAGE = "tenant_schemas.storage.TenantFileSystemStorage"
+STORAGES = {
+    "default": {
+        "BACKEND": "tenant_schemas.storage.TenantFileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "tenant_schemas.storage.TenantFileSystemStorage",
+    },
+}
+
 
 # Application definition
 
@@ -65,11 +73,11 @@ WSGI_APPLICATION = "dts_test_project.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "tenant_schemas.postgresql_backend",
-        "NAME": os.environ.get("PG_NAME", "dts_test_project"),
-        "USER": os.environ.get("PG_USER"),
-        "PASSWORD": os.environ.get("PG_PASSWORD"),
-        "HOST": os.environ.get("PG_HOST"),
-        "PORT": int(os.environ.get("PG_PORT")) if os.environ.get("PG_PORT") else None,
+        "NAME": "dts_test_project",
+        "USER": "dts_test_project",
+        "PASSWORD": "dts_test_project",
+        "HOST": "localhost",
+        "PORT": int(os.getenv("DB_5432_TCP_PORT"))
     }
 }
 
@@ -125,8 +133,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = "/static/"
-
-STATICFILES_STORAGE = "tenant_schemas.storage.TenantStaticFilesStorage"
 
 LOGGING = {
     "version": 1,

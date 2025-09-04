@@ -1,4 +1,3 @@
-import django
 from django.conf import settings
 from django.core.exceptions import DisallowedHost
 from django.db import connection
@@ -20,7 +19,7 @@ such as inspecting the header, or extracting it from some OAuth token.
 """
 
 
-class BaseTenantMiddleware(django.utils.deprecation.MiddlewareMixin):
+class BaseTenantMiddleware:
     TENANT_NOT_FOUND_EXCEPTION = Http404
 
     """
@@ -30,16 +29,10 @@ class BaseTenantMiddleware(django.utils.deprecation.MiddlewareMixin):
     (the request would be enough).
     """
 
-    def get_tenant(self, model, hostname, request):
-        raise NotImplementedError
+    def __init__(self, get_response):
+        self.get_response = get_response
 
-    def hostname_from_request(self, request):
-        """ Extracts hostname from request. Used for custom requests filtering.
-            By default removes the request's port and common prefixes.
-        """
-        return remove_www(request.get_host().split(":")[0]).lower()
-
-    def process_request(self, request):
+    def __call__(self, request):
         # Connection needs first to be at the public schema, as this is where
         # the tenant metadata is stored.
         connection.set_schema_to_public()
@@ -69,6 +62,18 @@ class BaseTenantMiddleware(django.utils.deprecation.MiddlewareMixin):
             and request.tenant.schema_name == get_public_schema_name()
         ):
             request.urlconf = settings.PUBLIC_SCHEMA_URLCONF
+
+        response = self.get_response(request)
+        return response
+
+    def get_tenant(self, model, hostname, request):
+        raise NotImplementedError
+
+    def hostname_from_request(self, request):
+        """ Extracts hostname from request. Used for custom requests filtering.
+            By default removes the request's port and common prefixes.
+        """
+        return remove_www(request.get_host().split(":")[0]).lower()
 
 
 class TenantMiddleware(BaseTenantMiddleware):
@@ -111,9 +116,7 @@ class DefaultTenantMiddleware(SuspiciousTenantMiddleware):
 
     def get_tenant(self, model, hostname, request):
         try:
-            return super(DefaultTenantMiddleware, self).get_tenant(
-                model, hostname, request
-            )
+            return super().get_tenant(model, hostname, request)
         except model.DoesNotExist:
             schema_name = self.DEFAULT_SCHEMA_NAME
             if not schema_name:

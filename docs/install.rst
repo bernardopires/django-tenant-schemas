@@ -2,11 +2,22 @@
 Installation
 ============
 
-Assuming you have django installed, the first step is to install ``django-tenant-schemas``.
+Assuming you have django installed, the first step is to install ``django-tenant-schemas`` with your preferred PostgreSQL client.
+
+.. code-block:: bash
+
+    # For psycopg2
+    pip install django-tenant-schemas[psycopg2]
+
+    # For psycopg
+    pip install django-tenant-schemas[psycopg]
+
+You can also install the base package without a PostgreSQL client if you want to manage the dependency separately:
 
 .. code-block:: bash
 
     pip install django-tenant-schemas
+    pip install psycopg2-binary  # or psycopg[binary]>=3.0
 
 Basic Settings
 ==============
@@ -31,7 +42,7 @@ Add `tenant_schemas.routers.TenantSyncRouter` to your `DATABASE_ROUTERS` setting
         'tenant_schemas.routers.TenantSyncRouter',
     )
 
-Add the middleware ``tenant_schemas.middleware.TenantMiddleware`` to the top of ``MIDDLEWARE_CLASSES``, so that each request can be set to use the correct schema.
+Add the middleware ``tenant_schemas.middleware.TenantMiddleware`` to the top of ``MIDDLEWARE``, so that each request can be set to use the correct schema.
 
 If the hostname in the request does not match a valid tenant ``domain_url``, a HTTP 404 Not Found will be returned.
 
@@ -50,13 +61,13 @@ If you'd like a different tenant selection technique (e.g. using an HTTP Header)
 
 .. code-block:: python
 
-    MIDDLEWARE_CLASSES = (
+    MIDDLEWARE = [
         'tenant_schemas.middleware.TenantMiddleware',
         # 'tenant_schemas.middleware.SuspiciousTenantMiddleware',
         # 'tenant_schemas.middleware.DefaultTenantMiddleware',
         # 'myproject.middleware.MyDefaultTenantMiddleware',
         #...
-    )
+    ]
 
 .. code-block:: python
 
@@ -246,7 +257,7 @@ Or you can create a completely separate project for the main website.
 Caching
 -------
 
-To enable tenant aware caching you can set the `KEY_FUNCTION <https://docs.djangoproject.com/en/1.8/ref/settings/#std:setting-CACHES-KEY_FUNCTION>`_ setting to use the provided ``make_key`` helper function which
+To enable tenant aware caching you can set the `KEY_FUNCTION <https://docs.djangoproject.com/en/4.2/ref/settings/#key-function>`_ setting to use the provided ``make_key`` helper function which
 adds the tenants ``schema_name`` as the first key prefix.
 
 .. code-block:: python

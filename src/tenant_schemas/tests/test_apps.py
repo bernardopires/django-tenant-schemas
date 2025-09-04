@@ -67,6 +67,19 @@ class AppConfigTests(TestCase):
                     id="tenant_schemas.W001"),
         ])
 
+    @override_settings(STORAGES={"default": {"BACKEND": "django.core.files.storage.FileSystemStorage"}})
+    def test_storage_engines(self):
+        self.assertBestPractice(
+            [
+                Warning(
+                    "Your default storage engine is not tenant aware.",
+                    hint="Set settings.STORAGES default backend to "
+                    "'tenant_schemas.storage.TenantFileSystemStorage'",
+                    id="tenant_schemas.W003",
+                )
+            ]
+        )
+
     @override_settings(INSTALLED_APPS=[
         'dts_test_app',
         'customers',

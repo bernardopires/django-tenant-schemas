@@ -1,0 +1,77 @@
+[build-system]
+requires = ["setuptools>=45", "setuptools-scm[toml]>=6.2", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "django-tenant-schemas"
+description = "Tenant support for Django using PostgreSQL schemas."
+authors = [
+    {name = "Bernardo Pires Carneiro", email = "carneiro.be@gmail.com"}
+]
+license = {text = "MIT"}
+readme = "README.rst"
+requires-python = ">=3.8"
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Framework :: Django",
+    "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.1", 
+    "Framework :: Django :: 5.2",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9", 
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Database",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = [
+    "Django>=4.2",
+    "ordered-set",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/bcarneiro/django-tenant-schemas"
+Repository = "https://github.com/bcarneiro/django-tenant-schemas"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["tenant_schemas"]
+zip-safe = false
+
+[tool.setuptools_scm]
+
+[tool.setuptools.package-data]
+"*" = ["*.txt", "*.rst"]
+
+# Tool configurations migrated from setup.cfg
+[tool.isort]
+combine_as_imports = true
+default_section = "THIRDPARTY"
+include_trailing_comma = true
+multi_line_output = 5
+not_skip = "__init__.py"
+
+[tool.flake8]
+exclude = [".tox", "docs", "build", "migrations", "__init__.py"]
+ignore = ["C901", "E501", "E731", "W503"]
+
+[tool.bdist_wheel]
+universal = false
+
+[project.optional-dependencies]
+psycopg2 = ["psycopg2-binary"]
+psycopg = ["psycopg[binary]>=3.0"]
+
+[dependency-groups]
+dev = [
+    "coverage>=7.6.1",
+    "mock",
+    "tblib", 
+    "tox>=4.25.0",
+    "tox-docker",
+    "tox-uv",
+]

@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        tox-env:
+          # Django 4.2 LTS - Python 3.8, 3.9, 3.10, 3.11, 3.12
+          - "py38-dj42-psycopg2"
+          - "py39-dj42-psycopg2"
+          - "py310-dj42-psycopg2"
+          - "py311-dj42-psycopg2"
+          - "py312-dj42-psycopg2"
+          - "py38-dj42-psycopg"
+          - "py39-dj42-psycopg"
+          - "py310-dj42-psycopg"
+          - "py311-dj42-psycopg"
+          - "py312-dj42-psycopg"
+          # Django 5.1 - Python 3.10, 3.11, 3.12, 3.13
+          - "py310-dj51-psycopg2"
+          - "py311-dj51-psycopg2"
+          - "py312-dj51-psycopg2"
+          - "py313-dj51-psycopg2"
+          - "py310-dj51-psycopg"
+          - "py311-dj51-psycopg"
+          - "py312-dj51-psycopg"
+          - "py313-dj51-psycopg"
+          # Django 5.2 LTS - Python 3.10, 3.11, 3.12, 3.13
+          - "py310-dj52-psycopg2"
+          - "py311-dj52-psycopg2"
+          - "py312-dj52-psycopg2"
+          - "py313-dj52-psycopg2"
+          - "py310-dj52-psycopg"
+          - "py311-dj52-psycopg"
+          - "py312-dj52-psycopg"
+          - "py313-dj52-psycopg"
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+
+    - name: Run tests with tox
+      env:
+        TOXENV: ${{ matrix.tox-env }}-standard
+      run: uv run tox

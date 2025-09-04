@@ -1,4 +1,5 @@
 from django.core.management.commands.migrate import Command as MigrateCommand
+from django.db.migrations.autodetector import MigrationAutodetector
 from django.db.migrations.exceptions import MigrationSchemaMissing
 from tenant_schemas.management.commands import SyncCommon
 from tenant_schemas.migration_executors import get_executor
@@ -10,18 +11,19 @@ from tenant_schemas.utils import (
 
 
 class Command(SyncCommon):
+    autodetector = MigrationAutodetector
     requires_system_checks = []
     help = (
         "Updates database schema. Manages both apps with migrations and those without."
     )
 
     def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
+        super().add_arguments(parser)
         command = MigrateCommand()
         command.add_arguments(parser)
 
     def handle(self, *args, **options):
-        super(Command, self).handle(*args, **options)
+        super().handle(*args, **options)
         self.PUBLIC_SCHEMA_NAME = get_public_schema_name()
 
         executor = get_executor(codename=self.executor)(self.args, self.options)

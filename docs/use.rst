@@ -4,9 +4,13 @@ Using django-tenant-schemas
 
 Supported versions
 ------------------
-You can use ``django-tenant-schemas`` with currently maintained versions of Django -- see the `Django's release process <https://docs.djangoproject.com/en/1.11/internals/release-process/>`_ and the present list of `Supported Versions <https://www.djangoproject.com/download/#supported-versions>`_.
+``django-tenant-schemas`` supports currently maintained versions of Django and Python:
 
-It is necessary to use a PostgreSQL database. ``django-tenant-schemas`` will ensure compatibility with the minimum required version of the latest Django release. At this time that is PostgreSQL 9.3, the minimum for Django 1.11.
+- **Django**: 4.2 LTS, 5.1, 5.2 LTS
+- **Python**: 3.8, 3.9, 3.10, 3.11, 3.12, 3.13
+- **PostgreSQL**: 12+
+
+See Django's `release process <https://docs.djangoproject.com/en/dev/internals/release-process/>`_ and the present list of `Supported Versions <https://www.djangoproject.com/download/#supported-versions>`_.
 
 Creating a Tenant
 -----------------
@@ -169,7 +173,15 @@ To avoid this you should configure a tenant aware storage backend - you will be 
 
     MEDIA_ROOT = '/data/media'
     MEDIA_URL = '/media/'
-    DEFAULT_FILE_STORAGE = 'tenant_schemas.storage.TenantFileSystemStorage'
+    
+    STORAGES = {
+        "default": {
+            "BACKEND": "tenant_schemas.storage.TenantFileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "tenant_schemas.storage.TenantFileSystemStorage",
+        },
+    }
 
 We provide :class:`tenant_schemas.storage.TenantStorageMixin` which can be added to any third-party storage backend.
 

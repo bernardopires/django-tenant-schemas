@@ -43,34 +43,28 @@ jobs:
 
     - name: Create virtual environment and install dependencies
       run: |
-        uv venv tutorial_env
-        source tutorial_env/bin/activate
+        uv venv
         uv pip sync requirements.txt
 
     - name: Verify database connection
       run: |
-        source tutorial_env/bin/activate
         echo "SELECT 1" | uv run python manage.py dbshell
 
     - name: Run initial migrations
       run: |
-        source tutorial_env/bin/activate
         uv run python manage.py migrate_schemas --shared
 
     - name: Create public tenant
       run: |
-        source tutorial_env/bin/activate
         uv run python manage.py create_client public localhost "Tutorial Public Tenant" --description "Public tenant for tutorial validation"
 
     - name: Create sample tenants
       run: |
-        source tutorial_env/bin/activate
         uv run python manage.py create_client tenant1 tenant1.example.com "Tenant 1 - Test Company" --description "First test tenant for validation"
         uv run python manage.py create_client tenant2 tenant2.example.com "Tenant 2 - Another Company" --description "Second test tenant for validation"
 
     - name: Verify tenants were created
       run: |
-        source tutorial_env/bin/activate
         uv run python manage.py list_tenants
         
         # Verify we have exactly 3 tenants (public + 2 test tenants)
@@ -83,7 +77,6 @@ jobs:
 
     - name: Start Django development server
       run: |
-        source tutorial_env/bin/activate
         uv run gunicorn -D -p django_server.pid -b 0.0.0.0:8000 tenant_tutorial.wsgi:application
         # Wait for server to start
         sleep 10
@@ -152,8 +145,6 @@ jobs:
 
     - name: Test tenant data isolation
       run: |
-        source tutorial_env/bin/activate
-        
         # Add users to tenant1
         uv run python manage.py tenant_command shell --schema=tenant1 << 'EOF'
         from django.contrib.auth.models import User

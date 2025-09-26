@@ -10,28 +10,38 @@ Setup Instructions
 
 **Prerequisites**: This tutorial requires `uv <https://docs.astral.sh/uv/>`_, a fast Python package manager. Install it by following the `uv installation guide <https://docs.astral.sh/uv/getting-started/installation/>`_.
 
-1. **Install dependencies**: Navigate to the tutorial directory and install the required packages:
+1. **Check dependencies**: Navigate to the tutorial directory and run the ``check`` management command:
 
 .. code-block:: bash
 
     cd examples/tenant_tutorial
-    uv pip sync requirements.txt
+    ./manage.py check
 
 2. **Configure the database**: Edit the ``settings.py`` file to configure the ``DATABASES`` variable for your PostgreSQL setup. The default configuration expects a PostgreSQL database named ``tenant_tutorial`` with user ``postgres`` and password ``root`` on localhost.
+
+.. code-block:: bash
+
+   echo "SELECT 1 AS test" | ./manage.py dbshell
 
 3. **Run initial migrations**: Use ``migrate_schemas`` instead of the regular ``migrate`` command:
 
 .. code-block:: bash
 
-    uv run python manage.py migrate_schemas
+    ./manage.py migrate_schemas --shared
+
+4. **Create the public tenant**: Use ``create_client`` command (defined in ``customers`` app:
+
+.. code-block:: bash
+
+    ./manage.py create_client public localhost "Tutorial Public Tenant" --description "Public tenant for tutorial validation"
 
 4. **Start the development server**:
 
 .. code-block:: bash
 
-    uv run python manage.py runserver 
+    ./manage.py runserver localhost:9000
 
-All other steps will be explained by following the tutorial, just open ``http://127.0.0.1:8000`` on your browser.
+All other steps will be explained by following the tutorial, just open ``http://localhost:9000`` in your browser.
 
 **Important Notes:**
 

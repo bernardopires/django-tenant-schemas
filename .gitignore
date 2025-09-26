@@ -4,6 +4,7 @@
 .DS_Store
 VERSION
 _build/
+build/
 dist/
 *.egg-info
 .eggs/

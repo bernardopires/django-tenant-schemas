@@ -4,6 +4,8 @@ import os
 
 DEBUG = True
 
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
@@ -151,9 +153,6 @@ TENANT_APPS = (
 
 TENANT_MODEL = "customers.Client"  # app.Model
 
-DEFAULT_FILE_STORAGE = "tenant_schemas.storage.TenantFileSystemStorage"
-
-# Modern Django STORAGES setting
 STORAGES = {
     "default": {
         "BACKEND": "tenant_schemas.storage.TenantFileSystemStorage",

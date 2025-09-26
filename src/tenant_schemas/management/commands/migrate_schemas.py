@@ -1,3 +1,4 @@
+import django
 from django.core.management.commands.migrate import Command as MigrateCommand
 from django.db.migrations.autodetector import MigrationAutodetector
 from django.db.migrations.exceptions import MigrationSchemaMissing
@@ -19,6 +20,15 @@ class Command(SyncCommon):
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
+
+        # Only add --skip-checks for Django 5.2+
+        if django.VERSION >= (5, 2):
+            parser.add_argument(
+                '--skip-checks',
+                action='store_true',
+                help='Skip system checks.',
+            )
+
         command = MigrateCommand()
         command.add_arguments(parser)
 

@@ -55,5 +55,6 @@ Contents
    examples
    templates
    test
+   faq
    involved
 

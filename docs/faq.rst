@@ -277,3 +277,167 @@ middleware sets ``request.tenant``:
 .. code-block:: html+django
 
     <p>Current tenant: {{ request.tenant.domain_url }}</p>
+
+
+File Storage & Media
+====================
+
+How does tenant-aware file storage work?
+-----------------------------------------
+
+By default, Django's :mod:`~django.core.files.storage` API stores all media in
+a single ``MEDIA_ROOT`` directory with no tenant isolation. To separate uploads
+per tenant, ``django-tenant-schemas`` provides
+:class:`~tenant_schemas.storage.TenantFileSystemStorage`.
+
+When configured, it overrides the ``path()`` method to store files under a
+subdirectory named after the tenant's ``domain_url``:
+
+.. code-block:: text
+
+    MEDIA_ROOT/
+        tenant1.example.com/
+            uploads/
+                photo.jpg
+        tenant2.example.com/
+            uploads/
+                photo.jpg
+
+Configure it in ``settings.py``:
+
+.. code-block:: python
+
+    MEDIA_ROOT = '/data/media'
+    MEDIA_URL = '/media/'
+
+    STORAGES = {
+        "default": {
+            "BACKEND": "tenant_schemas.storage.TenantFileSystemStorage",
+        },
+    }
+
+
+How do I use ``TenantStorageMixin`` with a cloud storage backend like S3 or Google Cloud Storage?
+-------------------------------------------------------------------------------------------------
+
+:class:`~tenant_schemas.storage.TenantStorageMixin` is a mixin that overrides
+the ``path()`` method to insert the tenant's ``domain_url`` into the file path.
+You can combine it with any third-party storage backend by creating a small
+subclass:
+
+.. code-block:: python
+
+    # myapp/storage.py
+
+    from tenant_schemas.storage import TenantStorageMixin
+    from storages.backends.s3boto3 import S3Boto3Storage
+
+    class TenantS3Storage(TenantStorageMixin, S3Boto3Storage):
+        """S3 storage backend with per-tenant path isolation."""
+        pass
+
+For Google Cloud Storage:
+
+.. code-block:: python
+
+    from tenant_schemas.storage import TenantStorageMixin
+    from storages.backends.gcloud import GoogleCloudStorage
+
+    class TenantGoogleCloudStorage(TenantStorageMixin, GoogleCloudStorage):
+        """GCS storage backend with per-tenant path isolation."""
+        pass
+
+Then reference your custom class in ``settings.py``:
+
+.. code-block:: python
+
+    STORAGES = {
+        "default": {
+            "BACKEND": "myapp.storage.TenantS3Storage",
+        },
+    }
+
+This stores all tenants' files in the **same** bucket, isolated by path prefix
+(e.g. ``s3://mybucket/tenant1.example.com/uploads/photo.jpg``). You do not need
+a separate bucket per tenant.
+
+
+How do I serve tenant-aware media files during development?
+-----------------------------------------------------------
+
+Django's built-in development server does not know about the tenant
+subdirectory structure that ``TenantFileSystemStorage`` creates. In production
+you would configure your reverse proxy (e.g. nginx) to handle this, but during
+development you have two options.
+
+**Option 1: Add a custom URL pattern (recommended for development)**
+
+Serve media through a view that resolves the correct tenant subdirectory:
+
+.. code-block:: python
+
+    # urls.py (development only)
+
+    from django.conf import settings
+    from django.views.static import serve
+    from django.db import connection
+    import os
+
+    if settings.DEBUG:
+        def tenant_media_serve(request, path):
+            tenant_media = os.path.join(
+                settings.MEDIA_ROOT,
+                connection.tenant.domain_url,
+            )
+            return serve(request, path, document_root=tenant_media)
+
+        urlpatterns += [
+            path('media/<path:path>', tenant_media_serve),
+        ]
+
+**Option 2: Use the standard** ``static()`` **helper with a note**
+
+If you are using the ``static()`` helper in your ``urls.py``, be aware that it
+serves from ``MEDIA_ROOT`` directly and will not find files in the tenant
+subdirectory. Option 1 above is the recommended workaround.
+
+
+Why are my media URLs missing the tenant prefix when served via Django REST Framework?
+--------------------------------------------------------------------------------------
+
+When using ``TenantFileSystemStorage``, file **uploads** are correctly placed in
+the tenant subdirectory (e.g. ``/data/media/tenant1.example.com/uploads/photo.jpg``).
+However, the **URL** returned by ``FieldFile.url`` and serialised by DRF is
+based on ``MEDIA_URL`` and the file's ``name`` attribute as stored in the
+database, which does not include the tenant prefix.
+
+This is by design. The ``path()`` method on the storage backend inserts the
+tenant directory at the filesystem level, but the URL path remains relative (e.g.
+``/media/uploads/photo.jpg``). It is the job of your reverse proxy to map the
+URL back to the correct tenant directory on disk.
+
+An illustrative nginx configuration:
+
+.. code-block:: nginx
+
+    server {
+        listen 80;
+        server_name ~^(www\.)?(.+)$;
+
+        location /media/ {
+            alias /data/media/$2/;
+        }
+
+        location / {
+            proxy_pass http://web;
+            proxy_set_header Host $host;
+        }
+    }
+
+Here ``$2`` captures the full domain from the ``Host`` header and maps it to
+the correct subdirectory under ``MEDIA_ROOT``.
+
+If you are not using subdomain-based routing (e.g. you use path prefixes or
+headers), you will need to adapt this mapping accordingly. An alternative is to
+override ``url()`` on your storage class to include the tenant prefix in the
+generated URL.
